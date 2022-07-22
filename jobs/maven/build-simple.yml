@@ -1,1 +1,14 @@
+# Construir el fat-jar
+build-job:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+  cache:
+    paths:
+      - ./.m2/repository
+  script:
+    - 'echo "=============================================================================================="'
+    - 'echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"'
+    - 'echo "=============================================================================================="'
+    - mvn clean package -DskipTests
 
