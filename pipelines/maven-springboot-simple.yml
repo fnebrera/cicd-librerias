@@ -5,7 +5,7 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'push'    # Solo en caso de push
 
-# Esta es una imagen propia, con maven y git, y uso local. Requiere cambiar pull_policy en config.toml a if-not-present
+# Esta es una imagen propia, con maven y git, y uso local. Requiere cambiar pull_policy en config.toml a 'if-not-present'
 image: ck-maven-executor:1.0.0 
 
 variables:
