@@ -27,7 +27,7 @@ stages:
 
 # Sonar
 include: 
-    - file: '/comunytek/cicd-librerias/jobs/maven/sonar-simple.yml'
+    - file: '/jobs/maven/sonar-simple.yml'
     - file: '/comunytek/cicd-librerias/jobs/maven/build-simple.yml'
     - file: '/comunytek/cicd-librerias/jobs/maven/deploy-simple.yml'
 
