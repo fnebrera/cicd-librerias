@@ -1,1 +1,39 @@
+# Pruebas de deploy a Nexus y Gitlabpropias
+deploy-job:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
+      when: never
+    - if: $CI_COMMIT_REF_NAME == "master"
+      when: manual
+    - if: $CI_COMMIT_REF_NAME == "develop" 
+  cache:
+    paths:
+      - ./.m2/repository
+  script:
+    # No se si es necesario. Por ahora no - /bin/bash
+    - 'echo "=============================================================================================="'
+    - 'echo "Ejecutando etapa DEPLOY en $CI_COMMIT_REF_NAME"'
+    - 'echo "=============================================================================================="'
+    - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
+    - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom"; exit 2; }'
+    - 'echo "Version del proyecto: ${PRJ_VERS}"'
+    - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Commit de SNAPSHOT debe hacerse en develop"; exit 3; }' 
+    - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Commit de RELEASE debe hacerse en master"; exit 3; }'
+    # Guardar en el registry 
+    # Este ejemplo funciona con nexus
+    #- mvn deploy -s ci_settings.xml -DskipTests -Drepo.user=$NEXUS_REPO_USER -Drepo.pass=$NEXUS_REPO_PASS -Drepo.url=$NEXUS_REPO_URL
+    # Aqui usamos el package registry de Gitlab
+    - 'mvn deploy -s ci_settings.xml -DskipTests'
+    # Si todo va bien, genero un tag. DUDA: solo en master?
+    - '[[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "INFO: no se genera tag en la rama ${CI_COMMIT_REF_NAME}"; exit 0; }'
+    - 'TAG="${CI_COMMIT_REF_NAME}-${PRJ_VERS}-${CI_PIPELINE_IID}"'
+    - 'echo "Creando tag $TAG en REMOTE_URL: $REMOTE_URL"'
+    - git config user.name "$CICD_USER"
+    - git config user.email "$CICD_EMAIL"
+    - git remote remove origin
+    - git remote add origin $REMOTE_URL
+    #- git remote show origin
+    - git tag -a $TAG -m "Build $TAG"
+    - git push --tags
 
