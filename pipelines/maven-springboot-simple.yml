@@ -29,5 +29,11 @@ stages:
 include: 
   - project: 'comunytek/cicd-librerias'
     ref: master
-    file: 'jobs/maven/sonar-simple.yml'
+    file: 
+      # sonar-job: verifica calidad del codigo
+      - 'jobs/maven/sonar-simple.yml'
+      # build-job: genera el fat-jar
+      - 'jobs/maven/build-simple.yml'
+      # deloy-job: Sube el artefacto al registry y genera tag (solo rama master)
+      - 'jobs/maven/deploy-simple.yml'
 
