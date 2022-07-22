@@ -25,11 +25,11 @@ deploy-job:
     # Si todo va bien, genero un tag, pero solo en master?
     - '[[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "INFO: no se genera tag en la rama ${CI_COMMIT_REF_NAME}"; exit 0; }'
     - 'TAG="${CI_COMMIT_REF_NAME}-${PRJ_VERS}"'
-    - 'echo "Creando tag $TAG en REMOTE_URL: $REMOTE_URL"'
+    - 'echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"'
     - git config user.name "$CICD_USER"
     - git config user.email "$CICD_EMAIL"
     - git remote remove origin
-    - git remote add origin ${REMOTE_URL}
+    - git remote add origin ${ORIGIN_URL}
     - git tag -a $TAG -m "Build $TAG"
     - git push --tags
 
