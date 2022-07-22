@@ -25,9 +25,9 @@ stages:
   - build
   - deploy
 
-# Sonar
+# Includes
 include: 
-    - file: '/jobs/maven/sonar-simple.yml'
-    - file: '/comunytek/cicd-librerias/jobs/maven/build-simple.yml'
-    - file: '/comunytek/cicd-librerias/jobs/maven/deploy-simple.yml'
+  - project: 'comunytek/cicd-librerias'
+    ref: master
+    file: 'jobs/maven/sonar-simple.yml'
 
