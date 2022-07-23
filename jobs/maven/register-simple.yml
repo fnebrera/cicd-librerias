@@ -11,7 +11,7 @@ deploy-job:
       - ./.m2/repository
   script:
     - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa DEPLOY en $CI_COMMIT_REF_NAME"'
+    - 'echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
     - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom"; exit 2; }'
