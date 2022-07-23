@@ -1,6 +1,5 @@
 #################################################
 # Pipeline simple para proyectos maven-springboot
-# Probar si puedo cambiarla siendo developer
 #################################################
 workflow:
   rules:
