@@ -1,29 +1,20 @@
-# Pruebas de deploy a Nexus y Gitlab
-deploy-job:
-  stage: deploy
+# Crear un tag, solo para master. Por el momento manual
+tag-job:
+  stage: tag
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
       when: never
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
-    - if: $CI_COMMIT_REF_NAME == "develop" 
   cache:
     paths:
       - ./.m2/repository
   script:
-    # No se si es necesario. Por ahora no - /bin/bash
     - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa DEPLOY en $CI_COMMIT_REF_NAME"'
+    - 'echo "Ejecutando etapa TAG en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
     - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom"; exit 2; }'
-    - 'echo "Version del proyecto: ${PRJ_VERS}"'
-    - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Commit de SNAPSHOT debe hacerse en develop"; exit 3; }' 
-    - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Commit de RELEASE debe hacerse en master"; exit 3; }'
-    # Guardar en el registry 
-    - 'mvn deploy -s ci_settings.xml -DskipTests'
-    # Si todo va bien, genero un tag, pero solo en master?
-    - '[[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "INFO: no se genera tag en la rama ${CI_COMMIT_REF_NAME}"; exit 0; }'
     - 'TAG="${CI_COMMIT_REF_NAME}-${PRJ_VERS}"'
     - 'echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"'
     - git config user.name "$CICD_USER"
@@ -32,4 +23,3 @@ deploy-job:
     - git remote add origin ${ORIGIN_URL}
     - git tag -a $TAG -m "Build $TAG"
     - git push --tags
-

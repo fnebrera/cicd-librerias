@@ -23,7 +23,8 @@ cache:
 stages:
   - sonar
   - build
-  - deploy
+  - register
+  - tag
 
 # Includes
 include: 
@@ -34,6 +35,8 @@ include:
       - 'jobs/maven/sonar-simple.yml'
       # build-job: genera el fat-jar
       - 'jobs/maven/build-simple.yml'
-      # deloy-job: Sube el artefacto al registry y genera tag (solo rama master)
-      - 'jobs/maven/deploy-simple.yml'
+      # register-job: Sube el artefacto al registry
+      - 'jobs/maven/register-simple.yml'
+      # tag-job: Genera tag (solo rama master)
+      - 'jobs/maven/tag-simple.yml'
 
