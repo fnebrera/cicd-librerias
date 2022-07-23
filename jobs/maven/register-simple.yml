@@ -1,5 +1,5 @@
 # Register a Gitlab
-deploy-job:
+register-job:
   stage: register
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
