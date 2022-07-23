@@ -1,14 +1,11 @@
-# Construir el fat-jar
-build-job:
-  stage: build
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+# Compilar para ver queno hay errores. Se ejecuta para cualquier push
+compile-job:
+  stage: compile
   cache:
     paths:
       - ./.m2/repository
   script:
     - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"'
+    - 'echo "Ejecutando etapa COMPILE en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - mvn package -DskipTests
-
+    - mvn clean compile

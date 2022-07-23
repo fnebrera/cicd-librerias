@@ -21,6 +21,7 @@ cache:
 
 # Etapas posibles del pipeline
 stages:
+  - compile
   - sonar
   - build
   - register
@@ -31,6 +32,8 @@ include:
   - project: 'comunytek/cicd-librerias'
     ref: master
     file: 
+      # compile-job: comprueba que no hay errores de compilacion
+      - 'jobs/maven/compile-simple.yml'
       # sonar-job: verifica calidad del codigo
       - 'jobs/maven/sonar-simple.yml'
       # build-job: genera el fat-jar
