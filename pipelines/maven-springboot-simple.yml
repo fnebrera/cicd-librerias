@@ -26,7 +26,7 @@ stages:
   - sonar
   - build
   - register
-  - docker
+  - dock
   - tag
 
 # Includes
@@ -44,7 +44,7 @@ include:
       - 'jobs/maven/build-simple.yml'
       # register-job: Sube el artefacto al registry
       - 'jobs/maven/register-simple.yml'
-      # docker-job: crea una imagen y la guarda en el registry de gitlab (manual)
+      # docker-job: crea una imagen y la guarda en el registry de gitlab
       - 'jobs/maven/docker-simple.yml'
       # tag-job: Genera tag (solo rama master) (manual)
       - 'jobs/maven/tag-simple.yml'
