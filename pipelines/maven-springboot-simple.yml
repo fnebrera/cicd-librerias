@@ -21,10 +21,12 @@ cache:
 
 # Etapas posibles del pipeline
 stages:
+  - prepare
   - compile
   - sonar
   - build
   - register
+  - docker
   - tag
 
 # Includes
@@ -32,6 +34,8 @@ include:
   - project: 'comunytek/cicd-librerias'
     ref: master
     file: 
+      # prepare-job: trabajos previos del pipeline
+      - 'jobs/maven/prepare-simple.yml'
       # compile-job: comprueba que no hay errores de compilacion
       - 'jobs/maven/compile-simple.yml'
       # sonar-job: verifica calidad del codigo
@@ -40,6 +44,8 @@ include:
       - 'jobs/maven/build-simple.yml'
       # register-job: Sube el artefacto al registry
       - 'jobs/maven/register-simple.yml'
-      # tag-job: Genera tag (solo rama master)
+      # docker-job: crea una imagen y la guarda en el registry de gitlab (manual)
+      - 'jobs/maven/docker-simple.yml'
+      # tag-job: Genera tag (solo rama master) (manual)
       - 'jobs/maven/tag-simple.yml'
 
