@@ -9,7 +9,7 @@ docker-job:
     - if: $COMMIT_REF_NAME == "master" || $COMMIT_REF_NAME == "develop"
   needs:
     - job: prepare-job
-    - artifacts: true
+      artifacts: true
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa DOCKER en $CI_COMMIT_REF_NAME"'
