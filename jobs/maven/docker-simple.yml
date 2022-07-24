@@ -2,11 +2,12 @@
 # y registrarla en el giltlab container registry
 docker-job:
   stage: dock
-  image: docker:2.10.16
+  image: docker:2.10.17
   services:
-    - docker:2.10.16-dind
+    - docker:2.10.17-dind
   rules:
-    - if: $COMMIT_REF_NAME == "master" || $COMMIT_REF_NAME == "develop"
+    - if: $COMMIT_REF_NAME == "master"
+    - if: $COMMIT_REF_NAME == "develop"
   needs:
     - job: register-job
       artifacts: true
