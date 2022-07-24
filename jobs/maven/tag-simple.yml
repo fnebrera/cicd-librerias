@@ -16,6 +16,7 @@ tag-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa TAG en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
+    - '[ -f "Dockerfile" ] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }''
     - 'TAG="${CI_COMMIT_REF_NAME}-${PRJ_VERS}"'
     - 'echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"'
     - git config user.name "$CICD_USER"
