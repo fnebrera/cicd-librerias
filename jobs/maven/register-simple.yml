@@ -1,14 +1,17 @@
 # Register a Gitlab
 register-job:
   stage: register
+
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
       when: never
     - if: $CI_COMMIT_REF_NAME == "master"
     - if: $CI_COMMIT_REF_NAME == "develop" 
+
   cache:
     paths:
       - ./.m2/repository
+
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"'
@@ -22,6 +25,7 @@ register-job:
     - 'mvn deploy -s ci_settings.xml -DskipTests'
     # Ejemplo de variable que pasamos a otros jobs
     - 'echo "PRJ_VERS=$PRJ_VERS" >> register-job.env'
+    
   artifacts:
     reports:
       dotenv: register-job.env

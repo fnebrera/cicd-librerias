@@ -25,7 +25,7 @@ stages:
   - sonar
   - build
   - register
-  - dock
+  - dockimage
   - tag
 
 # Includes
