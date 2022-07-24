@@ -11,7 +11,7 @@ register-job:
       - ./.m2/repository
   needs:
     - job: prepare-job
-    - artifacts: true
+      artifacts: true
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"'
