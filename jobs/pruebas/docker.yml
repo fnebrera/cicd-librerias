@@ -11,9 +11,9 @@ docker-job:
   #  - if: $COMMIT_REF_NAME == "master"
   #- if: $COMMIT_REF_NAME == "develop"
 
-  #needs:
-  #  - job: register-job
-  #    artifacts: true
+  cache:
+    paths:
+      - ./target
 
   script:
     - 'echo "=============================================================================================="'
