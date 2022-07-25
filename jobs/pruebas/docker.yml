@@ -24,6 +24,7 @@ docker-job:
     - 'IMG_TAG="${CI_REGISTRY_IMAGE}:${PRJ_VERS}"'
     - 'echo "IMG_TAG: $IMG_TAG"'
     - 'docker --version'
-    - 'echo "$CICD_TOKEN" | docker login -u $CICD_USER --password-stdin $CI_REGISTRY_IMAGE'
+    - 'REGISTRY_HOST="https://registry2.comunytek.com"'
+    - 'echo "$CICD_TOKEN" | docker login -u $CICD_USER --password-stdin $REGISTRY_HOST'
     - 'docker build -t $IMG_TAG .'
     #- 'docker push $IMG_TAG'    
