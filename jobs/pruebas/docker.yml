@@ -4,8 +4,8 @@ docker-job:
   stage: dockimage
 
   image: docker:20.10.17
-  #services:
-  #  - docker:20.10.17-dind
+  services:
+    - docker:20.10.17-dind
 
   #rules:
   #  - if: $COMMIT_REF_NAME == "master"
