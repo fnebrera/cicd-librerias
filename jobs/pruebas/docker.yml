@@ -3,7 +3,8 @@
 docker-job:
   stage: dockimage
 
-  image: docker:2.10.17-dind
+  image: docker:2.10.17
+  #image: docker:2.10.17-dind
   #services:
   #  - docker:2.10.16-dind
 
@@ -19,6 +20,7 @@ docker-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa DOCKER en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
+    - docker --version
     - 'echo "PRJ_VERS: $PRJ_VERS"'
     #- '[[ -f "Dockerfile" ]] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }'
     #- 'IMG_TAG="${CI_REGISTRY_IMAGE}:{$PRJ_VERS}"'
