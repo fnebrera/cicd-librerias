@@ -1,11 +1,11 @@
 # Verificar con Sonarqube
 sonar-job:
   stage: sonar
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "develop" 
-      allow_failure: true
-    - if: $CI_COMMIT_REF_NAME == "master" 
-      allow_failure: false 
+  #rules:
+  #  - if: $CI_COMMIT_REF_NAME == "develop" 
+  #    allow_failure: true
+  #  - if: $CI_COMMIT_REF_NAME == "master" 
+  #    allow_failure: false 
   cache:
     paths:
       - ./.m2/repository
