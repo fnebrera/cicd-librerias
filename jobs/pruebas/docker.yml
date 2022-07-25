@@ -26,6 +26,6 @@ docker-job:
     - 'docker --version'
     - 'echo "CICD_REGISTRY_HOST: $CICD_REGISTRY_HOST"'
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
-    - 'docker search $IMG_TAG'
+    - 'docker search $CI_REGISTRY_IMAGE'
     - 'docker build -t $IMG_TAG .'
     - 'docker push $IMG_TAG' 
