@@ -1,0 +1,33 @@
+# Register a Gitlab
+register-job:
+  stage: register
+
+  rules:
+    - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
+      when: never
+    - if: $CI_COMMIT_REF_NAME == "master"
+    - if: $CI_COMMIT_REF_NAME == "develop" 
+
+  cache:
+    paths:
+      - ./.m2/repository
+
+  script:
+    - 'echo "=============================================================================================="'
+    - 'echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"'
+    - 'echo "=============================================================================================="'
+    - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
+    #- '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
+    - 'echo "Version del proyecto: ${PRJ_VERS}"'
+    #- '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Push de SNAPSHOT debe hacerse en rama develop"; exit 3; }' 
+    #- '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
+    # Guardar jar y pom en el registry 
+    #- 'mvn deploy -s ci_settings.xml -DskipTests'
+    # Ejemplo de variable que pasamos a otros jobs
+    - 'echo "PRJ_VERS=$PRJ_VERS" >> register-job.env'
+    
+  artifacts:
+    reports:
+      dotenv: register-job.env
+
+

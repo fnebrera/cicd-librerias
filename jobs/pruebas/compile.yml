@@ -1,0 +1,12 @@
+# Compilar para ver queno hay errores. Se ejecuta para cualquier push
+compile-job:
+  stage: compile
+  cache:
+    paths:
+      - ./.m2/repository
+  script:
+    - 'echo "=============================================================================================="'
+    - 'echo "Ejecutando etapa COMPILE en $CI_COMMIT_REF_NAME"'
+    - 'echo "=============================================================================================="'
+    #- mvn clean compile
+    

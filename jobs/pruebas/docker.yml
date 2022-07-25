@@ -1,0 +1,27 @@
+# Crear imagen docker usando el Dockerfile del proyecto
+# y registrarla en el giltlab container registry
+docker-job:
+  stage: dockimage
+
+  image: docker:2.10.17
+  services:
+    - docker:2.10.17-dind
+
+  rules:
+    - if: $COMMIT_REF_NAME == "master"
+    - if: $COMMIT_REF_NAME == "develop"
+
+  needs:
+    - job: register-job
+      artifacts: true
+
+  script:
+    - 'echo "=============================================================================================="'
+    - 'echo "Ejecutando etapa DOCKER en $CI_COMMIT_REF_NAME"'
+    - 'echo "=============================================================================================="'
+    - 'echo "PRJ_VERS: $PRJ_VERS"'
+    #- '[[ -f "Dockerfile" ]] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }'
+    #- 'IMG_TAG="${CI_REGISTRY_IMAGE}:{$PRJ_VERS}"'
+    #- 'docker login -u $CICD_USER -p $CICD_TOKEN $CI_REGISTRY'
+    #- 'docker build -t $IMG_TAG .'
+    #- 'docker push $IMG_TAG'    
