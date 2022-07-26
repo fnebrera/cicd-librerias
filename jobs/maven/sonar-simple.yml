@@ -17,5 +17,5 @@ sonar-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa SONAR en branch $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true
+    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -Dsonar.java.skipUnchanged=false
 
