@@ -11,5 +11,5 @@ build-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - mvn package -DskipTests
+    - mvn clean package -DskipTests
 
