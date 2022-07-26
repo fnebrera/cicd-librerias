@@ -45,7 +45,9 @@ include:
       # compile-job: comprueba que no hay errores de compilacion
       - 'jobs/maven/compile-simple.yml'
       # sonar-job: verifica calidad del codigo
-      - 'jobs/maven/sonar-simple.yml'
+      # - 'jobs/maven/sonar-simple.yml'
+      # gitlab-quality-job-job: verifica calidad del codigo
+      - 'jobs/maven/gitlab-quality.yml'
       # build-job: genera el fat-jar
       - 'jobs/maven/build-simple.yml'
       # register-job: Sube el artefacto al registry
