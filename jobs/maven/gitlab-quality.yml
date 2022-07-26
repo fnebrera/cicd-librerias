@@ -11,8 +11,8 @@ gitlab-quality-job:
   stage: quality
 
   image: docker:20.10.17
-  services:
-    - docker:20.10.17-dind
+  #services:
+  #  - docker:20.10.17-dind
 
   script:
     - 'echo "=============================================================================================="'
@@ -24,6 +24,6 @@ gitlab-quality-job:
       --env REPORT_STDOUT
       --volume "$PWD":/code
       --volume /var/run/docker.sock:/var/run/docker.sock
-      registry.gitlab.com/gitlab-org/ci-cd/codequality:latest /code
+      registry.gitlab.com/gitlab-org/ci-cd/codequality:0.86.0 /code
 
 
