@@ -11,8 +11,8 @@ gitlab-quality-job:
   stage: quality
 
   image: docker:20.10.17
-  #services:
-  #  - docker:20.10.17-dind
+  services:
+    - docker:20.10.17-dind
 
   script:
     - 'echo "=============================================================================================="'
