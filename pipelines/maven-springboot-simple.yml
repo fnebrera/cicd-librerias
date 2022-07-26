@@ -31,7 +31,7 @@ cache:
 # Etapas posibles del pipeline
 stages:
   - compile
-  - sonar
+  - quality
   - build
   # En esta etapa corren en paralelo los jobs pkg-register-job y docker-register-job
   - register
