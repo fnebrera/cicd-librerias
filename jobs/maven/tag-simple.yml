@@ -1,19 +1,28 @@
+#########################################################################################################
 # Crear un tag, solo para master. Por el momento manual
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 tag-job:
   stage: tag
+
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
       when: never
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
+
   cache:
     paths:
       - ./.m2/repository
+
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa TAG en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
     - 'TAG="${CI_COMMIT_REF_NAME}-${PRJ_VERS}"'
     - 'echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"'

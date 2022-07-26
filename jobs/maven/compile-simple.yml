@@ -1,11 +1,31 @@
-# Compilar para ver queno hay errores. Se ejecuta para cualquier push
+#########################################################################################################
+# Compilar proyecto maven para ver que no hay errores. Se ejecuta para cualquier push,
+# y siempre antes de cualquier otro job que requiera conocer la version del proyecto.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+#########################################################################################################
 compile-job:
   stage: compile
   cache:
     paths:
       - ./.m2/repository
+      - ./target
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa COMPILE en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
+    - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
+    - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
+    - 'echo "Version del proyecto: ${PRJ_VERS}"'
     - mvn clean compile
+    # Guardar la/s variables de entorno globales en un fichero .env
+    - 'echo "PRJ_VERS=$PRJ_VERS" > pipeline.env'
+    
+  # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
+  # automaticamente disponibles para el resto del pipeline
+  artifacts:
+    reports:
+      dotenv: pipeline.env

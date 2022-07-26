@@ -1,11 +1,14 @@
-# Verificar con Sonarqube
+#########################################################################################################
+# Pasar Sonarqube para verificar la calidad del codigo. Se ejecuta para cualquier push, para evitar
+# pasar a etapas posteriores si no se pasan los niveles de calidad requeridos.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+#########################################################################################################
 sonar-job:
   stage: sonar
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "develop" 
-      allow_failure: true
-    - if: $CI_COMMIT_REF_NAME == "master" 
-      allow_failure: false 
   cache:
     paths:
       - ./.m2/repository
@@ -14,5 +17,5 @@ sonar-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa SONAR en branch $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - mvn verify sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true
+    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true
 

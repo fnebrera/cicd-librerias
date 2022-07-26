@@ -1,4 +1,13 @@
-# Construir el fat-jar
+#########################################################################################################
+# Construye el fat-jar dejandolo preparado en el directorio /target.
+# Se ejecuta solo para ramas master y develop.
+# Se cachea el directorio /target, que habra sido limpiado previamente por la etapa compile.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+#########################################################################################################
 build-job:
   stage: build
   rules:
@@ -6,9 +15,11 @@ build-job:
   cache:
     paths:
       - ./.m2/repository
+      - ./target
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
+    # PROVISIONAL!! Saltamos tests por ahora
     - mvn package -DskipTests
 

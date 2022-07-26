@@ -1,33 +1,36 @@
-# Register a Gitlab
-register-job:
+#########################################################################################################
+# Registra el artefacto en el Package Registry de Gitlab. Se ejecuta en la fase "registry", normalmente
+# en paralelo al job "docker-register-job".
+# Para que este job funcione, el Pacjage Registry debe estar configurado en el pom.xml.
+# Se ejecuta solo para ramas master y develop.
+# Se cachea el directorio /target, que habra sido populado previamente por la etapa build.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+#########################################################################################################
+pkg-register-job:
   stage: register
 
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
       when: never
-    - if: $CI_COMMIT_REF_NAME == "master"
-    - if: $CI_COMMIT_REF_NAME == "develop" 
+    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" 
 
   cache:
     paths:
       - ./.m2/repository
+      - ./target
 
   script:
     - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"'
+    - 'echo "Ejecutando etapa REGISTER/PKG en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
-    - 'echo "Version del proyecto: ${PRJ_VERS}"'
     - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Push de SNAPSHOT debe hacerse en rama develop"; exit 3; }' 
     - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
     # Guardar jar y pom en el registry 
     - 'mvn deploy -s ci_settings.xml -DskipTests'
-    # Ejemplo de variable que pasamos a otros jobs
-    - 'echo "PRJ_VERS=$PRJ_VERS" >> register-job.env'
     
-  artifacts:
-    reports:
-      dotenv: register-job.env
-
 
