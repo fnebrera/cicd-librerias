@@ -17,5 +17,8 @@ sonar-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa SONAR en branch $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -Dsonar.java.skipUnchanged=false
+    - 'SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=true"'
+    # En ramas master y develop, forzamos analizar todo el codigo y no solo los cambios
+    - '[[ $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" ]] && SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=false"'
+    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true $SKIP_UNCHANGED
 
