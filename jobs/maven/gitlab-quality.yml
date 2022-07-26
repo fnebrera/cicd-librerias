@@ -20,9 +20,9 @@ gitlab-quality-job:
     - 'echo "=============================================================================================="'
     - >
       docker run
-      --env SOURCE_CODE="./src"
+      --env SOURCE_CODE="$PWD/src"
       --env REPORT_STDOUT
-      --volume "./src":/code
+      --volume "$PWD":/code
       --volume /var/run/docker.sock:/var/run/docker.sock
       registry.gitlab.com/gitlab-org/ci-cd/codequality:latest /code
 
