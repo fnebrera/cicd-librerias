@@ -13,13 +13,16 @@
 pkg-register-job:
   stage: register
 
+  variables:
+    IS_DOCKER: $DOCKER_PRJ
+
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
       when: never
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop"
   except:
     variables: 
-      - $DOCKER_PRJ == "true" 
+      - $IS_DOCKER == "true" 
 
   cache:
     paths:
