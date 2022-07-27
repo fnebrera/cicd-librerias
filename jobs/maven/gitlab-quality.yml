@@ -8,8 +8,8 @@
 #
 ##########################################################################################################
 include:
-  - template: Code-Quality.gitlab-ci.ymlgitlab-quality-job
-  
+  - template: Code-Quality.gitlab-ci.yml
+
 gitlab-code-quality-job:
 
   stage: quality
