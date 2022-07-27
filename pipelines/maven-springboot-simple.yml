@@ -31,7 +31,9 @@ cache:
 # Etapas posibles del pipeline
 stages:
   - compile
-  - quality
+  # PROVISIONAL: Parace que gitñab code quality debe ejecutarse en la etapa test
+  #- quality
+  - test
   - build
   # En esta etapa corren en paralelo los jobs pkg-register-job y docker-register-job
   - register

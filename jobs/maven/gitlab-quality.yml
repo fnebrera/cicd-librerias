@@ -10,9 +10,9 @@
 include:
   - template: Code-Quality.gitlab-ci.yml
 
-gitlab-code-quality-job:
+code_quality:
 
-  stage: quality
+  stage: test
 
   image: docker:20.10.17
   services:
