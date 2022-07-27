@@ -20,9 +20,9 @@ docker-register-job:
   rules:
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" 
 
-  cache:
-    paths:
-      - ./target
+  #cache:
+  #  paths:
+  #    - ./target
 
   script:
     - 'echo "=============================================================================================="'
@@ -35,6 +35,7 @@ docker-register-job:
     - 'IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"'
     - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"'
     - 'echo "IMG_TAG: $IMG_TAG"'
+    - 'ls -al target/*'
     #- 'docker --version'
     #- 'echo "CICD_REGISTRY_HOST: $CICD_REGISTRY_HOST"'
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'

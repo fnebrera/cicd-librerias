@@ -15,7 +15,7 @@ build-job:
   cache:
     paths:
       - ./.m2/repository
-      - ./target
+      #- ./target
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"'
