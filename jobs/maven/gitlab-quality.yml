@@ -9,6 +9,7 @@
 ##########################################################################################################
   #include:
   #  - template: Code-Quality.gitlab-ci.ymlgitlab-quality-job
+gitlab-code-quality-job:
 
   stage: quality
 
