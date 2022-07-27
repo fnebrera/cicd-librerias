@@ -32,6 +32,7 @@ pkg-register-job:
     - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
     #- '[[ -f "Dockerfile" ]] && { echo "INFO: Existe un fichero Dockerfile. Esta etapa no se ejecuta"; exit 0; }'    
     # Guardar jar y pom en el registry 
-    - 'mvn deploy -s ci_settings.xml -DskipTests'
+    #- 'mvn deploy -s ci_settings.xml -DskipTests'
+    - 'mvn validate deploy:deploy -s ci_settings.xml'
     
 
