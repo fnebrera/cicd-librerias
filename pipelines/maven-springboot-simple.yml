@@ -31,11 +31,9 @@ cache:
 # Etapas posibles del pipeline
 stages:
   - compile
-  # PROVISIONAL: Parace que gitñab code quality debe ejecutarse en la etapa test
-  #- quality
-  - test
+  - quality
   - build
-  # En esta etapa corren en paralelo los jobs pkg-register-job y docker-register-job
+  # En la etapa register corren en paralelo los jobs pkg-register-job y docker-register-job
   - register
   - tag
 
@@ -47,9 +45,7 @@ include:
       # compile-job: comprueba que no hay errores de compilacion
       - 'jobs/maven/compile-simple.yml'
       # sonar-job: verifica calidad del codigo
-      # - 'jobs/maven/sonar-simple.yml'
-      # gitlab-quality-job-job: verifica calidad del codigo
-      - 'jobs/maven/gitlab-quality.yml'
+      - 'jobs/maven/sonar-simple.yml'
       # build-job: genera el fat-jar
       - 'jobs/maven/build-simple.yml'
       # register-job: Sube el artefacto al registry
