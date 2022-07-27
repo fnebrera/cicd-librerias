@@ -25,7 +25,7 @@ gitlab-code-quality-job:
       docker run
       --env SOURCE_CODE="$PWD"
       --volume "$PWD":/code
-      # --volume /var/run/docker.sock:/var/run/docker.sock
+      --volume /var/run/docker.sock:/var/run/docker.sock
       registry.gitlab.com/gitlab-org/ci-cd/codequality:latest /code
   artifacts:
     paths: [gl-code-quality-report.json]
