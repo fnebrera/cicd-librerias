@@ -11,7 +11,7 @@
 #
 ########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 docker-register-job:
-  stage: register
+  stage: docker
 
   image: docker:20.10.17
   services:
@@ -20,9 +20,9 @@ docker-register-job:
   rules:
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" 
 
-  cache:
-    paths:
-      - target
+  #cache:
+  #  paths:
+  #    - target
 
   script:
     - 'echo "=============================================================================================="'

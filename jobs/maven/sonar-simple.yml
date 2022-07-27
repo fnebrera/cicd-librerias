@@ -8,12 +8,13 @@
 #
 #########################################################################################################
 sonar-job:
-  stage: quality
+  stage: sonar
   cache:
     paths:
       - ./.m2/repository
       - ./.sonar/cache
-      - target
+      #- target
+
   script:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa SONAR en branch $CI_COMMIT_REF_NAME"'
