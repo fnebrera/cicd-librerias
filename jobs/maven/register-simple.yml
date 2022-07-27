@@ -16,7 +16,8 @@ pkg-register-job:
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
       when: never
-    - if: $DOCKER_PRJ == false && ($CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop") 
+    #- if: $DOCKER_PRJ == false && ($CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop") 
+    - if: $DOCKER_PRJ == false 
 
   cache:
     paths:
