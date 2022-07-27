@@ -17,12 +17,7 @@ docker-register-job:
   services:
     - docker:20.10.17-dind
 
-  variables:
-    IS_DOCKER: "$DOCKER_PRJ"
-
   rules:
-    - if: $IS_DOCKER == 'false'
-      when: never
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" 
 
   cache:
@@ -33,17 +28,14 @@ docker-register-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa REGISTER/DOCKER en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
+    - '[[ -f "Dockerfile" ]] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }'
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
     - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Push de SNAPSHOT debe hacerse en rama develop"; exit 3; }' 
     - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
-    - '[[ -f "Dockerfile" ]] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }'
     - 'IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"'
     - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"'
     - 'echo "IMG_TAG: $IMG_TAG"'
-    - 'pwd'
-    - 'ls -al'
-    #- 'docker --version'
-    #- 'echo "CICD_REGISTRY_HOST: $CICD_REGISTRY_HOST"'
+    - 'docker --version'
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
     - 'docker build -t $IMG_TAG .'
     - 'docker push $IMG_TAG' 

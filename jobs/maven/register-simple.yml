@@ -13,13 +13,8 @@
 pkg-register-job:
   stage: register
 
-  variables:
-    IS_DOCKER: "$DOCKER_PRJ"
-
   rules:
     - if: $CI_COMMIT_TAG     # No ejecutar si es el commit manual de un tag 
-      when: never
-    - if: $IS_DOCKER == 'true'
       when: never
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop"
 
@@ -32,10 +27,10 @@ pkg-register-job:
     - 'echo "=============================================================================================="'
     - 'echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
+    - '[[ -f "Dockerfile" ]] && { echo "INFO: Existe un fichero Dockerfile. Esta etapa no se ejecuta"; exit 0; }'    
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
     - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Push de SNAPSHOT debe hacerse en rama develop"; exit 3; }' 
     - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
-    - '[[ -f "Dockerfile" ]] && { echo "INFO: Existe un fichero Dockerfile. Esta etapa no se ejecuta"; exit 0; }'    
     # Guardar jar y pom en el registry 
     - 'mvn deploy -s ci_settings.xml -DskipTests'
     
