@@ -44,8 +44,12 @@ include:
   - project: 'comunytek/cicd-librerias'
     ref: master
     file: 
+      # prepare-job: preparar entorno
+      - 'jobs/maven/prepare-simple.yml'
       # compile-job: comprueba que no hay errores de compilacion
       - 'jobs/maven/compile-simple.yml'
+      # test-job: ejecuta tests unitarios
+      - 'jobs/maven/test-simple.yml'
       # sonar-job: verifica calidad del codigo
       - 'jobs/maven/sonar-simple.yml'
       # build-job: genera el fat-jar
