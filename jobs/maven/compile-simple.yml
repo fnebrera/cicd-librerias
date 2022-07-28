@@ -15,7 +15,7 @@ compile-job:
     - IF: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
     # Compilamos cualquier otro branch dependiendo del correspondiente flag,
     # salvo que tambien se requiera ejecutar tests, en cuyo caso el compilar esta implicito.
-    - IF: $COMPILE_AUX_BRANCHES == "true" && $TEST_AUX_BRANCHES == "false"
+    - IF: $COMPILE_AUX_BRANCHES == "true" #&& $TEST_AUX_BRANCHES == "false"
     
   cache:
     paths:
