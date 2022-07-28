@@ -23,13 +23,6 @@ workflow:
 # Esta es una imagen propia, con maven y git, y uso local. Requiere cambiar pull_policy en config.toml a 'if-not-present'
 image: ck-maven-executor:1.0.0 
 
-variables:
-  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
-  MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"
-  # Como acceder a gitlab desde un executor
-  ORIGIN_URL: "https://oauth2:${CICD_TOKEN}@${CICD_HOST}/${CI_PROJECT_PATH}.git"
-
 cache:
   # Definimos la clave como el nombre del branch en el que hacemos push, de este modo
   # separamos la informacion cacheada para cada rama, para no interferir en otros pipelines.
