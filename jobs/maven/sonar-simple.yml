@@ -13,8 +13,9 @@ sonar-job:
   rules:
     # Siempre pasamos sonar a ramas principales
     - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
-    # Pasamos sonar a cualquier otro branch dependiendo del correspondiente flag
-    - if: $SONAR_AUX_BRANCHES == "true"
+    # Pasamos sonar a cualquier otro branch dependiendo del correspondiente flag,
+    # pero tambien debe haber un compile o un test previo
+    - if: $SONAR_AUX_BRANCHES == "true" && ($COMPILE_AUX_BRANCHES == "true" || TEST_AUX_BRANCHES == "true")
     
   cache:
     paths:

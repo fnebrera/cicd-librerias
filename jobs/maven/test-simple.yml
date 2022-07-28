@@ -7,8 +7,8 @@
 # 1.0.0 FNG 26/07/2022 Version inicial
 #
 #########################################################################################################
-compile-job:
-  stage: compile
+test-job:
+  stage: test
 
   rules:
     # Siempre compilamos ramas principales
