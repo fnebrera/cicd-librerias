@@ -1,6 +1,6 @@
 #########################################################################################################
-# Compilar proyecto maven para ver que no hay errores. Se ejecuta para cualquier push,
-# y siempre antes de cualquier otro job que requiera conocer la version del proyecto.
+# Ejecutar tests unitarios en la rama en la que se hace push.
+# Solo se ejecuta en develop y master, salvo que se defina $TEST_AUX_BRANCHES
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -13,9 +13,8 @@ compile-job:
   rules:
     # Siempre compilamos ramas principales
     - IF: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
-    # Compilamos cualquier otro branch dependiendo del correspondiente flag,
-    # salvo que tambien se requiera ejecutar tests, en cuyo caso el compilar esta implicito.
-    - IF: $COMPILE_AUX_BRANCHES == "true" && $TEST_AUX_BRANCHES == "false"
+    # Compilamos cualquier otro branch dependiendo del correspondiente flag
+    - IF: $TEST_AUX_BRANCHES == "true"
     
   cache:
     paths:
@@ -24,6 +23,6 @@ compile-job:
 
   script:
     - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa COMPILE en $CI_COMMIT_REF_NAME"'
+    - 'echo "Ejecutando etapa TEST en $CI_COMMIT_REF_NAME"'
     - 'echo "=============================================================================================="'
-    - mvn compile
+    - mvn test

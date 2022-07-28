@@ -9,6 +9,13 @@
 #########################################################################################################
 sonar-job:
   stage: sonar
+
+  rules:
+    # Siempre pasamos sonar a ramas principales
+    - IF: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+    # Pasamos sonar a cualquier otro branch dependiendo del correspondiente flag
+    - IF: $SONAR_AUX_BRANCHES == "true"
+    
   cache:
     paths:
       - ./.m2/repository
