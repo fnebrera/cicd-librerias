@@ -14,8 +14,8 @@ compile-job:
     # Siempre compilamos ramas principales.
     # Tambien compilamos cualquier otro branch dependiendo del correspondiente flag,
     # salvo que tambien se requiera ejecutar tests, en cuyo caso el compilar esta implicito.
-    - IF: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master'
-    - IF: $COMPILE_AUX_BRANCHES == 'true' && $TEST_AUX_BRANCHES == 'false'
+    - if: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master'
+    - if: $COMPILE_AUX_BRANCHES == 'true' && $TEST_AUX_BRANCHES == 'false'
     
   cache:
     paths:
