@@ -17,9 +17,10 @@ build-job:
       - ./.m2/repository
       - target
   script:
-    - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"'
-    - 'echo "=============================================================================================="'
-    # PROVISIONAL!! Saltamos tests por ahora
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa BUILD en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
+    # Saltamos tests, pues deberian haberse ejecutado antes
     - mvn package -DskipTests
 

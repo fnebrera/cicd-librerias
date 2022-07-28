@@ -24,9 +24,10 @@ sonar-job:
       - target
 
   script:
-    - 'echo "=============================================================================================="'
-    - 'echo "Ejecutando etapa SONAR en branch $CI_COMMIT_REF_NAME"'
-    - 'echo "=============================================================================================="'
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa SONAR en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
     - 'SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=true"'
     # En ramas master y develop, forzamos analizar todo el codigo y no solo los cambios
     - '[[ $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" ]] && SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=false"'
