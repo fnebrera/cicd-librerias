@@ -13,20 +13,36 @@ variables:
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"
-  # Como acceder a gitlab desde un executor
+  # Como acceder a nuestro gitlab desde un executor
   ORIGIN_URL: "https://oauth2:${CICD_TOKEN}@${CICD_HOST}/${CI_PROJECT_PATH}.git"
 
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'push'    # Solo en caso de push
+    #
+    # No ejecutar al crear tags (se supone que ya se han verificado, tanto si son manuales como
+    # si se han generado en este pipeline).
+    #
+    - if: $CI_COMMIT_TAG                   
+      when: never
+    #
+    # No ejecutar este pipeline en ramas auxiliares
+    #
+    - if: $IGNORE_AUX_BRANCHES && $CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_REF_NAME != "master"
+      when: never
+    #
+    # En este ejemplo solo ejecutamos en caso de 'push'. En algunas organizaciones se utilizan 'merge-requests' que
+    # han de ser aprobados por un supervisor. Esta intervención manual va en contra de los principios de 'Integración
+    # Continua'. Ver en la documentación el modo de forzar intervención manual en casos concretos.
+    #
+    - if: $CI_PIPELINE_SOURCE == 'push' 
 
 # Esta es una imagen propia, con maven y git, y uso local. Requiere cambiar pull_policy en config.toml a 'if-not-present'.
 # Al disponer de esta imagen, no es necesario incluir la instalacion de maven y git en los jobs que necesiten de
-# estos entornos.
+# estos entornos. Ver documentación para detalles.
 image: ck-maven-executor:1.0.0 
 
 cache:
-  # Definimos la clave como el nombre del branch en el que hacemos push, de este modo
+  # Definimos la clave del cache como el nombre del branch en el que hacemos push, de este modo
   # separamos la informacion cacheada para cada rama, para no interferir en otros pipelines.
   key: "$CI_COMMIT_REF_NAME"
 
@@ -41,7 +57,7 @@ stages:
   - docker
   - tag
 
-# Includes
+# Includes, uno por job
 include: 
   - project: 'comunytek/cicd-librerias'
     ref: master
