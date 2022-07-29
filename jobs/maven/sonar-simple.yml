@@ -15,8 +15,6 @@ sonar-job:
     - if: $CI_COMMIT_REF_NAME == "develop"
       - if: $ALLOW_FAILURE_IN_TEST_DEVELOP == "true"
         allow_failure: true
-      - else:
-        allow_failure: false
     # En rama master no permitimos errores
     - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false
