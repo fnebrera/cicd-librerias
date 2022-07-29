@@ -11,10 +11,14 @@ test-job:
   stage: test
 
   rules:
-    # Siempre compilamos ramas principales
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
-    # Compilamos cualquier otro branch dependiendo del correspondiente flag
+    # En rama develop permitimos errores
+    - if: $CI_COMMIT_REF_NAME == "develop"
+      allow_failure: true
+    # En rama master no permitimos errores
+    - if: $CI_COMMIT_REF_NAME == "master"
+    # Compilamos cualquier otro branch dependiendo del correspondiente flag, y permitimos errores
     - if: $TEST_AUX_BRANCHES == "true"
+      allow_failure: true
     
   cache:
     paths:

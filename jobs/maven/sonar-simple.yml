@@ -11,11 +11,16 @@ sonar-job:
   stage: sonar
 
   rules:
-    # Siempre pasamos sonar a ramas principales
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+    # En rama develop permitimos errores
+    - if: $CI_COMMIT_REF_NAME == "develop"
+      allow_failure: true
+    # En rama master no permitimos errores
+    - if: $CI_COMMIT_REF_NAME == "master"
+      allow_failure: false
     # Pasamos sonar a cualquier otro branch dependiendo del correspondiente flag,
     # pero tambien debe haber un compile o un test previo
     - if: $SONAR_AUX_BRANCHES == "true" && ($COMPILE_AUX_BRANCHES == "true" || $TEST_AUX_BRANCHES == "true")
+      allow_failure: true
     
   cache:
     paths:
