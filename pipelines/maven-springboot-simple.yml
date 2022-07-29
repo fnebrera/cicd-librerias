@@ -50,8 +50,8 @@ cache:
 stages:
   - prepare
   - compile
-  - test
   - sonar
+  - test
   - build
   - register
   - docker
@@ -71,13 +71,13 @@ include:
       #
       - 'jobs/maven/compile-simple.yml'
       #
-      # test-job: ejecuta tests unitarios
-      #
-      - 'jobs/maven/test-simple.yml'
-      #
       # sonar-job: verifica calidad del codigo
       #
       - 'jobs/maven/sonar-simple.yml'
+      #
+      # test-job: ejecuta tests unitarios
+      #
+      - 'jobs/maven/test-simple.yml'
       #
       # build-job: genera el fat-jar
       #
