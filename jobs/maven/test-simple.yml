@@ -12,9 +12,9 @@ test-job:
 
   rules:
     # En rama develop permitimos errores
-    - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP" == "true"
+    - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP == "true"
       allow_failure: true
-    - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP" == "false"
+    - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP == "false"
       allow_failure: false
     - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false
