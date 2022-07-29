@@ -27,7 +27,7 @@ workflow:
     #
     # No ejecutar este pipeline en ramas auxiliares
     #
-    - if: $IGNORE_AUX_BRANCHES && $CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_REF_NAME != "master"
+    - if: $IGNORE_AUX_BRANCHES == "true" && $CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_REF_NAME != "master"
       when: never
     #
     # En este ejemplo solo ejecutamos en caso de 'push'. En algunas organizaciones se utilizan 'merge-requests' que
