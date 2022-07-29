@@ -13,8 +13,7 @@ sonar-job:
   rules:
     # En rama develop permitimos errores si el flag esta definido
     - if: $CI_COMMIT_REF_NAME == "develop"
-      - if: $ALLOW_FAILURE_IN_TEST_DEVELOP == "true"
-        allow_failure: true
+      allow_failure: $ALLOW_FAILURE_IN_SONAR_DEVELOP
     # En rama master no permitimos errores
     - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false
