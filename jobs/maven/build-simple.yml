@@ -16,7 +16,7 @@ build-job:
     - if: $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT == "true"
     # Hacemos build en master solo si es release
     - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
-    # Excepcionalmente hacemos build en una rama concreta
+    # Excepcionalmente hacemos build en una rama concreta (hotfix)
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:

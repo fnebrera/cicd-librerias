@@ -10,17 +10,13 @@
 compile-job:
   stage: compile
 
-  variables:
-    SEGUIR: "false"
-
   rules:
     # Siempre compilamos ramas principales.
     - if: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master'
-    # Tambien compilamos cualquier otro branch dependiendo del correspondiente flag.
-    - if: $COMPILE_AUX_BRANCHES == 'true'
     # Hotfixes se compilan en cualquier caso
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
-      when: manual
+    # Tambien compilamos cualquier otro branch dependiendo del correspondiente flag.
+    - if: $COMPILE_AUX_BRANCHES == 'true'
     
   cache:
     paths:
@@ -28,7 +24,6 @@ compile-job:
       - target
 
   script:
-    - '[[ $SEGUIR != "true" ]] && { echo "ERROR: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 1; }'
     - >
       echo -e "==============================================================================================
       \nEjecutando etapa COMPILE en $CI_COMMIT_REF_NAME

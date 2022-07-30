@@ -18,13 +18,12 @@ test-job:
       allow_failure: false
     - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false
-    # Compilamos cualquier otro branch dependiendo del correspondiente flag, y permitimos errores
-    - if: $TEST_AUX_BRANCHES == "true"
-      allow_failure: true
     # Hotfixes pasan tests, pero permitimos errores
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       allow_failure: true
-
+    # Compilamos cualquier otro branch dependiendo del correspondiente flag, y permitimos errores
+    - if: $TEST_AUX_BRANCHES == "true"
+      allow_failure: true
     
   cache:
     paths:

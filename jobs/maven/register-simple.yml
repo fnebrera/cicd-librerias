@@ -31,7 +31,6 @@ pkg-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
     # Guardar jar y pom en el registry 
     - 'mvn deploy -s ci_settings.xml -DskipTests'
     

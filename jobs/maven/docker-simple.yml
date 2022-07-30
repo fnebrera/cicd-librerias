@@ -38,11 +38,10 @@ docker-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    # Esto es redundante, pero porsi acaso..
-    - '[[ -f "Dockerfile" ]] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }'
-    - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
     - 'IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"'
     - '[[ $IS_SNAPSHOT == "true" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"'
+    - '[[ $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"'
+    - '[[ $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH && $HOTFIX_NUMBER > "" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}-${HOTFIX_NUMBER}"'
     - 'echo "IMG_TAG: $IMG_TAG"'
     - 'docker --version'
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
