@@ -23,6 +23,9 @@ sonar-job:
     # pero tambien debe haber un compile o un test previo, para tener los .class
     - if: $SONAR_AUX_BRANCHES == "true" && ($COMPILE_AUX_BRANCHES == "true" || $TEST_AUX_BRANCHES == "true")
       allow_failure: true
+    # Hotfixes pasan sonar, pero permitimos errores
+    - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
+      allow_failure: true
     
   cache:
     paths:
@@ -36,8 +39,8 @@ sonar-job:
       \nEjecutando etapa SONAR en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
     - 'SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=true"'
-    # En ramas master y develop, forzamos analizar todo el codigo y no solo los cambios
-    - '[[ $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" ]] && SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=false"'
-    - 'echo "SKIP_UNCHANGED: $SKIP_UNCHANGED"'
+    # En ramas master, develop y hotfix, forzamos analizar todo el codigo y no solo los cambios
+    - '[[ $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop"  || $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH ]] && SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=false"'
+    - 'echo " Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"'
     - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true $SKIP_UNCHANGED
 
