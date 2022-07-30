@@ -19,7 +19,7 @@ pkg-register-job:
     # Hacemos register en master solo si es release
     - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
     # Excepcionalmente hacemos release en una rama concreta
-    - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:

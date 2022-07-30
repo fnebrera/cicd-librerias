@@ -12,7 +12,7 @@ tag-job:
     # Hacemos tag en master solo si es release
     - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
     # Excepcionalmente hacemos tag en una rama concreta, pero solo de forma manual
-    - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       when: manual
 
   cache:

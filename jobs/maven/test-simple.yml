@@ -22,7 +22,7 @@ test-job:
     - if: $TEST_AUX_BRANCHES == "true"
       allow_failure: true
     # Hotfixes pasan tests, pero permitimos errores
-    - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       allow_failure: true
 
     

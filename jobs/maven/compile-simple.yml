@@ -16,7 +16,7 @@ compile-job:
     # Tambien compilamos cualquier otro branch dependiendo del correspondiente flag.
     - if: $COMPILE_AUX_BRANCHES == 'true'
     # Hotfixes se compilan en cualquier caso
-    - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
     
   cache:
     paths:
