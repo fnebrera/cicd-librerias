@@ -14,8 +14,11 @@ pkg-register-job:
   stage: register
 
   rules:
-    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop"
-    # Excepcionalmente registramos en una rama concreta
+    # Hacemos register en develop solo si es SNAPSHOT
+    - if: $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT == "true"
+    # Hacemos register en master solo si es release
+    - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
+    # Excepcionalmente hacemos release en una rama concreta
     - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
 
   cache:
@@ -28,10 +31,7 @@ pkg-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    #- '[[ -f "Dockerfile" ]] && { echo "INFO: Existe un fichero Dockerfile. Esta etapa no se ejecuta"; exit 0; }'    
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
-    - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Push de SNAPSHOT debe hacerse en rama develop"; exit 3; }' 
-    - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
     # Guardar jar y pom en el registry 
     - 'mvn deploy -s ci_settings.xml -DskipTests'
     

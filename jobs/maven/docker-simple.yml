@@ -18,9 +18,16 @@ docker-register-job:
     - docker:20.10.17-dind
 
   rules:
-    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" 
-    # Excepcionalmente creamos imagen docker y la registramos en una rama concreta
+    # Solo si hay Dockerfile
+    - if: $DOCKER_PRJ != "true"
+      when: never
+    # Hacemos docker en develop solo si es SNAPSHOT
+    - if: $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT == "true"
+    # Hacemos docker en master solo si es release
+    - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
+    # Excepcionalmente hacemos docker en una rama concreta
     - if: $CI_COMMIT_REF_NAME == $RELEASE_AUX_BRANCH
+
 
   cache:
     paths:
@@ -31,12 +38,11 @@ docker-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    # Esto es redundante, pero porsi acaso..
     - '[[ -f "Dockerfile" ]] || { echo "INFO: No existe Dockerfile. Esta etapa no se ejecuta"; exit 0; }'
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
-    - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "develop" ]] && { echo "ERROR: Push de SNAPSHOT debe hacerse en rama develop"; exit 3; }' 
-    - '[[ ${PRJ_VERS} != *"SNAPSHOT" ]] && [[ ${CI_COMMIT_REF_NAME} != "master" ]] && { echo "ERROR: Push de RELEASE debe hacerse en rama master"; exit 3; }'
     - 'IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"'
-    - '[[ ${PRJ_VERS} == *"SNAPSHOT" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"'
+    - '[[ $IS_SNAPSHOT == "true" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"'
     - 'echo "IMG_TAG: $IMG_TAG"'
     - 'docker --version'
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
