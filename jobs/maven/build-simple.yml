@@ -35,12 +35,12 @@ build-job:
     # Si es master deberia ser release
     #
     - >
-      '[[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" ]] &&
+      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" ]] &&
       { echo -e "ERROR: PUSH de <develop> en verion RELEASE.
-      Se ha generado el jar, pero el pipeline se ha interrumpido."; 
-      exit 2; }'
+      \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
+      exit 2; }
     - >
-      '[[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
+      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
       { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.
-      Se ha generado el jar, pero el pipeline se ha interrumpido."; 
-      exit 2; }'
+      \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
+      exit 2; }
