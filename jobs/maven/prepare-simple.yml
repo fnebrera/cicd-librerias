@@ -27,7 +27,7 @@ prepare-job:
     - '[[ -f "Dockerfile" ]] && DOCKER_PRJ="true"'
     - 'echo "¿Es un proyecto Docker?: ${DOCKER_PRJ}"'
     - 'IS_SNAPSHOT="false"'
-    - '[[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT=="true"'
+    - '[[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"'
     - 'echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"'
     # Limpiar el directorio target, si es que existe (no deberia)
     - '[[ -d "target" ]] && mvn clean'
