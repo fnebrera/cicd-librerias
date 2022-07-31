@@ -23,8 +23,8 @@ build-job:
   script:
     - >
       echo -e "==============================================================================================
-             \nEjecutando etapa BUILD en $CI_COMMIT_REF_NAME
-             \n=============================================================================================="
+      \nEjecutando etapa BUILD en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
     # 
     # Hacemos build en cualquier caso.
     # Saltamos tests, pues deberian haberse ejecutado antes.
@@ -44,3 +44,4 @@ build-job:
       { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.
       \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
       exit 2; }
+    - 'echo "Build finalizado con exito"'
