@@ -13,7 +13,7 @@ build-job:
 
   rules:
     # Hacemos build en develop solo si es SNAPSHOT
-    - if: $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT == "true"
+    - if: $CI_COMMIT_REF_NAME == "develop" #&& $IS_SNAPSHOT == "true"
     # Hacemos build en master solo si es release
     - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
     # Excepcionalmente hacemos build en una rama concreta (hotfix)
@@ -29,6 +29,7 @@ build-job:
       echo -e "==============================================================================================
       \nEjecutando etapa BUILD en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    - 'echo "Es SNAPSHOT? $IS_SNAPSHOT"'
     # Saltamos tests, pues deberian haberse ejecutado antes
     - mvn package -DskipTests
 
