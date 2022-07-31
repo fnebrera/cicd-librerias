@@ -11,9 +11,12 @@
 build-job:
   stage: build
 
+  variables:
+    SNAP: $IS_SNAPSHOT
+
   rules:
-    # Hacemos build en develop solo si es SNAPSHOT
-    - if: $CI_COMMIT_REF_NAME == "develop" #&& $IS_SNAPSHOT == "true"
+    # Hacemos build en develop solo si es SNAPSHOT (ver mas adelante)
+    - if: $CI_COMMIT_REF_NAME == "develop" && $SNAP == "true"
     # Hacemos build en master solo si es release
     - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
     # Excepcionalmente hacemos build en una rama concreta (hotfix)
