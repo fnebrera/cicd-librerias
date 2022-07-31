@@ -12,13 +12,8 @@ build-job:
   stage: build
 
   rules:
-    # Hacemos build en develop solo si es SNAPSHOT (ver mas adelante)
-    - if: $CI_COMMIT_REF_NAME == "develop"
-      allow_failure: true
-    # Hacemos build en master solo si es release
-    - if: $CI_COMMIT_REF_NAME == "master"
-    # Excepcionalmente hacemos build en una rama concreta (hotfix)
-    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    # Hacemos build solo en develop, master y hotfix (si lo hay)
+    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:
@@ -28,10 +23,24 @@ build-job:
   script:
     - >
       echo -e "==============================================================================================
-      \nEjecutando etapa BUILD en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    - 'echo "Es SNAPSHOT? $IS_SNAPSHOT"'
-    # Saltamos tests, pues deberian haberse ejecutado antes
+             \nEjecutando etapa BUILD en $CI_COMMIT_REF_NAME
+             \n=============================================================================================="
+    # 
+    # Hacemos build en cualquier caso.
+    # Saltamos tests, pues deberian haberse ejecutado antes.
+    #
     - mvn package -DskipTests
-    - '[[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true"]] && { echo "WARN: Se ha hecho build de develop de una version de release"; exit 2 }'
-
+    #
+    # Si es develop deberia ser un snapshot.
+    # Si es master deberia ser release
+    #
+    - >
+      '[[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" ]] &&
+        { echo -e "ERROR: PUSH de <develop> en verion RELEASE.
+          \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
+          exit 2; }'
+    - >
+      '[[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
+        { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.
+          \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
+          exit 2; }'
