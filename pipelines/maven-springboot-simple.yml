@@ -2,7 +2,7 @@
 # Pipeline simple para manejar proyectos maven/java. Los diferentes jobs estan descritos en archivos
 # del directorio jobs/maven.
 # Este pipeline se ejecuta solo en caso de push de cualquier rama, aunque buena parte de los
-# jobs se ejecutan solo para las ramas master o develop. 
+# jobs se ejecutan solo para las ramas master o develop.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -10,6 +10,21 @@
 #
 #########################################################################################################
 variables:
+  #
+  # Deben definirse en la cofiguracion de CI/CD del grupo, de modo que solo sean accesibles
+  # para los usuarios con role 'manager'.
+  #
+  # CICD_USER: "antonio"
+  # CICD_PASSWD: "unamuydificil"
+  # CICD_TOKEN: "aaaaaaaaaaaaaaaaaaaaaa"
+  # CICD_EMAIL: "antonio@putin.org"
+  # CICD_HOST: "git2.comunytek.com"
+  # CICD_REGISTRY_HOST: "https://registry2.comunytek.com"
+  # SONAR_HOST_URL: "https://sonar2.comunytek.com"
+  # SONAR_HOST_TOKEN: "bbbbbbbbbbbbbbbbbbbb"
+  #
+  # Basicas del pipeline
+  #
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"
