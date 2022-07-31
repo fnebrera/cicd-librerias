@@ -11,14 +11,12 @@
 build-job:
   stage: build
 
-  variables:
-    SNAP: $IS_SNAPSHOT
-
   rules:
     # Hacemos build en develop solo si es SNAPSHOT (ver mas adelante)
-    - if: $CI_COMMIT_REF_NAME == "develop" && $SNAP == "true"
+    - if: $CI_COMMIT_REF_NAME == "develop"
+      allow_failure: true
     # Hacemos build en master solo si es release
-    - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
+    - if: $CI_COMMIT_REF_NAME == "master"
     # Excepcionalmente hacemos build en una rama concreta (hotfix)
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
@@ -35,4 +33,5 @@ build-job:
     - 'echo "Es SNAPSHOT? $IS_SNAPSHOT"'
     # Saltamos tests, pues deberian haberse ejecutado antes
     - mvn package -DskipTests
+    - '[[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true"]] && { echo "WARN: Se ha hecho build de develop de una version de release"; exit 2 }'
 
