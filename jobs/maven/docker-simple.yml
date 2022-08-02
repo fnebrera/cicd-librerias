@@ -50,7 +50,7 @@ docker-register-job:
     # Si es snapshot, al registry 'snapshot' y solo con la version del proyecto (no se puede repetir),
     # salvo que nos definan un numero de snapshot adicional a la version.
     - |
-      if [[ ${IS_SNAPSHOT} == "true" ]]; then
+      if [ ${IS_SNAPSHOT} = "true" ]; then
       IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
       [[ ${SNAPSHOT_NUMBER} != "" ]] && IMG_TAG=${IMG_TAG}-${SNAPSHOT_NUMBER}
       fi
