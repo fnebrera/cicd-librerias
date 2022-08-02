@@ -30,7 +30,7 @@ docker-register-job:
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
     # Solo si es un proyecto Docker
-    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0 }'
+    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
     #
     # Si es develop deberia ser un snapshot.
     # Si es master deberia ser release.
