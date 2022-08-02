@@ -1,8 +1,8 @@
 #########################################################################################################
-# Registra el artefacto en el Package Registry de Gitlab. Se ejecuta en la fase "registry", normalmente
-# en paralelo al job "docker-register-job".
-# Para que este job funcione, el Pacjage Registry debe estar configurado en el pom.xml.
-# Se ejecuta solo para ramas master y develop.
+# Registra el artefacto en el Package Registry de Gitlab. Se ejecuta en la fase "registry".
+# Para que este job funcione, el Package Registry debe estar configurado en el pom.xml.
+# Adicionamente debe existir un archivo 'ci_setting.xml' con las credenciales para el registry.
+# Se ejecuta solo para ramas master, develop y hotfix (si existe).
 # Se cachea el directorio /target, que habra sido populado previamente por la etapa build.
 #
 # Vers  Por Fecha      Notas
@@ -14,12 +14,8 @@ pkg-register-job:
   stage: register
 
   rules:
-    # Hacemos register en develop solo si es SNAPSHOT
-    - if: $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT == "true"
-    # Hacemos register en master solo si es release
-    - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
-    # Excepcionalmente hacemos release en una rama concreta
-    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    # Hacemos register solo en develop, master y hotfix (si lo hay)
+    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:
@@ -31,7 +27,20 @@ pkg-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    #
+    # Si es develop deberia ser un snapshot.
+    # Si es master deberia ser release.
+    #
+    - >
+      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]] &&
+      { echo -e "ERROR: PUSH de <develop> en verion RELEASE.";
+      exit 2; }
+    - >
+      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" && $ALLOW_SNAPSHOT_IN_MASTER != "true" ]] &&
+      { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
+      exit 2; }
     # Guardar jar y pom en el registry 
     - 'mvn deploy -s ci_settings.xml -DskipTests'
     
+  ################################## E O F ##########################################
 

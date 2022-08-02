@@ -1,8 +1,7 @@
 #########################################################################################################
-# Crea la imagen docker en base al Dockerfile, y la sube al Component Registry del ropio gitlab.
-# Normalmente se ejecuta en paralelo al job "pkg-register-job".
-# Para que este job funcione, el Pacjage Registry debe estar configurado en el pom.xml.
-# Se ejecuta solo para ramas master y develop.
+# Crea la imagen docker en base al Dockerfile, y la sube al Component Registry del propio gitlab.
+# Para que este job funcione, el Component Registry debe estar configurado en gitlab.
+# Se ejecuta solo para ramas master, develop y hoyfix (si existe).
 # Se cachea el directorio /target, que habra sido populado previamente por la etapa build.
 #
 # Vers  Por Fecha      Notas
@@ -18,16 +17,8 @@ docker-register-job:
     - docker:20.10.17-dind
 
   rules:
-    # Solo si hay Dockerfile
-    - if: $DOCKER_PRJ != "true"
-      when: never
-    # Hacemos docker en develop solo si es SNAPSHOT
-    - if: $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT == "true"
-    # Hacemos docker en master solo si es release
-    - if: $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT != "true"
-    # Excepcionalmente hacemos docker en una rama concreta
-    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
-
+    # Creamos y registramos imagen Docker solo en develop, master y hotfix (si lo hay)
+    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:
@@ -38,12 +29,40 @@ docker-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    # Solo si es un proyecto Docker
+    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0 }'
+    #
+    # Si es develop deberia ser un snapshot.
+    # Si es master deberia ser release.
+    #
+    - >
+      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]] &&
+      { echo -e "ERROR: PUSH de <develop> en verion RELEASE.";
+      exit 2; }
+    - >
+      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" && $ALLOW_SNAPSHOT_IN_MASTER != "true" ]] &&
+      { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
+      exit 2; }
+    #
+    # Preparamos tagid. Si es release, al registry 'release' y solo con la version del proyecto (no se puede repetir)
+    #
     - 'IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"'
-    - '[[ $IS_SNAPSHOT == "true" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"'
-    - '[[ $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"'
-    - '[[ $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH && $HOTFIX_NUMBER > "" ]] && IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}-${HOTFIX_NUMBER}"'
+    # Si es snapshot, al registry 'snapshot' y solo con la version del proyecto (no se puede repetir),
+    # salvo que nos definan un numero de snapshot adicional a la version.
+    - |
+      if [[ $IS_SNAPSHOT == "true" ]]; then
+        IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
+        [[ $SNAPSHOT_NUMBER > "" ]] && IMG_TAG=${IMG_TAG}-$SNAPSHOT_NUMBER
+      fi
+    - |
+      if [[ $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH ]]; then
+        IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
+        [[ $HOTFIX_NUMBER > "" ]] && IMG_TAG=${IMG_TAG}-$HOTFIX_NUMBER
+      fi
     - 'echo "IMG_TAG: $IMG_TAG"'
     - 'docker --version'
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
     - 'docker build -t $IMG_TAG .'
     - 'docker push $IMG_TAG' 
+
+################################## E O F ##########################################

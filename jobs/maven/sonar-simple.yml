@@ -44,3 +44,5 @@ sonar-job:
     - 'echo " Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"'
     - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true $SKIP_UNCHANGED
 
+################################## E O F ##########################################
+
