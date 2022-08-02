@@ -50,14 +50,16 @@ docker-register-job:
     # Si es snapshot, al registry 'snapshot' y solo con la version del proyecto (no se puede repetir),
     # salvo que nos definan un numero de snapshot adicional a la version.
     - |
-      if [[ $IS_SNAPSHOT == "true" ]]; then
-        IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
-        [[ $SNAPSHOT_NUMBER > "" ]] && IMG_TAG=${IMG_TAG}-$SNAPSHOT_NUMBER
+      if [[ ${IS_SNAPSHOT} == "true" ]]; then
+      IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
+      [[ ${SNAPSHOT_NUMBER} != "" ]] && IMG_TAG=${IMG_TAG}-${SNAPSHOT_NUMBER}
       fi
+    # Si es hotfix, al registry 'hotfix' y solo con la version del proyecto (no se puede repetir),
+    # salvo que nos definan un numero de hotfix adicional a la version.
     - |
-      if [[ $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH ]]; then
-        IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
-        [[ $HOTFIX_NUMBER > "" ]] && IMG_TAG=${IMG_TAG}-$HOTFIX_NUMBER
+      if [[ ${CI_COMMIT_REF_NAME} == ${HOTFIX_BRANCH} ]]; then
+      IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
+      [[ ${HOTFIX_NUMBER} != "" ]] && IMG_TAG=${IMG_TAG}-${HOTFIX_NUMBER}
       fi
     - 'echo "IMG_TAG: $IMG_TAG"'
     - 'docker --version'
