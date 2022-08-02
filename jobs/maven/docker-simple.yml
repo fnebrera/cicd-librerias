@@ -46,23 +46,19 @@ docker-register-job:
     #
     # Preparamos tagid. Si es release, al registry 'release' y solo con la version del proyecto (no se puede repetir)
     #
-    - 'IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"'
+    - IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
     # Si es snapshot, al registry 'snapshot' y solo con la version del proyecto (no se puede repetir),
     # salvo que nos definan un numero de snapshot adicional a la version.
-    - |
-      if [[ ${IS_SNAPSHOT} == "true" ]]; then
-      IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
-      [[ ${SNAPSHOT_NUMBER} != "" ]] && IMG_TAG=${IMG_TAG}-${SNAPSHOT_NUMBER}
-      fi
-    -
     # Si es hotfix, al registry 'hotfix' y solo con la version del proyecto (no se puede repetir),
     # salvo que nos definan un numero de hotfix adicional a la version.
     - |
-      if [[ ${CI_COMMIT_REF_NAME} == ${HOTFIX_BRANCH} ]]; then
+      if [[ ${IS_SNAPSHOT} == "true" ]]; then
+      IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
+      [[ ${SNAPSHOT_NUMBER} > "" ]] && IMG_TAG=${IMG_TAG}-${SNAPSHOT_NUMBER}
+      elif [[ ${CI_COMMIT_REF_NAME} == ${HOTFIX_BRANCH} ]]; then
       IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
-      [[ ${HOTFIX_NUMBER} != "" ]] && IMG_TAG=${IMG_TAG}-${HOTFIX_NUMBER}
+      [[ ${HOTFIX_NUMBER} > "" ]] && IMG_TAG=${IMG_TAG}-${HOTFIX_NUMBER}
       fi
-    -
     - 'echo "IMG_TAG: ${IMG_TAG}"'
     - docker --version
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
