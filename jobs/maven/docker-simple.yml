@@ -61,10 +61,10 @@ docker-register-job:
       IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
       [[ ${HOTFIX_NUMBER} != "" ]] && IMG_TAG=${IMG_TAG}-${HOTFIX_NUMBER}
       fi
-    - 'echo "IMG_TAG: $IMG_TAG"'
-    - 'docker --version'
+    - 'echo "IMG_TAG: ${IMG_TAG}"'
+    - docker --version
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
-    - 'docker build -t $IMG_TAG .'
-    - 'docker push $IMG_TAG' 
+    - docker build -t $IMG_TAG .
+    - docker push $IMG_TAG 
 
 ################################## E O F ##########################################
