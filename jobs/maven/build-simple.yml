@@ -52,7 +52,5 @@ build-job:
     paths:
       - target/*.jar
     expire_in: 2 hours
-    rules:
-      -if: $retcode > 0
 
   ################################## E O F ##########################################
