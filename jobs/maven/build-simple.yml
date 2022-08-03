@@ -29,19 +29,19 @@ build-job:
     # Hacemos build en cualquier caso.
     # Saltamos tests, pues deberian haberse ejecutado antes.
     #
-    - mvn package -DskipTests
+    - mvn package -DskipTests -Dversion=prueba
     #
     # Si es develop deberia ser un snapshot.
     # Si es master deberia ser release
     #
     - >
-      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]] &&
-      { echo -e "ERROR: PUSH de <develop> en verion RELEASE.
+      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
+      { echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido.
       \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
       exit 2; }
     - >
-      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" && $ALLOW_SNAPSHOT_IN_MASTER != "true" ]] &&
-      { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.
+      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]] &&
+      { echo -e "ERROR: PUSH de <develop> en verion RELEASE no permitido.
       \nSe ha generado el jar, pero el pipeline se ha interrumpido."; 
       exit 2; }
     - 'echo "Build finalizado con exito"'

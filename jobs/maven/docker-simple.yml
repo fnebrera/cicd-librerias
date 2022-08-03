@@ -40,45 +40,50 @@ docker-register-job:
     #
     - |
       IMG_TAG="${CI_REGISTRY_IMAGE}/wrong:${PRJ_VERS}"
-      if [[ ${CI_COMMIT_REF_NAME} == "master" ]]; then
-          if [[ $IS_SNAPSHOT == "true" ]]; then
-              echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
-              exit 2
-          fi
-          #
-          # Va al registry 'release' y solo con la version del proyecto.
-          #
-          IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
-      elif [[ ${CI_COMMIT_REF_NAME} == "develop" ]]; then
-          if [[ $IS_SNAPSHOT == "true" ]]; then
-              #
-              # Va a 'snapshot'
-              #
-              IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
-          else
-              if [[ $ALLOW_RELEASE_IN_DEVELOP != "true"]]; then
-                echo -e "ERROR: PUSH de <develop> en version RELEASE no permitido"
-                exit 2
+      case ${CI_COMMIT_REF_NAME} in
+          master)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
+                  exit 2
               fi
               #
-              # Va a 'release'
+              # Va al registry 'release' y solo con la version del proyecto.
               #
               IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
-          fi
-          #
-          # Sea snapshot o release, en develop siempre agregamos el numero de snapshot, si existe
-          #
-          [[ -z $SNAPSHOT_NUMBER ]] || IMG_TAG="${IMG_TAG}.${SNAPSHOT_NUMBER}"
-      elif [[ ${CI_COMMIT_REF_NAME} == ${HOTFIX_BRANCH} ]]; then
-          #
-          # Va a 'hotfix'
-          #
-          IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
-          [[ -z ${HOTFIX_NUMBER} ]] || IMG_TAG="${IMG_TAG}.${HOTFIX_NUMBER}"
-      else
-          echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Docker"
-          exit 2          
-      fi
+              ;;
+          develop)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  #
+                  # Va a 'snapshot'
+                  #
+                  IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
+              else
+                  if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+                      echo -e "ERROR: PUSH de <develop> en version RELEASE no permitido"
+                      exit 2
+                  fi
+                  #
+                  # Va a 'release'
+                  #
+                  IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
+              fi
+              #
+              # Sea snapshot o release, en develop siempre agregamos el numero de snapshot, si existe
+              #
+              [[ -z $SNAPSHOT_NUMBER ]] || IMG_TAG="${IMG_TAG}.${SNAPSHOT_NUMBER}"
+              ;;
+          ${HOTFIX_BRANCH})
+              #
+              # Va a 'hotfix'
+              #
+              IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
+              [[ -z ${HOTFIX_NUMBER} ]] || IMG_TAG="${IMG_TAG}.${HOTFIX_NUMBER}"
+              ;;
+          *)
+              echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Docker"
+              exit 2          
+              ;;
+      esac
     - 'echo "IMG_TAG: ${IMG_TAG}"'
     - docker -v
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
