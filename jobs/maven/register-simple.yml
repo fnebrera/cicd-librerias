@@ -40,7 +40,7 @@ pkg-register-job:
       { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
       exit 2; }
     # Guardar jar y pom en el registry 
-    - 'mvn deploy -s ci_settings.xml -DskipTests'
+    - mvn deploy -s ci_settings.xml -DskipTests -Dversion=prueba
     
   ################################## E O F ##########################################
 

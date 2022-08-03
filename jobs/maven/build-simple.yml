@@ -29,7 +29,7 @@ build-job:
     # Hacemos build en cualquier caso.
     # Saltamos tests, pues deberian haberse ejecutado antes.
     #
-    - mvn package -DskipTests -Dversion=prueba
+    - mvn package -DskipTests
     #
     # Si es develop deberia ser un snapshot.
     # Si es master deberia ser release
