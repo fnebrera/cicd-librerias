@@ -56,7 +56,7 @@ docker-register-job:
               #
               IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
           else
-              if [[ $ALLOW_SNAPSHOT_IN_MASTER != "true"]]; then
+              if [[ $ALLOW_RELEASE_IN_DEVELOP != "true"]]; then
                 echo -e "ERROR: PUSH de <develop> en version RELEASE no permitido"
                 exit 2
               fi
