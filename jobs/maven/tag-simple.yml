@@ -32,45 +32,50 @@ tag-job:
     #
     - |
       TAG="wrong-${PRJ_VERS}"
-      if [[ ${CI_COMMIT_REF_NAME} == "master" ]]; then
-          if [[ $IS_SNAPSHOT == "true" ]]; then
-              echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
-              exit 2
-          fi
-          #
-          # A 'release' y solo con la version del proyecto.
-          #
-          TAG="release-${PRJ_VERS}"
-      elif [[ ${CI_COMMIT_REF_NAME} == "develop" ]]; then
-          if [[ $IS_SNAPSHOT == "true" ]]; then
-              #
-              # Va a 'snapshot'
-              #
-              TAG="snapshot-${PRJ_VERS}"
-          else
-              if [[ $ALLOW_RELEASE_IN_DEVELOP != "true"]]; then
-                echo -e "ERROR: PUSH de <develop> en version RELEASE no permitido"
-                exit 2
+      case ${CI_COMMIT_REF_NAME} in
+          master)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
+                  exit 2
               fi
               #
-              # Va a 'develop-release'
+              # A 'release' y solo con la version del proyecto.
               #
-              TAG="develop-release-${PRJ_VERS}"
-          fi
-          #
-          # Sea snapshot o release, en develop siempre agregamos el numero de snapshot, si existe
-          #
-          [[ -z $SNAPSHOT_NUMBER ]] || TAG="${TAG}.${SNAPSHOT_NUMBER}"
-      elif [[ ${CI_COMMIT_REF_NAME} == ${HOTFIX_BRANCH} ]]; then
-          #
-          # Va a 'hotfix'
-          #
-          TAG="hotfix-${PRJ_VERS}"
-          [[ -z ${HOTFIX_NUMBER} ]] || TAG="${TAG}.${HOTFIX_NUMBER}"
-      else
-          echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Tag"
-          exit 2          
-      fi
+              TAG="release-${PRJ_VERS}"
+              ;;
+          develop)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  #
+                  # Va a 'snapshot'
+                  #
+                  TAG="snapshot-${PRJ_VERS}"
+              else
+                  if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+                    echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
+                    exit 2
+                  fi
+                  #
+                  # Va a 'develop-release'
+                  #
+                  TAG="develop-release-${PRJ_VERS}"
+              fi
+              #
+              # Sea snapshot o release, en develop siempre agregamos el numero de snapshot, si existe
+              #
+              [[ -z $SNAPSHOT_NUMBER ]] || TAG="${TAG}.${SNAPSHOT_NUMBER}"
+              ;;
+          ${HOTFIX_BRANCH})
+              #
+              # Va a 'hotfix'
+              #
+              TAG="hotfix-${PRJ_VERS}"
+              [[ -z ${HOTFIX_NUMBER} ]] || TAG="${TAG}.${HOTFIX_NUMBER}"
+              ;;
+          *)
+              echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Tag"
+              exit 2          
+              ;;
+      esac
     - 'echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"'
     - git config user.name "$CICD_USER"
     - git config user.email "$CICD_EMAIL"
