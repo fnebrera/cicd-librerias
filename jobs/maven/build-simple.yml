@@ -45,11 +45,17 @@ build-job:
       fi
       echo "Build finalizado con exito"
 
+  #
+  # En caso de error, generamos un artefacto que expira en 2 horas, por si el
+  # usuario desea conservar el .jar o alguno de los archivos de configuracion.
+  #
   artifacts:
     when: on_failure
     name: "Build ${CI_COMMIT_NAME} con error"
     paths:
       - ./target/*.jar
+      - ./pom.xml
+      - ./.gitlab-ci.yml
     expire_in: 2 hours
 
   ################################## E O F ##########################################
