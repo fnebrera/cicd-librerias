@@ -34,23 +34,28 @@ build-job:
     # Si es develop deberia ser un snapshot, salvo que permitamos release.
     # Si es master deberia ser release.
     #
-    - retcode=0
-    - >
-      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
-      { echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido.
-      \nSe ha generado un artefacto con el jar, pero el pipeline se interrumpira."; 
-      retcode=2; }
-    - >
-      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]] &&
-      { echo -e "ERROR: PUSH de <develop> en verion RELEASE no permitido.
-      \nSe ha generado un artefacto con el jar, pero el pipeline se interrumpira."; 
-      retcode=3; }
-    - 'echo "Build finalizado con retcode: $retcode"'
+    - |
+      retcode=0
+      if [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]]; then
+        echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido.\nSe ha generado el artefacto en tmp_jars/, pero el pipeline se interrumpira." 
+        retcode=2
+      fi
+      if [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+        echo -e "ERROR: PUSH de <develop> en verion RELEASE no permitido.\nSe ha generado el artefacto en tmp_jars/, pero el pipeline se interrumpira."
+        retcode=3
+      fi
+      if [[ $retcode > 0 ]]; then
+        mkdir -p tmp_jars
+        rm tmp_jars/*
+        cp target/*.jar tmp_jars
+        git config user.name "$CICD_USER"
+        git config user.email "$CICD_EMAIL"
+        git remote remove origin
+        git remote add origin ${ORIGIN_URL}
+        git add tmp_jars
+        git commit
+      fi
+      echo "Build finalizado con retcode: $retcode"
     - exit $retcode
-
-  artifacts:
-    paths:
-      - target/*.jar
-    expire_in: 2 hours
 
   ################################## E O F ##########################################
