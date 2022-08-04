@@ -1,6 +1,7 @@
-# syntax = docker/dockerfile:experimental
 #
-# Crear imagen del servidor SelfWeb (selfwebspringboot) 
+# Ejemplo de Dockerfile:
+# Crear imagen de un servidor REST escrito en java/springboot
+# 
 
 FROM azul/zulu-openjdk:15
 

@@ -89,24 +89,11 @@
         </repository>
     </repositories>
 
-    <!-- Repositorios Nexus -->
     <!--
-    <distributionManagement>
-        <snapshotRepository>
-            <id>maven-snapshots</id>
-            <name>Maven Snapshots Repository</name>
-            <url>http://${repo.user}:${repo.pass}@${repo.url}/maven-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>maven-releases</id>
-            <name>Nexus Releases Repository</name>
-            <url>http://${repo.user}:${repo.pass}@${repo.url}/maven-releases/</url>
-        </repository>
-    </distributionManagement>
+        Aqui definimos lo registries en el Gitlab local. Es habitula definir dos registries,
+        uno para release y otro para develop. En el caso de Gitlab (al contratrio de Nexus)
+        se emplea el mismo registry para ambos entornos.
     -->
-    <!-- Hasta aqui Nexus -->
-
-    <!-- Repositorios Gitlab -->
     <distributionManagement>
         <snapshotRepository>
             <id>gitlab-maven</id>

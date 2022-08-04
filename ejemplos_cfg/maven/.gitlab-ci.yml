@@ -1,7 +1,7 @@
 ############################################################################
 # Ejemplo de .gitlab-ci.yml. Debe estar en el root del proyecto a tratar.
 # Usamos el pipeline simple para maven y springboot.
-# El codigo en el proyecto "cicd-librerias" puede ser consultado
+# El codigo en el proyecto "cicd-librerias" puede ser empleado
 # por cualquier miembro del grupo "comunytek", pero sólo pueden
 # editarlo los managers. El pipeline que usamos en este proyecto es:
 #
@@ -48,7 +48,7 @@ variables:
   #
   ALLOW_RELEASE_IN_DEVELOP: "false"
   #
-  # Si registramos, creamos docker y tag, etc. podemos agregar (opcionalmente)
+  # Si registramos, creamos docker y tag, etc. en SNAPSHOT podemos agregar (opcionalmente)
   # un numero de snapshot a la vesion del proyecto para identificar registros y tag.
   #
   SNAPSHOT_NUMBER: "002"

@@ -1,6 +1,7 @@
 #########################################################################################################
-# Crear un tag. Por el momento manual.
-# Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor true
+# Crear un tag. Por el momento la ejecucion es manual.
+# Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor 'true' en el
+# momento de lanzar el job.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
