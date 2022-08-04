@@ -1,6 +1,6 @@
 #########################################################################################################
 # Crear un tag. Por el momento manual.
-# Para que esta etapa se ejecute, se debe entrar manualmente SEGUIR: true
+# Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor true
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -26,7 +26,9 @@ tag-job:
       echo -e "==============================================================================================
       \nEjecutando etapa TAG en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    #
     # Para continuar, debe entrar SEGUIR=true
+    #
     - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 1; }'
     #
     #  Aplicar reglas complejas

@@ -1,0 +1,78 @@
+############################################################################
+# Ejemplo de .gitlab-ci.yml. Debe estar en el root del proyecto a tratar.
+# Usamos el pipeline simple para maven y springboot.
+# El codigo en el proyecto "cicd-librerias" puede ser consultado
+# por cualquier miembro del grupo "comunytek", pero sólo pueden
+# editarlo los managers. El pipeline que usamos en este proyecto es:
+#
+#     /comunytek/cicd-librerias/pipelines/maven-springboot-simple.yml
+#
+############################################################################
+
+variables:
+  #
+  # No ejecutar el pipeline en ramas auxiliares (aquellas distintas de 'master' y 'develop').
+  # Si se define a "true", el resto de flags relacionados con ramas auxiliares no tienen efecto.
+  # Como excepcion, la rama identificada como HOTFIX_BRANCH (si existe) siempre pasa todas las etapas.
+  #
+  IGNORE_AUX_BRANCHES: "false"
+  #
+  # Compilar ramas auxiliares
+  #
+  COMPILE_AUX_BRANCHES: "true"
+  #
+  # Pasar sonar en ramas auxiliares.
+  # Al ser un proceso informativo, se permite o no que los tests fallen.
+  #
+  SONAR_AUX_BRANCHES: "true"
+  #
+  # Pasar tests unitarios en ramas auxiliares.
+  # Al ser un proceso informativo, se permite o no que los tests fallen.
+  #
+  TEST_AUX_BRANCHES: "false"
+  #
+  # Permitir o no errores al pasar Sonar en rama 'develop'.
+  # NOTA: siempre se permiten errores en la rama identificada como HOTFIX_BRANCH (si existe).
+  #
+  ALLOW_FAILURE_IN_SONAR_DEVELOP: "true"
+  #
+  # Permitir o no errores al pasar tests unitarios en rama 'develop'.
+  # NOTA: siempre se permiten errores en la rama identificada como HOTFIX_BRANCH (si existe).
+  #
+  ALLOW_FAILURE_IN_TEST_DEVELOP: "true"
+  #
+  # Permitir versiones 'release' en rama 'develop'. Lo normal es que no se permita,
+  # pero puede haber circunstancias muy especiales en que sea necesario.
+  # En maven, una version snapshot termina en 'SNAPSHOT'.
+  # NOTA: No permitimos versiones SNAPSHOT en 'master'.
+  #
+  ALLOW_RELEASE_IN_DEVELOP: "false"
+  #
+  # Si registramos, creamos docker y tag, etc. podemos agregar (opcionalmente)
+  # un numero de snapshot a la vesion del proyecto para identificar registros y tag.
+  #
+  SNAPSHOT_NUMBER: "002"
+  #
+  # Si estamos en una rama de hotfix, se ejecuta todo el pipeline,
+  # aunque las etapas sonar y test admiten errores.
+  # Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
+  # Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
+  # En la version del proyecto, se respeta la que se indica en el pom.xml. 
+  #
+  HOTFIX_BRANCH: ""
+  HOTFIX_NUMBER: "002"
+
+#
+# Pipeline predefinido
+#
+include:
+   project: 'comunytek/cicd-librerias'
+   ref: master
+   file: 'pipelines/maven-springboot-simple.yml'
+
+variables:
+  SNAPSHOT_NUMBER: "003"
+   
+############################# E O F ##############################
+
+   
