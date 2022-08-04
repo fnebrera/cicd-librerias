@@ -18,7 +18,7 @@ Helm/Kubernetes y Ansible.
     ------ --- ---------- ----------------------------------------------------------------------
     1.0.0  FNG 28/07/2022 Primera versión CI para maven/java
 
-## 1. Introducción
+# 1. Introducción
 
 Los stacks CI/CD más habituales están compuestos de varios productos, especializados cada uno de ellos en un aspecto concreto
 de la cadena o pipeline de la solución final. Es muy frecuente encontrar stacks que incluyen 5 o más
