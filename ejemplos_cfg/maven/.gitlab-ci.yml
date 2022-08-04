@@ -70,9 +70,6 @@ include:
    ref: master
    file: 'pipelines/maven-springboot-simple.yml'
 
-variables:
-  SNAPSHOT_NUMBER: "003"
-   
 ############################# E O F ##############################
 
    
