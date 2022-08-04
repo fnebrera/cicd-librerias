@@ -35,7 +35,7 @@ build-job:
     # Si es master deberia ser release.
     #
     - |
-      [[ -d tmp_jars ]] && rm tmp_jars/*
+      [[ -d tmp_jars ]] && rm -f tmp_jars/*
       retcode=0
       if [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]]; then
         echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido.\nSe ha generado el artefacto en tmp_jars/, pero el pipeline se interrumpira." 
@@ -47,7 +47,7 @@ build-job:
       fi
       if [[ $retcode > 0 ]]; then
         mkdir -p tmp_jars
-        rm tmp_jars/*
+        rm -f tmp_jars/*
         cp target/*.jar tmp_jars
         git config user.name "$CICD_USER"
         git config user.email "$CICD_EMAIL"
