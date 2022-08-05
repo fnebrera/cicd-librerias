@@ -45,6 +45,6 @@ pkg-register-job:
     - du -h ${PRJ_VERS}.tgz
     - REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven/snapshot/${PRJ_VERS}.tgz"
     - 'echo "REG_URL: $REG_URL"'
-    - 'curl --header "PRIVATE_TOKEN ${CICD_TOKEN}" --upload-file "${PRJ_VERS}.tgz" "${REG_URL}"'
+    - 'curl --header "PRIVATE-TOKEN: ${CICD_TOKEN}" --upload-file "${PRJ_VERS}.tgz" "${REG_URL}"'
   ################################## E O F ##########################################
 
