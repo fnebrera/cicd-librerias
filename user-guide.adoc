@@ -96,7 +96,7 @@ Git y Gitlab representan el estándar de-facto para la gestión de código fuent
 a explicar este aspecto, por ser sobradamente conocido. Sin embargo, hay características menos conocidas
 que conviene mencionar.
 
-- Gitlab incluye un *Issue manager* sencillo pero bastante completo, hasta el punto de que podría
+- Gitlab incluye un *Issue Manager* sencillo pero bastante completo, hasta el punto de que podría
 emplearse como sustituto de *Jira*.
 - También incluye una *Wiki* con soporte de varios lenguajes de markup que, como en el caso anterior,
 podría emplearse como sustituto de *Confluence*.
