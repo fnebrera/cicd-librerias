@@ -43,7 +43,7 @@ pkg-register-job:
     #- mvn deploy -s ci_settings.xml -DskipTests
     - tar czf ${PRJ_VERS}.tgz src/* target/*.jar pom.xml
     - du -h ${PRJ_VERS}.tgz
-    - REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_GROUP_NAME}/${PRJ_VERS}/${PRJ_VERS}.tgz"
+    - REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_PATH}/${PRJ_VERS}/${PRJ_VERS}.tgz"
     - 'echo "REG_URL: $REG_URL"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "${PRJ_VERS}.tgz" "${REG_URL}"'
   ################################## E O F ##########################################
