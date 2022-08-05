@@ -41,7 +41,7 @@ pkg-register-job:
       exit 2; }
     # Guardar jar y pom en el registry 
     #- mvn deploy -s ci_settings.xml -DskipTests
-    - tar czf ${PRJ_VERS}.tgz src/* /target/*.jar pom.xml
+    - tar czf ${PRJ_VERS}.tgz src/* target/*.jar pom.xml
     - du -h ${PRJ_VERS}.tgz
     
   ################################## E O F ##########################################
