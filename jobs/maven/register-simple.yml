@@ -36,14 +36,15 @@ pkg-register-job:
       { echo -e "ERROR: PUSH de <develop> en verion RELEASE.";
       exit 2; }
     - >
-      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" && $ALLOW_SNAPSHOT_IN_MASTER != "true" ]] &&
+      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
       { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
       exit 2; }
     # Guardar jar y pom en el registry 
     #- mvn deploy -s ci_settings.xml -DskipTests -Dversion="5.0.5-SNAPSHOT-002"
     - >
+      [[ -f "./target/${PRJ_VERS}.jar" ]] || { echo "El archivo ./target/${PRJ_VERS}.jar no existe"; exit 1; }
       mvn deploy:deploy-file -Durl="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven" \
-      -DrepositoryId=gitlab-maven -Dfile="target/${PRJ_VERS}.jar" -DpomFile=pom.xml
+      -DrepositoryId="gitlab-maven" -Dfile="./target/${PRJ_VERS}.jar" -DpomFile="pom.xml"
   
   ################################## E O F ##########################################
 
