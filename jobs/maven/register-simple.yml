@@ -41,6 +41,9 @@ pkg-register-job:
       exit 2; }
     # Guardar jar y pom en el registry 
     #- mvn deploy -s ci_settings.xml -DskipTests -Dversion="5.0.5-SNAPSHOT-002"
-    - mvn deploy:deploy-file -Dfile=target/${PRJ_VERS}.jar -DpomFile=pom.xml
+    - >
+      mvn deploy:deploy-file -Durl="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven" \
+      -DrepositoryId=gitlab-maven -Dfile="target/${PRJ_VERS}.jar" -DpomFile=pom.xml
+  
   ################################## E O F ##########################################
 
