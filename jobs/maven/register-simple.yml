@@ -41,10 +41,12 @@ pkg-register-job:
       exit 2; }
     # Guardar jar y pom en el registry 
     #- mvn deploy -s ci_settings.xml -DskipTests
-    - tar czf ${PRJ_VERS}.tgz src/* target/*.jar pom.xml
-    - du -h ${PRJ_VERS}.tgz
-    - REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_PATH}/${PRJ_VERS}/${PRJ_VERS}.tgz"
+    - TGZ="pack-${PRJ_VERS}.tgz"
+    - tar czf "${TGZ}" src/* target/*.jar pom.xml
+    - du -h ${TGZ}.tgz
+    #- REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_PATH}/${PRJ_VERS}/${PRJ_VERS}.tgz"
+    - REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/com/comunytek/SelfWeb/generic/${PRJ_VERS}/${TGZ}"
     - 'echo "REG_URL: $REG_URL"'
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "${PRJ_VERS}.tgz" "${REG_URL}"'
+    - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "${TGZ}" "${REG_URL}"'
   ################################## E O F ##########################################
 
