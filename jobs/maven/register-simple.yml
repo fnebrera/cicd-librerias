@@ -44,8 +44,9 @@ pkg-register-job:
     - |
       mvn package -DskipTests
       [[ -f "./target/${PRJ_VERS}.jar" ]] || { echo "El archivo ./target/${PRJ_VERS}.jar no existe"; exit 1; }
+      jar cf src.jar ./src/*
       mvn deploy:deploy-file -Durl="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven" \
-      -DrepositoryId="gitlab-maven" -Dfile="./target/${PRJ_VERS}.jar" -DpomFile="pom.xml"
+      -DrepositoryId="gitlab-maven" -Dfile="./target/${PRJ_VERS}.jar" -DpomFile="pom.xml" -Dsources=src.jar
   
   ################################## E O F ##########################################
 
