@@ -40,14 +40,6 @@ pkg-register-job:
       { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
       exit 2; }
     # Guardar jar y pom en el registry 
-    #- mvn deploy -s ci_settings.xml -DskipTests
-    - TGZ="pack-${PRJ_VERS}.tgz"
-    - tar czf "${TGZ}" src/* target/*.jar pom.xml
-    - du -h ${TGZ}
-    #- REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_PATH}/${PRJ_VERS}/${PRJ_VERS}.tgz"
-    #- REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/com/comunytek/SelfWeb/generic/${PRJ_VERS}/${TGZ}"
-    - REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PRJ_VERS}/${TGZ}"
-    - 'echo "REG_URL: $REG_URL"'
-    - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "${TGZ}" "${REG_URL}"'
+    - mvn deploy -s ci_settings.xml -DskipTests -Dversion="5.0.5-SNAPSHOT-002"
   ################################## E O F ##########################################
 
