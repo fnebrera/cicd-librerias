@@ -39,15 +39,20 @@ pkg-register-job:
       [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
       { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
       exit 2; }
-    # Guardar jar y pom en el registry, usando deploy-file, para incluir los fuentes.
-    # Esta seria la forma habitual - mvn deploy -s ci_settings.xml -DskipTests
+    #
+    # Si queremos guardar el .jar y el pom (lo habitual), usaremos esta forma de delploy:
+    #
+    #- mvn deploy -s ci_settings.xml -DskipTests
+    #
+    # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado:
+    #
     - |
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       SRC_FILE="${PRJ_NAME}-src-${PRJ_VERS}.jar"
-      [[ -f "${JAR_FILE}" ]] || { echo "El archivo "${JAR_FILE}" no existe"; exit 1; }
+      [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       jar cf ${SRC_FILE} ./src/*
-      mvn deploy:deploy-file -Durl="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven" \
-      -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}""
+      mvn deploy:deploy-file -s ci_setting.xml -Durl="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven" \
+      -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
   
   ################################## E O F ##########################################
 
