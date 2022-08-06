@@ -27,6 +27,12 @@ prepare-job:
     - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
     - 'echo "Version del proyecto: ${PRJ_VERS}"'
     #
+    # Nombre del proyecto
+    #
+    - 'PRJ_NAME=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.name -q -DforceStdout)'
+    - '[[ -z ${PRJ_NAME} ]] && { echo "ERROR: No se ha encontrado el nombre del proyecto en el pom.xml"; exit 2; }'
+    - 'echo "Nombre del proyecto: ${PRJ_NAME}"'
+    #
     # Es un proyecto Docker?
     #
     - 'DOCKER_PRJ="false"'
@@ -46,6 +52,7 @@ prepare-job:
     # Guardar las variables de entorno globales en un fichero .env
     #
     - 'echo "PRJ_VERS=$PRJ_VERS" > prepare.env'
+    - 'echo "PRJ_NAME=$PRJ_NAME" >> prepare.env'
     - 'echo "DOCKER_PRJ=$DOCKER_PRJ" >> prepare.env'
     - 'echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env'
 
