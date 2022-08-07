@@ -1,16 +1,20 @@
 = Proyecto _cicd-librerias_
+Faustino Nebrera <faustino.nebrera@vass.es>
+1.0.0, 2022-08-07
+:icons: font
 
+:sectnums!:
 == Resumen
 
-Este proyecto representa un ejemplo y template de una cadena CI/CD contruida con la idea de simplificar el stack
+Este proyecto representa un ejemplo y template de una cadena CI/CD construida con la idea de simplificar el stack
 de productos requeridos, su instalación y, sobre todo, la preparación de pipelines y jobs para los circuitos más
 habituales.
 
-Esta primera versión se limita a las etapas correspondientes a CI (hasta el deploy a los registries de artefactos e imagenes docker), 
+icon:warning[2x,role=red] Esta primera versión se limita a las etapas correspondientes a CI (hasta el deploy a los registries de artefactos e imagenes _docker_), 
 y al gestor de proyectos maven sobre proyectos java/SpringBoot o similares. Partiendo de este template es muy sencillo
-agregar las configuraciones correspondientes a otros entornos, tales como node.js, python, JS, Angular, etc.
+agregar las configuraciones correspondientes a otros entornos, tales como node.js, python, Angular, etc.
 
-En versiones posteriores está previsto incluir los jobs correspondientes a CD, concretamente para Terraform,
+icon:calendar[2x,role=yellow] En versiones posteriores está previsto incluir los jobs correspondientes a CD, concretamente para Terraform,
 Helm/Kubernetes y Ansible.
  
 == Versiones
@@ -29,7 +33,8 @@ Helm/Kubernetes y Ansible.
 
 |===
 
-== 1. Introducción
+:sectnums:
+== Introducción
 
 Los stacks CI/CD más habituales están compuestos de varios productos, especializados cada uno de ellos en un aspecto concreto
 de la cadena o pipeline de la solución final. Es muy frecuente encontrar stacks que incluyen 5 o más
@@ -53,9 +58,14 @@ En este proyecto se ha intentado minimizar:
 - La complejidad de la definición de
 pipelines, todo ello en en base al empleo de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones.
 
-== 2. Entorno de desarrollo
+.Importante
+****
+Independientemente de cuál sea su formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filisofía de los pipelines  de CI/CD.
+****
 
-=== 2.1. Hardware y software de base
+== Entorno de desarrollo
+
+=== Hardware y software de base
 
 - Server
 * Máquina virtual en Hyper-V.
@@ -72,7 +82,7 @@ pipelines, todo ello en en base al empleo de las capacidades CI/CD que Gitlab of
 * Visual Studio Code 1.69.2
 * Eclipse 2022-06 (4.24.0)
 
-=== 2.2. Productos para CI/CD
+=== Productos para CI/CD
 
 Todos los productos se han instalado como imagenes docker, y se lanzan mediante docker-compose.
 
@@ -82,21 +92,46 @@ Todos los productos se han instalado como imagenes docker, y se lanzan mediante 
 - PostgreSQL 12.2
 - Portainer ce:2.14.1
 
-== 3. Visión general de la solución
+== Visión general de la solución
 
-=== 3.1 Gitlab como entorno CI/CD
+=== Gitlab como entorno CI/CD
 
 En sus últimas versiones, Gitlab incorpora un conjunto de características que lo hacen un buen
 candidato para soportar el grueso de las cadenas CI/CD de manera integrada. Vamos a comentar
 algunos de los aspectos principales.
 
-==== 3.1.1 Repositorio de código fuente
+==== Repositorio de código fuente
 
-Git y Gitlab representan el estándar de-facto para la gestión de código fuente. No vamos a entrar
-a explicar este aspecto, por ser sobradamente conocido. Sin embargo, hay características menos conocidas
+Git/Gitlab representan el estándar de-facto para la gestión de código fuente. No vamos a entrar
+a explicar git, por ser sobradamente conocido. Sin embargo, hay características menos conocidas
 que conviene mencionar.
 
-- Gitlab incluye un *Issue Manager* sencillo pero bastante completo, hasta el punto de que podría
-emplearse como sustituto de *Jira*.
+- Gitlab incluye un *Issue Manager* sencillo pero bastante completo, hasta el punto de que, en algunos casos, podría
+emplearse como sustituto de _Jira_(TM).
 - También incluye una *Wiki* con soporte de varios lenguajes de markup que, como en el caso anterior,
-podría emplearse como sustituto de *Confluence*.
+podría emplearse como sustituto de _Confluence_(TM), al menos en lo que se refiere a documentación de los proyectos.
+
+==== Coordinador CI/CD
+
+Gitlab incluye un coordinador de CI/CD relativamente poco conocido, dado que tradicionalmente sus capacidades han estado por
+debajo de los productos más usuales, tales como _Jenkins_(TM) o _TeamCity_(TM). En sus últimas versiones, sin embargo, Gitlab se ha posicionado
+como un serio competidor fundamentalmente por las siguientes razones:
+
+* Todo el "plumbing" de CI/CD está estrechamente integrado con el repositorio de código fuente, emplea la misma interfaz de usuario,
+y simplifica la eventual integración de otros productos.
+
+* Los _pipelines_ se definen mediante un lenguaje de markup sobradamente conocido (yaml), lo que evita tener que aprender un lenguaje
+específico.
+
+* Si se requieren acciones complejas, el entorno de "shell" está directamente integrado con los jobs. Es muy fácil, además,
+crear librerías de funciones escritas en .sh, .bash, etc. y llamarlas directamente desde un job. En un entorno complejo,
+los ingenieros DevOps peden concentrarse en la creación de pipelines, dejando los detalles de programación del flujo a los desarrolladores.
+
+Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
+
+==== Verificación de Calidad del Código
+
+En este apartado, Gitlab no dispone de una solución propia, sino que
+integra el producto CodeClimate. Dado que el estándar de facto para esta fase es _SonarQube_, que además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preperido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
+ 
+
