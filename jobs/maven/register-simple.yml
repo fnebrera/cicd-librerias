@@ -28,31 +28,62 @@ pkg-register-job:
       \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
     #
-    # Si es develop deberia ser un snapshot.
-    # Si es master deberia ser release.
+    # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
     #
-    - >
-      [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]] &&
-      { echo -e "ERROR: PUSH de <develop> en verion RELEASE.";
-      exit 2; }
-    - >
-      [[ $CI_COMMIT_REF_NAME == "master" && $IS_SNAPSHOT == "true" ]] &&
-      { echo -e "ERROR: PUSH de <master> en version SNAPSHOT.";
-      exit 2; }
-    #
-    # Si queremos guardar el .jar y el pom (lo habitual), usaremos esta forma de deploy:
-    #
-    #- mvn deploy -s ci_settings.xml -DskipTests
+    # - mvn deploy -s ci_settings.xml -DskipTests
     #
     # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado:
     #
     - |
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
-      SRC_FILE="src-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
+      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+      SRC_FILE="src-${PRJ_VERS}.jar"
       jar cf ${SRC_FILE} ./src/*
-      mvn deploy:deploy-file -s ci_settings.xml -Durl="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven" \
-      -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}" -Dversion="004"
+      case ${CI_COMMIT_REF_NAME} in
+          master)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
+                  exit 2
+              fi
+              #
+              # Va a 'release'
+              #
+              REG_URL="${REG_URL}/release"
+              ;;
+          develop)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  #
+                  # Va a 'snapshot'
+                  #
+                REG_URL="${REG_URL}/snapshot"
+              else
+                  if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+                    echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
+                    exit 2
+                  fi
+                  #
+                  # Va a 'develop-release'
+                  #
+                  REG_URL="${REG_URL}/develop-release"
+              fi
+              ;;
+          ${HOTFIX_BRANCH})
+              #
+              # Va a 'hotfix'
+              #
+              REG_URL="${REG_URL}/hotfix"
+              ;;
+          *)
+              echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
+              exit 2          
+              ;;
+      esac
+      #
+      # Deploy
+      #
+      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" \
+      -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
   
   ################################## E O F ##########################################
 
