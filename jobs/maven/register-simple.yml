@@ -37,7 +37,7 @@ pkg-register-job:
     - |
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
-      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages"
+      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
       SRC_FILE="src-${PRJ_VERS}.jar"
       jar cf ${SRC_FILE} ./src/*
       case ${CI_COMMIT_REF_NAME} in
@@ -82,7 +82,7 @@ pkg-register-job:
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}/maven" \
+      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" \
       -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
   
   ################################## E O F ##########################################
