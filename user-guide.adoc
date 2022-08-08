@@ -1,9 +1,10 @@
 = Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.0, 2022-08-07
+1.0.0, 07/08/2022
+:toc:
+:toclevels: 3
 :icons: font
 
-:sectnums!:
 == Resumen
 
 Este proyecto representa un ejemplo y template de una cadena CI/CD construida con la idea de simplificar el stack
@@ -58,23 +59,24 @@ En este proyecto se ha intentado minimizar:
 - La complejidad de la definición de
 pipelines, todo ello en en base al empleo de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones.
 
+[sidebar]
 .Importante
-****
+--
 Independientemente de cuál sea su formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filisofía de los pipelines  de CI/CD.
-****
+--
 
 == Entorno de desarrollo
 
 === Hardware y software de base
 
-- Server
+Server::
 * Máquina virtual en Hyper-V.
 * 24 GB Memoria max.
 * 4 procesadores virtuales.
 * Ubuntu 20.04.1
 * Docker 20.10.17
 
-- Workstation
+Workstation::
 * Core i7-1165G7
 * 16 GB memoria
 * 512 GB SSD
@@ -84,7 +86,7 @@ Independientemente de cuál sea su formación previa en CI/CD, la lectura de est
 
 === Productos para CI/CD
 
-Todos los productos se han instalado como imagenes docker, y se lanzan mediante docker-compose.
+Todos los productos se han instalado como imágenes docker, y se lanzan mediante docker-compose.
 
 - Gitlab OMNIBUS 15.2.1-ee.0
 - Gitlab-runner: latest
@@ -133,5 +135,13 @@ Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
 
 En este apartado, Gitlab no dispone de una solución propia, sino que
 integra el producto CodeClimate. Dado que el estándar de facto para esta fase es _SonarQube_, que además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preperido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
+
+==== Tests Unitarios
+
+De nuevo Gitab se apoya en soluciones de terceros tanto para la ejecución de tests unitarios como SAST. En nuestro caso, emplearemos las capacidades embebidas en _maven_, más que suficientes en la mayor parte de los proyectos.
+
+==== Construcción de Artefactos
+
+La mayor parte de los gestores de proyectos (_maven_, _gradle_, _npm_..) disponen de sus propios mecanismos de detección de dependencias y construcción del/los artefactos finales. En este proyecto nos hemos apoyado en las capacidades de maven, como se verá más adelante.
  
 
