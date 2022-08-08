@@ -38,42 +38,46 @@ pkg-register-job:
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
-      ART_ID="${PRJ_VERS}"
+      VERSION="${PRJ_VERS}"
       SRC_FILE="src-${PRJ_VERS}.jar"
       jar cf ${SRC_FILE} ./src/*
+      #
+      # En que rama estamos?
+      #
       case ${CI_COMMIT_REF_NAME} in
           master)
               if [[ $IS_SNAPSHOT == "true" ]]; then
                   echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
                   exit 2
               fi
-              #
-              # Va a 'release'
-              #
-              #REG_URL="${REG_URL}/release"
               ;;
           develop)
               if [[ $IS_SNAPSHOT == "true" ]]; then
                   #
-                  # Va a 'snapshot'
+                  # Agregamos numero de snapshot, si lo hay
                   #
-                #REG_URL="${REG_URL}/snapshot"
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}-${SNAPSHOT_NUMBER}"
               else
                   if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
                     echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
                     exit 2
                   fi
                   #
-                  # Va a 'develop-release'
+                  # Le agregamos "-DEV"
                   #
-                  #REG_URL="${REG_URL}/develop-release"
+                  VERSION="${VERSION}-DEV"
+                  #
+                  # Agregamos numero de snapshot, si lo hay
+                  #
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}-${SNAPSHOT_NUMBER}"
               fi
               ;;
           ${HOTFIX_BRANCH})
               #
-              # Va a 'hotfix'
+              # Agregamos "-HOTFIX"
               #
-              #REG_URL="${REG_URL}/hotfix"
+              VERSION="${VERSION}-HOTFIX"
+              [[ -z $HOTFIX_NUMBER ]] || VERSION="${VERSION}-${HOTFIX_NUMBER}"
               ;;
           *)
               echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
@@ -83,7 +87,7 @@ pkg-register-job:
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" -DartifactId="${ART_ID}.001" \
+      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" -Dversion="{VERSION}" \
       -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
   
   ################################## E O F ##########################################
