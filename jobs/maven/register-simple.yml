@@ -38,6 +38,7 @@ pkg-register-job:
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+      ART_ID="${PRJ_VERS}"
       SRC_FILE="src-${PRJ_VERS}.jar"
       jar cf ${SRC_FILE} ./src/*
       case ${CI_COMMIT_REF_NAME} in
@@ -49,14 +50,14 @@ pkg-register-job:
               #
               # Va a 'release'
               #
-              REG_URL="${REG_URL}/release"
+              #REG_URL="${REG_URL}/release"
               ;;
           develop)
               if [[ $IS_SNAPSHOT == "true" ]]; then
                   #
                   # Va a 'snapshot'
                   #
-                REG_URL="${REG_URL}/snapshot"
+                #REG_URL="${REG_URL}/snapshot"
               else
                   if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
                     echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
@@ -65,14 +66,14 @@ pkg-register-job:
                   #
                   # Va a 'develop-release'
                   #
-                  REG_URL="${REG_URL}/develop-release"
+                  #REG_URL="${REG_URL}/develop-release"
               fi
               ;;
           ${HOTFIX_BRANCH})
               #
               # Va a 'hotfix'
               #
-              REG_URL="${REG_URL}/hotfix"
+              #REG_URL="${REG_URL}/hotfix"
               ;;
           *)
               echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
@@ -82,7 +83,7 @@ pkg-register-job:
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" \
+      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" -DartifactId="${ART_ID}.001" \
       -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
   
   ################################## E O F ##########################################
