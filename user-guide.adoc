@@ -9,13 +9,15 @@ Faustino Nebrera <faustino.nebrera@vass.es>
 
 Este proyecto representa un ejemplo y template de una cadena CI/CD construida con la idea de simplificar el stack
 de productos requeridos, su instalación y, sobre todo, la preparación de pipelines y jobs para los circuitos más
-habituales.
+habituales. No se ha pretendido hacer comparativas de productos y, menos aún, establecer una guía estricta de
+cómo hacer las cosas. El proyecto es, simplemente, un demostrador del "ahorro" de costes y tiempo de aprendizaje
+para establecer cadenas CI/CD no demasiado complejas. 
 
-icon:warning[2x,role=red] Esta primera versión se limita a las etapas correspondientes a CI (hasta el deploy a los registries de artefactos e imagenes _docker_), 
+WARNING: Esta primera versión se limita a las etapas correspondientes a CI (hasta el deploy a los registries de artefactos e imagenes _docker_), 
 y al gestor de proyectos maven sobre proyectos java/SpringBoot o similares. Partiendo de este template es muy sencillo
 agregar las configuraciones correspondientes a otros entornos, tales como node.js, python, Angular, etc.
 
-icon:calendar[2x,role=yellow] En versiones posteriores está previsto incluir los jobs correspondientes a CD, concretamente para Terraform,
+NOTE: En versiones posteriores está previsto incluir los jobs correspondientes a CD, concretamente para Terraform,
 Helm/Kubernetes y Ansible.
  
 == Versiones
@@ -47,7 +49,7 @@ CI/CD de Amazon Web Services, etc.) aunque, lógicamente, no se trata de simples
 tiene sus propios requisitos de CI/CD. No es lo mismo un pequeño ISV que una gran Entidad Financiera, por lo que siempre es necesario
 hacer "retoques" sobre las configuraciones por defecto.
 
-Por otra parte, los coordinadores de circuitos tipo *Jenkins* se configuran mediante un lenguaje de
+Por otra parte, los coordinadores de circuitos tipo _Jenkins(TM)_ se configuran mediante un lenguaje de
 programación que, aunque sencillo, requiere que los ingenieros de DevOps tengan ciertos conocimientos de
 programación y estén familiarizados con el lenguaje en cuestión. Si, además (y es lo habitual) el código debe
 mantenerse como read-only para los 'developers', y debe ser modular (empleando
@@ -88,24 +90,24 @@ Workstation::
 
 Todos los productos se han instalado como imágenes docker, y se lanzan mediante docker-compose.
 
-- Gitlab OMNIBUS 15.2.1-ee.0
+- Gitlab OMNIBUS 15.2.1-ce.0
 - Gitlab-runner: latest
 - Sonarqube 9.5.0-community
-- PostgreSQL 12.2
-- Portainer ce:2.14.1
+- PostgreSQL 12.2 (requerido por Gitlab)
+- Portainer ce:2.14.1 (entorno GUI para Docker)
 
 == Visión general de la solución
 
 === Gitlab como entorno CI/CD
 
 En sus últimas versiones, Gitlab incorpora un conjunto de características que lo hacen un buen
-candidato para soportar el grueso de las cadenas CI/CD de manera integrada. Vamos a comentar
+candidato para soportar el grueso de las cadenas CI/CD de manera integrada. A continuación vamos a comentar
 algunos de los aspectos principales.
 
 ==== Repositorio de código fuente
 
 Git/Gitlab representan el estándar de-facto para la gestión de código fuente. No vamos a entrar
-a explicar git, por ser sobradamente conocido. Sin embargo, hay características menos conocidas
+a explicar Git, por ser sobradamente conocido. Sin embargo, hay algunas características menos conocidas
 que conviene mencionar.
 
 - Gitlab incluye un *Issue Manager* sencillo pero bastante completo, hasta el punto de que, en algunos casos, podría
@@ -117,7 +119,7 @@ podría emplearse como sustituto de _Confluence_(TM), al menos en lo que se refi
 
 Gitlab incluye un coordinador de CI/CD relativamente poco conocido, dado que tradicionalmente sus capacidades han estado por
 debajo de los productos más usuales, tales como _Jenkins_(TM) o _TeamCity_(TM). En sus últimas versiones, sin embargo, Gitlab se ha posicionado
-como un serio competidor fundamentalmente por las siguientes razones:
+como un serio competidor, fundamentalmente por las siguientes razones:
 
 * Todo el "plumbing" de CI/CD está estrechamente integrado con el repositorio de código fuente, emplea la misma interfaz de usuario,
 y simplifica la eventual integración de otros productos.
@@ -127,14 +129,14 @@ específico.
 
 * Si se requieren acciones complejas, el entorno de "shell" está directamente integrado con los jobs. Es muy fácil, además,
 crear librerías de funciones escritas en .sh, .bash, etc. y llamarlas directamente desde un job. En un entorno complejo,
-los ingenieros DevOps peden concentrarse en la creación de pipelines, dejando los detalles de programación del flujo a los desarrolladores.
+los ingenieros DevOps peden concentrarse en la creación de pipelines, dejando los detalles de implementación de cada job a los desarrolladores.
 
 Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
 
 ==== Verificación de Calidad del Código
 
 En este apartado, Gitlab no dispone de una solución propia, sino que
-integra el producto CodeClimate. Dado que el estándar de facto para esta fase es _SonarQube_, que además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preperido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
+integra el producto _CodeClimate(TM)_. Dado que el estándar de facto para esta fase es, desde hace años, _SonarQube(TM)_, el cual además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preperido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
 
 ==== Tests Unitarios
 
@@ -142,6 +144,15 @@ De nuevo Gitab se apoya en soluciones de terceros tanto para la ejecución de te
 
 ==== Construcción de Artefactos
 
-La mayor parte de los gestores de proyectos (_maven_, _gradle_, _npm_..) disponen de sus propios mecanismos de detección de dependencias y construcción del/los artefactos finales. En este proyecto nos hemos apoyado en las capacidades de maven, como se verá más adelante.
+La mayor parte de los gestores de proyectos (_maven_, _gradle_, _npm_..) disponen de sus propios mecanismos de detección de dependencias y construcción del/los artefactos finales. En este proyecto nos hemos apoyado en las capacidades de _maven_, como se verá más adelante. La adaptación de los jobs a otros entornos es
+completamente trivial.
+
+==== Registro de Artefactos
+
+En este aspecto, el mercado está claramente dominado por dos jugadores clave: _Nexus(TM)_ y _Artifactory(TM)_. Gitlab, sin embargo, dispone de un "Package Registry" compatible con los
+formatos más habituales, y con funcionalidades básicas, que pensamos 
+pueden ser suficientes en muchos casos. Por ello nos hemos basado
+en el propio Gitlab en este apartado.
+
  
 
