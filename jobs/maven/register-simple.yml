@@ -35,7 +35,7 @@ pkg-register-job:
     # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado:
     #
     - |
-      VERSION="${PRJ_VERS}"
+      CLASSIF=""
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
@@ -54,28 +54,20 @@ pkg-register-job:
                   #
                   # Agregamos numero de snapshot, si lo hay
                   #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}.${SNAPSHOT_NUMBER}"
+                  [[ -z $SNAPSHOT_NUMBER ]] || CLASSIF="-Dclassifier=${SNAPSHOT_NUMBER}"
               else
                   if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
                       echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
                       exit 2
                   fi
                   #
-                  # Le agregamos "-DEV"
-                  #
-                  VERSION="${VERSION}-DEV"
-                  #
                   # Agregamos numero de snapshot, si lo hay
                   #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}.${SNAPSHOT_NUMBER}"
+                  [[ -z $SNAPSHOT_NUMBER ]] || CLASSIF="-Dclassifier=DEV-${SNAPSHOT_NUMBER}"
               fi
               ;;
           ${HOTFIX_BRANCH})
-              #
-              # Agregamos "-HOTFIX"
-              #
-              VERSION="${VERSION}-HOTFIX"
-              [[ -z $HOTFIX_NUMBER ]] || VERSION="${VERSION}.${HOTFIX_NUMBER}"
+              [[ -z $HOTFIX_NUMBER ]] || CLASSIF="-Dclassifier=HOTFIX-${HOTFIX_NUMBER}"
               ;;
           *)
               echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
@@ -87,7 +79,7 @@ pkg-register-job:
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" -Dversion="${VERSION}" \
+      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" "${CLASSIF}" \
       -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
   
   ################################## E O F ##########################################
