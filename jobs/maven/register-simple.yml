@@ -32,7 +32,10 @@ pkg-register-job:
     #
     # - mvn deploy -s ci_settings.xml -DskipTests
     #
-    # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado:
+    # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado, empleando
+    # deploy-file.
+    # Además, como hemos configurado el registry para que no admita duplicados,
+    # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
     #
     - |
       VERSION=""
@@ -61,12 +64,15 @@ pkg-register-job:
                       exit 2
                   fi
                   #
-                  # Agregamos numero de snapshot, si lo hay
+                  # Agregamos numero de snapshot, si lo hay, precedido de "DEV"
                   #
                   [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEV.${SNAPSHOT_NUMBER}"
               fi
               ;;
           ${HOTFIX_BRANCH})
+              #
+              # Agregamos numero de hotfix, si lo hay, precedido de "HOTFIX"
+              #
               [[ -z $HOTFIX_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-HOTFIX.${HOTFIX_NUMBER}"
               ;;
           *)
@@ -74,6 +80,9 @@ pkg-register-job:
               exit 2          
               ;;
       esac
+      #
+      # Preparamos los fuentes, en formato tgz
+      #
       SRC_FILE="./{PRJ_VERS}-src.tgz"
       tar czf ${SRC_FILE} ./src/*
       #
