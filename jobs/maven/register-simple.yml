@@ -74,13 +74,20 @@ pkg-register-job:
               exit 2          
               ;;
       esac
-      SRC_FILE="src.jar"
+      SRC_FILE=""./${PRJ_NAME}-{PRJ_VERS}-source.jar"
       jar cf ${SRC_FILE} ./src/*
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml -Durl="${REG_URL}" "${CLASSIF}" \
-      -DrepositoryId="gitlab-maven" -Dfile="${JAR_FILE}" -DpomFile="pom.xml" -Dsources="${SRC_FILE}"
+      mvn deploy:deploy-file -s ci_settings.xml \
+      -Dversion="5.0.5-SNAPSHOT.022"
+      -Durl="${REG_URL}" \
+      -DrepositoryId="gitlab-maven" \
+      -Dfile="${JAR_FILE}" \
+      -DpomFile="pom.xml"
+      -Dfiles=${SRC_FILE} \
+      -Dclassifiers=source \
+      -Dtypes=jar
   
   ################################## E O F ##########################################
 
