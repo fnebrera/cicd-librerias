@@ -80,11 +80,11 @@ pkg-register-job:
       # Deploy
       #
       mvn deploy:deploy-file -s ci_settings.xml \
-      ${CLASSIF}
       -Durl="${REG_URL}" \
       -DrepositoryId="gitlab-maven" \
       -Dfile="${JAR_FILE}" \
-      -DpomFile="pom.xml"
+      -DpomFile="pom.xml" \
+      ${CLASSIF} \
       -Dfiles=${SRC_FILE} \
       -Dclassifiers=src \
       -Dtypes=jar
