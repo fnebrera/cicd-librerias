@@ -54,7 +54,7 @@ pkg-register-job:
                   #
                   # Agregamos numero de snapshot, si lo hay
                   #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}-${SNAPSHOT_NUMBER}"
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}.${SNAPSHOT_NUMBER}"
               else
                   if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
                       echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
@@ -67,7 +67,7 @@ pkg-register-job:
                   #
                   # Agregamos numero de snapshot, si lo hay
                   #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}-${SNAPSHOT_NUMBER}"
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="${VERSION}.${SNAPSHOT_NUMBER}"
               fi
               ;;
           ${HOTFIX_BRANCH})
@@ -75,14 +75,14 @@ pkg-register-job:
               # Agregamos "-HOTFIX"
               #
               VERSION="${VERSION}-HOTFIX"
-              [[ -z $HOTFIX_NUMBER ]] || VERSION="${VERSION}-${HOTFIX_NUMBER}"
+              [[ -z $HOTFIX_NUMBER ]] || VERSION="${VERSION}.${HOTFIX_NUMBER}"
               ;;
           *)
               echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
               exit 2          
               ;;
       esac
-      SRC_FILE="./${PRJ_NAME}-${PRJ_VERS}-sources.jar"
+      SRC_FILE="src.jar"
       jar cf ${SRC_FILE} ./src/*
       #
       # Deploy
