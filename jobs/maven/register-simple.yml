@@ -36,7 +36,7 @@ pkg-register-job:
     #
     - |
       VERSION="${PRJ_VERS}"
-      JAR_FILE="./target/${CI_PROJECT_NAME}-${PRJ_VERS}.jar"
+      JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
       #
