@@ -82,7 +82,7 @@ pkg-register-job:
               exit 2          
               ;;
       esac
-      SRC_FILE="src-${VERSION}.jar"
+      SRC_FILE="./${PRJ_NAME}-${PRJ_VERS}-sources.jar"
       jar cf ${SRC_FILE} ./src/*
       #
       # Deploy
