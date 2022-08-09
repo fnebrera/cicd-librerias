@@ -74,8 +74,8 @@ pkg-register-job:
               exit 2          
               ;;
       esac
-      SRC_FILE="./{PRJ_VERS}-src.jar"
-      jar cf ${SRC_FILE} ./src/*
+      SRC_FILE="./{PRJ_VERS}-src.tgz"
+      tar czf ${SRC_FILE} ./src/*
       #
       # Deploy
       #
@@ -85,9 +85,9 @@ pkg-register-job:
       -Dfile="${JAR_FILE}" \
       -DpomFile="pom.xml" \
       ${VERSION} \
-      -Dfiles=${SRC_FILE}
-      #-Dclassifiers=src \
-      #-Dtypes=jar
+      -Dfiles=${SRC_FILE} \
+      -Dclassifiers=src \
+      -Dtypes=tgz
   
   ################################## E O F ##########################################
 
