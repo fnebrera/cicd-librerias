@@ -39,9 +39,15 @@ build-job:
         echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido.\nSe ha generado el artefacto, pero el pipeline se interrumpira." 
         exit 2
       fi
-      if [[ $CI_COMMIT_REF_NAME == "develop" && $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
-        echo -e "ERROR: PUSH de <develop> en verion RELEASE no permitido.\nSe ha generado el artefacto, pero el pipeline se interrumpira."
-        exit 3
+      if [[ $CI_COMMIT_REF_NAME == "develop" ]]
+        if [[ $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+          echo -e "ERROR: PUSH de <develop> en verion RELEASE no permitido.\nSe ha generado el artefacto, pero el pipeline se interrumpira."
+          exit 3
+        fi
+        if [[ $REGISTER_DEVELOP != "true" ]]
+          echo -e "INFO: La rama <develop> NO se registra.\nSe ha generado el artefacto, pero el pipeline se interrumpira."
+          exit 4
+        fi
       fi
       echo "Build finalizado con exito"
 
@@ -51,7 +57,7 @@ build-job:
   #
   artifacts:
     when: on_failure
-    name: "Build ${CI_COMMIT_NAME} con error"
+    name: "Build ${CI_COMMIT_NAME} en pipeline interrumpido"
     paths:
       - ./target/*.jar
       - ./pom.xml

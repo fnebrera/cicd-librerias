@@ -10,9 +10,10 @@
 #
 #########################################################################################################
 variables:
-  #
-  # Deben definirse en la cofiguracion de CI/CD del grupo, de modo que solo sean accesibles
+  ##
+  # Globales. Deben definirse en la cofiguracion de CI/CD del grupo, de modo que solo sean accesibles
   # para los usuarios con role 'manager'.
+  ##
   #
   # CICD_USER: "antonio"
   # CICD_PASSWD: "unamuydificil"
@@ -23,13 +24,60 @@ variables:
   # SONAR_HOST_URL: "https://sonar2.comunytek.com"
   # SONAR_HOST_TOKEN: "bbbbbbbbbbbbbbbbbbbb"
   #
+  ##
   # Basicas del pipeline
-  #
+  ##
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"
   # Como acceder a nuestro gitlab desde un executor
   ORIGIN_URL: "https://oauth2:${CICD_TOKEN}@${CICD_HOST}/${CI_PROJECT_PATH}.git"
+  ##
+  # Variables del pipeline que solo debe modificar el manager del grupo.
+  # Si se desea, y para mayor seguridad, pueden definirse como variables CI/CD de grupo.
+  ##
+  #
+  # No ejecutar el pipeline en ramas auxiliares (aquellas distintas de 'master' y 'develop').
+  # Si se define a "true", el resto de flags relacionados con ramas auxiliares no tienen efecto.
+  # Como excepcion, la rama identificada como HOTFIX_BRANCH (si existe) siempre pasa.
+  #
+  IGNORE_AUX_BRANCHES: "false"
+  #
+  # Compilar ramas auxiliares
+  #
+  COMPILE_AUX_BRANCHES: "true"
+  #
+  # Pasar sonar en ramas auxiliares.
+  # Al ser un proceso informativo, se permite o no que los tests fallen.
+  #
+  SONAR_AUX_BRANCHES: "true"
+  #
+  # Pasar tests unitarios en ramas auxiliares.
+  # Al ser un proceso informativo, se permite o no que los tests fallen.
+  #
+  TEST_AUX_BRANCHES: "false"
+  #
+  # Permitir o no errores al pasar Sonar en rama 'develop'.
+  #
+  ALLOW_FAILURE_IN_SONAR_DEVELOP: "true"
+  #
+  # Permitir o no errores al pasar tests unitarios en rama 'develop'.
+  #
+  ALLOW_FAILURE_IN_TEST_DEVELOP: "true"
+  #
+  # Permitir versiones 'release' en rama 'develop'. Lo normal es que no se permita,
+  # pero puede haber circunstancias muy especiales en que sea necesario.
+  # NOTA: No permitimos versiones SNAPSHOT en 'master' en ningun caso.
+  #
+  ALLOW_RELEASE_IN_DEVELOP: "true"
+  #
+  # Registrar, generar imagen docker y tag de la rama 'develop'. Debe indicarse a "true"
+  # si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA o staging.
+  # Si se establece como "false", el pipeline termina con la generación del fat-jar y su
+  # almacenamiento temporal como artefacto.
+  #
+  REGISTER_DEVELOP: "true"
+  ################################## VARIABLES #####################################
 
 workflow:
   rules:

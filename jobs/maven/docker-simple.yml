@@ -63,9 +63,9 @@ docker-register-job:
                       exit 2
                   fi
                   #
-                  # Va a 'release'
+                  # Va a 'develop-release'
                   #
-                  IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
+                  IMG_TAG="${CI_REGISTRY_IMAGE}/develop-release:${PRJ_VERS}"
               fi
               #
               # Sea snapshot o release, en develop siempre agregamos el numero de snapshot, si existe
