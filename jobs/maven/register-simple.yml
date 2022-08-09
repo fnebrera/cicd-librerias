@@ -85,9 +85,9 @@ pkg-register-job:
       -Dfile="${JAR_FILE}" \
       -DpomFile="pom.xml" \
       ${VERSION} \
-      -Dfiles=${SRC_FILE} \
-      -Dclassifiers=src \
-      -Dtypes=jar
+      -Dfiles=${SRC_FILE}
+      #-Dclassifiers=src \
+      #-Dtypes=jar
   
   ################################## E O F ##########################################
 
