@@ -39,12 +39,12 @@ build-job:
         echo -e "ERROR: PUSH de <master> en version SNAPSHOT no permitido.\nSe ha generado el artefacto, pero el pipeline se interrumpira." 
         exit 2
       fi
-      if [[ $CI_COMMIT_REF_NAME == "develop" ]]
+      if [[ $CI_COMMIT_REF_NAME == "develop" ]]; then
         if [[ $IS_SNAPSHOT != "true" && $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
           echo -e "ERROR: PUSH de <develop> en verion RELEASE no permitido.\nSe ha generado el artefacto, pero el pipeline se interrumpira."
           exit 3
         fi
-        if [[ $REGISTER_DEVELOP != "true" ]]
+        if [[ $REGISTER_DEVELOP != "true" ]]; then
           echo -e "INFO: La rama <develop> NO se registra.\nSe ha generado el artefacto, pero el pipeline se interrumpira."
           exit 4
         fi
