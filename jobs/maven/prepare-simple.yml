@@ -14,7 +14,9 @@ prepare-job:
     paths:
       - ./.m2/repository
       - target
-      
+  before_script:
+    - cmod 400 $CICD_SSH_KEY
+    
   script:
     - >
       echo -e "==============================================================================================
