@@ -39,11 +39,14 @@ rules:
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
     - >
       ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
-        cd selfweb &&
-        docker-compose down &&
-        echo "services:" > docker-compose.override.yml &&
-        echo "    selfweb:" >> docker-compose.override.yml &&
-        echo "        image: ${IMG_TAG}" >> docker-compose.override.yml &&
-        docker-compose up -d &&
-        docker ps
+      cd selfweb &&
+      docker-compose down &&
+      echo "services:" > docker-compose.override.yml &&
+      echo "    selfweb:" >> docker-compose.override.yml &&
+      echo "        image: ${IMG_TAG}" >> docker-compose.override.yml &&
+      docker-compose up -d &&
+      docker ps
       "
+
+################################## E O F ##########################################    
+
