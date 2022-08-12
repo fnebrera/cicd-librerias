@@ -22,6 +22,7 @@ prepare-job:
       \n=============================================================================================="
     # PRUEBAS!!!
     - IMG_TAG="Esto es un atraco"
+    - chmod 400 $CICD_SSH_KEY
     - >
       ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
       cd selfweb &&
