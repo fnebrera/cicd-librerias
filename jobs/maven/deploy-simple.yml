@@ -1,0 +1,18 @@
+
+deploy-job:
+  stage: deploy
+
+  rules:
+    # Hacemos deploy solo en develop y master
+    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+
+  before_script:
+    - chmod 400 $CICD_SSH_KEY
+
+  script:
+    # PRUEBAS
+    - 'echo "IMG_TAG: ${IMG_TAG}"'
+    - >
+      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
+      docker ps
+      "

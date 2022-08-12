@@ -119,6 +119,7 @@ stages:
   - register
   - docker
   - tag
+  - deploy
 
 # Includes, uno por job
 include: 
@@ -157,6 +158,10 @@ include:
       # tag-job: Genera tag (solo rama master) (manual)
       #
       - 'jobs/maven/tag-simple.yml'
+      #
+      # deploy-job: Despliega la nueva imagen docker (manual)
+      #
+      - 'jobs/maven/deploy-simple.yml'
 
 ########################### E O F ##################################      
 

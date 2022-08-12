@@ -88,6 +88,7 @@ docker-register-job:
               ;;
       esac
     - 'echo "IMG_TAG: ${IMG_TAG}"'
+    - 'echo "IMG_TAG=${IMG_TAG}" >> prepare.env'
     - docker -v
     - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
     - docker build -t $IMG_TAG .

@@ -14,20 +14,12 @@ prepare-job:
     paths:
       - ./.m2/repository
       - target
-      
-  before_script:
-    - chmod 400 $CICD_SSH_KEY
 
   script:
     - >
       echo -e "==============================================================================================
       \nEjecutando etapa PREPARE en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    # PRUEBAS
-    - >
-      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
-      docker ps
-      "
     #
     # Obtener version del proyecto. Si no lo encuentra, no es un proyecto maven.
     #
