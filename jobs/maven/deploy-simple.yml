@@ -11,6 +11,7 @@ deploy-job:
 
   script:
     # PRUEBAS
+    - 'echo "DOCKER_PRJ: ${DOCKER_PRJ}"'
     - 'echo "IMG_TAG: ${IMG_TAG}"'
     - >
       ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "

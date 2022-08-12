@@ -94,4 +94,8 @@ docker-register-job:
     - docker build -t $IMG_TAG .
     - docker push $IMG_TAG 
 
+  artifacts:
+    reports:
+      dotenv: prepare.env
+
 ################################## E O F ##########################################
