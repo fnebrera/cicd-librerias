@@ -1,19 +1,49 @@
-
+#########################################################################################################
+# Conecta con el host de destino del deploy y regenera el docker-compose
+# usando la imagen generada en la etapa docker.
+# Para este ejemplo podemos usar develop o master. En un caso real, sólo en master.
+# Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor 'true' en el
+# momento de lanzar el job.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 12/08/2022 Version inicial
+#
+#########################################################################################################
 deploy-job:
   stage: deploy
 
-  rules:
-    # Hacemos deploy solo en develop y master
+  variables:
+    SEGUIR: "false"
+
+rules:
+    # Hacemos deploy solo en develop y master, y en manual
     - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+      when: manual
 
   before_script:
     - chmod 400 $CICD_SSH_KEY
 
   script:
-    # PRUEBAS
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa DEPLOY en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
+    #
+    # Para continuar, debe entrar SEGUIR=true
+    #
+    - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 0; }'
     - 'echo "DOCKER_PRJ: ${DOCKER_PRJ}"'
     - 'echo "IMG_TAG: ${IMG_TAG}"'
+    # Solo si es un proyecto Docker
+    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
     - >
       ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
-      docker ps
+        cd selfweb &&
+        docker-compose down &&
+        echo "services:" > docker-compose.override.yml &&
+        echo "    selfweb:" >> docker-compose.override.yml &&
+        echo "        image: ${IMG_TAG}" >> docker-compose.override.yml &&
+        docker-compose up -d &&
+        docker ps
       "

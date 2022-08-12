@@ -30,7 +30,7 @@ tag-job:
     #
     # Para continuar, debe entrar SEGUIR=true
     #
-    - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 1; }'
+    - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 0; }'
     #
     #  Aplicar reglas complejas
     #
