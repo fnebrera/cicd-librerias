@@ -20,6 +20,8 @@ prepare-job:
       echo -e "==============================================================================================
       \nEjecutando etapa PREPARE en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    # PRUEBAS
+    - ssh -V
     #
     # Obtener version del proyecto. Si no lo encuentra, no es un proyecto maven.
     #
