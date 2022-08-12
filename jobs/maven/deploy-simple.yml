@@ -16,7 +16,7 @@ deploy-job:
   variables:
     SEGUIR: "false"
 
-rules:
+  rules:
     # Hacemos deploy solo en develop y master, y en manual
     - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
       when: manual
