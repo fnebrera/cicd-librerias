@@ -26,9 +26,9 @@ prepare-job:
     - >
       ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
       cd selfweb &&
-      echo "services:" > test.yml &&
-      echo "    selfweb:" >> test.yml &&
-      echo "        image: ${TEST_TAG}" >> test.yml &&
+      echo -e "services:" > test.yml &&
+      echo -e "    selfweb:" >> test.yml &&
+      echo -e "        image: ${TEST_TAG}" >> test.yml &&
       cat test.yml
       "
     #
