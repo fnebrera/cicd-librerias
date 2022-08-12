@@ -22,6 +22,7 @@ prepare-job:
       \n=============================================================================================="
     # PRUEBAS!!!
     - TEST_TAG="registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.007"
+    - chmod 400 $CICD_SSH_KEY
     - >
       ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
       cd selfweb &&
