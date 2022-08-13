@@ -90,7 +90,7 @@ pkg-register-job:
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml \
+      mvn validate deploy:deploy-file -s ci_settings.xml \
       -Durl="${REG_URL}" \
       -DrepositoryId="gitlab-maven" \
       -Dfile="${JAR_FILE}" \
@@ -99,6 +99,8 @@ pkg-register-job:
       -Dfiles=${SRC_FILE} \
       -Dclassifiers=src \
       -Dtypes=tgz
-  
+    # PRUEBAS
+    - ls -al target/*.jar
+
   ################################## E O F ##########################################
 
