@@ -25,6 +25,7 @@ docker-register-job:
 
   cache:
     paths:
+      - ./.m2/repository
       - target
 
   script:
