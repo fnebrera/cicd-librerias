@@ -10,7 +10,7 @@
 #
 ########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 docker-register-job:
-  stage: register
+  stage: docker
 
   image: docker:20.10.17
   services:
@@ -25,9 +25,7 @@ docker-register-job:
 
   cache:
     paths:
-      - ./.m2/repository
       - target
-    policy: pull
 
   script:
     - >

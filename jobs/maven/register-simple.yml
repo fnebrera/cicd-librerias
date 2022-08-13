@@ -21,15 +21,12 @@ pkg-register-job:
     paths:
       - ./.m2/repository
       - target
-    policy: pull
 
   script:
     - >
       echo -e "==============================================================================================
       \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    # PRUEBAS
-    - ls -al target/*.jar
     #
     # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
     #
@@ -100,8 +97,6 @@ pkg-register-job:
       -Dfiles=${SRC_FILE} \
       -Dclassifiers=src \
       -Dtypes=tgz
-    # PRUEBAS
-    - ls -al target/*.jar
 
   ################################## E O F ##########################################
 

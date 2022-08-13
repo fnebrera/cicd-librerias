@@ -120,6 +120,7 @@ stages:
   - test
   - build
   - register
+  - docker
   - tag
   - deploy
 
