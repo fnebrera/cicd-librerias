@@ -27,6 +27,8 @@ pkg-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    # PRUEBAS
+    - ls -al target/*.jar
     #
     # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
     #

@@ -32,6 +32,8 @@ docker-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    # PRUEBAS
+    - ls -al target/*.jar
     # Solo si es un proyecto Docker
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
     #
