@@ -27,6 +27,7 @@ docker-register-job:
     paths:
       - ./.m2/repository
       - target
+    policy: pull
 
   script:
     - >
