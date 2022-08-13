@@ -6,11 +6,11 @@
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
-# 1.0.0 FNG 26/07/2022 Version inicial
+# 1.0.0 FNG 13/08/2022 Version inicial
 #
 ########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 docker-register-job:
-  stage: docker
+  stage: register
 
   image: docker:20.10.17
   services:
