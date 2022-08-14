@@ -32,10 +32,11 @@ docker-register-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    # PRUEBAS
-    - ls -al target/*.jar
     # Solo si es un proyecto Docker
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
+    # Necesitamos el fat-jar
+    - JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
+    - '[[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }'
     #
     # Preparamos tagid. Las reglas actuales son:
     #   - En <master> no se admite SNAPSHOT. Se registra en 'release' con el Id del proyecto.

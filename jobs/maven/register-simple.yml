@@ -38,7 +38,7 @@ pkg-register-job:
     # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
     #
     - |
-      VERSION=""
+      VERSION="$PRJ_VERS"
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"

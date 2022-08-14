@@ -1,6 +1,6 @@
 = Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.0, 07/08/2022
+1.0.0, 13/08/2022
 :toc:
 :toclevels: 3
 :icons: font
@@ -13,11 +13,11 @@ habituales. No se ha pretendido hacer comparativas de productos y, menos aún, e
 cómo hacer las cosas. El proyecto es, simplemente, un demostrador del "ahorro" de costes y tiempo de aprendizaje
 para establecer cadenas CI/CD no demasiado complejas. 
 
-WARNING: Esta primera versión se limita a las etapas correspondientes a CI (hasta el deploy a los registries de artefactos e imagenes _docker_), 
-y al gestor de proyectos maven sobre proyectos java/SpringBoot o similares. Partiendo de este template es muy sencillo
+WARNING: En esta primera versión la etapa de despliegue se realiza de manera muy simple (mediante SSH), 
+y se limita a proyectos maven sobre java/SpringBoot o similares. Partiendo de este template es muy sencillo
 agregar las configuraciones correspondientes a otros entornos, tales como node.js, python, Angular, etc.
 
-NOTE: En versiones posteriores está previsto incluir los jobs correspondientes a CD, concretamente para Terraform,
+NOTE: En versiones posteriores está previsto incluir jobs más complejos para las etapas CD, concretamente para Terraform,
 Helm/Kubernetes y Ansible.
  
 == Versiones
@@ -31,7 +31,7 @@ Helm/Kubernetes y Ansible.
 
 |1.0.0
 |FNG
-|05/08/2022
+|13/08/2022
 |Primera versión CI para maven/java
 
 |===
@@ -71,12 +71,19 @@ Independientemente de cuál sea su formación previa en CI/CD, la lectura de est
 
 === Hardware y software de base
 
-Server::
+Server CI/CD::
 * Máquina virtual en Hyper-V.
 * 24 GB Memoria max.
 * 4 procesadores virtuales.
 * Ubuntu 20.04.1
-* Docker 20.10.17
+* Docker 20.10.17 y docker-compose
+
+Server Despliegue::
+* Maquina virtual en Hyper-V.
+* 4 GB Memoria max.
+* 2 procesadores virtuales.
+* Ubuntu 22.04.1
+* Docker 20.10.17 y docker-compose.
 
 Workstation::
 * Core i7-1165G7
@@ -88,15 +95,58 @@ Workstation::
 
 === Productos para CI/CD
 
-Todos los productos se han instalado como imágenes docker, y se lanzan mediante docker-compose.
+Todos los productos se han instalado en el server CI/CD como imágenes docker, y se lanzan mediante sendos docker-compose, para facilitar
+el arranque/parada de un producto concreto sin afectar al resto. Todos los docker-compose referencian un network
+común tipo bridge. Al compartir network, se facilita la comunicación entre containers, puesto que Docker actúa
+como DNS interno. Salvo en el caso de Nginx, no se exponen puertos TCP/IP al exterior. El acceso externo se
+canaliza a través de Nginx (port 443), que actúa como proxy inverso, discriminando el acceso en base al hostname de destino. Los
+productos instalados son:
 
 - Gitlab OMNIBUS 15.2.1-ce.0
 - Gitlab-runner: latest
 - Sonarqube 9.5.0-community
-- PostgreSQL 12.2 (requerido por Gitlab)
-- Portainer ce:2.14.1 (entorno GUI para Docker)
+- PostgreSQL 12.2 (requerido por Sonar)
+- Nginx 1.21.6
+- Portainer ce:2.14.1
 
 == Visión general de la solución
+
+=== Proyecto de trabajo
+
+Las librerías de pipelines y jobs se encuentran en el proyecto "cicd-librerias", y se describirán con mayor detalle más adelante. Este
+proyecto se maneja en la workstation empleando Visual Studio Code.
+
+Como proyecto de trabajo, se ha escogido la aplicación Selfweb de Comunytek, y concretamente el server REST (selfwebspingboot). Se
+trata de una aplicación java que emplea el framework SpringBoot. Como gestor de proyectos se emplea maven. En la carpeta "ejemplos_cfg"
+puede verse el pom.xml de dicho proyecto, así como otros ejemplos de archivos de configuración. Este proyecto
+se maneja en la workstation empleando Eclipse.
+
+El servidor de despliegue pretende simular un entorno real de producción. Se han preinstalado docker y docker-compose. Adicionalmente
+están preconstruidos los diferentes volúmenes docker
+que emplean Selfweb y Nginx, y preinstalado el cliente javascript de Selfweb (SelfTask).
+
+=== Flujo de desarrollo
+
+Como normativa se ha escogido el modelo "Git Flow" simplificado. Si bien los pipelines pueden fácilmente adaptarse
+a otros modelos, este es el preferido por muchas organizaciones, y el que se emplea en este momento en los
+proyectos del Clan Comunytek. El modelo es el siguiente:
+
+- Debe existir una rama "master" que además es la de defecto. En esta rama debe estar el código de la última versión
+liberada para producción, o en curso de liberarse. La rama está protegida de modo que sólo los "Mantainers"
+pueden hacer merge y push.
+- Debe existir una rama "develop". En esta rama debe estar el código de la última versión
+liberada para preproducción, UAT, Staging, o en curso de liberarse. La rama está protegida de modo que sólo los "Mantainers"
+pueden hacer merge y push.
+- El desarrollo se realiza sobre ramas auxiliares, asociadas a una "feature", a un desarrollador, etc. Los desarrolladores
+trabajan en local sobre su rama y, de forma periódica, hacen "push" a efectos de backup, lo que, opcionalmente,
+puede disparar un pipeline de CI/CD. Una vez finalizado el trabajo,
+deben hacer pull de "develop", y merge local de la rama de trabajo sobre "develop" para revisar posibles inconsistencias.
+- Puede existir una rama hotfix, pero no más de una simultáneamente. Como veremos más tarde, esta rama (de existir) tiene
+un tratamiento especial.
+- Una vez preparado en local un SNAPSHOT en "develop" incluyendo todas las ramas auxiliares finalizadas, un "Mantainer" hará
+push de develop, lo que disparará un pipeline CI/CD.
+- Cuando un SNAPSHOT sea autorizado para producción, un "Mantainer" hará merge local de develop sobre master,
+modificará la versión en el pom (eliminando la cadena "SNAPSHOT"), y hará push de master, lo que disparará un pipeline CI/CD. 
 
 === Gitlab como entorno CI/CD
 
@@ -136,7 +186,7 @@ Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
 ==== Verificación de Calidad del Código
 
 En este apartado, Gitlab no dispone de una solución propia, sino que
-integra el producto _CodeClimate(TM)_. Dado que el estándar de facto para esta fase es, desde hace años, _SonarQube(TM)_, el cual además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preperido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
+integra el producto _CodeClimate(TM)_. Dado que el estándar de facto para esta fase es, desde hace años, _SonarQube(TM)_, el cual además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preferido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
 
 ==== Tests Unitarios
 
@@ -154,5 +204,89 @@ formatos más habituales, y con funcionalidades básicas, que pensamos
 pueden ser suficientes en muchos casos. Por ello nos hemos basado
 en el propio Gitlab en este apartado.
 
- 
+==== Registro de Imágenes Docker
+
+También en este apartado Gitlab dispone de un "Component Registry" muy flexible, por lo que es el que se ha empleado en este
+ejemplo.
+
+==== Despliegue
+
+En esta primera versión, el despliegue de la imagen Docker generada se realiza de una manera muy simple (utilizando SSH).
+Gitlab dispone de integraciones directas con Terraform, Helmet/Kubernetes, Ansible, etc. por lo que en posteriores versiones
+de este proyecto se trabajará con estas posibilidades. 
+
+=== Un vistazo a Gitlab CI/CD
+
+Obviamente, no es objeto de este documento explicar pormenorizadamente el trabajo con Gitlab CI/CD, pero sí
+que es interesante comentar los aspectos principales.
+
+- Lo primero que llama la atención de Gitlab CI/CD es que existe un *único* archivo de definición
+de pipelines por proyecto. Este archivo debe localizarse en la raíz del proyecto, y debe denominarse obligatoriamente ".gitlab-ci.yml". El
+formato del archivo es yaml, con unas keywords bastante sencillas de aprender.
+- No obstante lo anterior, este .yml puede contener "includes" de otro/s archivo/s .yml, los cuales a su vez pueden tener includes, y así sucesivamente.
+Además, los includes pueden referenciar otro proyecto, por lo que es sencillo montar un proyecto específico para almacenar estos includes,
+como es el caso de este ejemplo.
+- El pipeline se compone de etapas (stages), y de definiciones de trabajos (jobs) asociados a las diferentes etapas. Puede haber más de un job asociado a un stage, bien sea para que se ejecuten en paralelo o úno sólo de ellos en función de los valores de ciertas variables.
+- En cada job se definen reglas (rules) para incluir o no este job en el pipeline, y en qué condiciones de ejecución. Por ejemplo, un job "manual" quedará bloqueado en el pipeline hasta que sea lanzado por un Mantainer.
+- Cuando se dispara un evento CI/CD, Gitlab analiza todas las reglas y monta de manera dinámica un pipeline que contiene sólamente los jobs en los que se cumplen las reglas. Esto nos permite tener "n" pipelines distintos, cada uno asociado a un conjunto de reglas. Como puede verse, se trata de una modalidad de trabajo muy diferente a la de Jenkins o Artifactory.
+- También mediante reglas, podemos definir si permitimos o no que el job falle y, en consecuencia, que el pipeline continue. Por ejemplo, en un job que ejecute Sonar, permitimos que falle en la rama "develop", al no tartarse de un release a producción.
+- Podemos incluir en el job un "before_script" y un "after_script", además del "script" principal. Por ejemplo, podemos definir un after_script que se debe ejecutar sólo si el job falla, para hacer rollout o preparar una fase posterior.
+- En gitlab debemos tener uno o más "runners" que se encargan de gestionar la ejecución de los jobs, lanzando un "executor" específico para ese job. En este ejemplo, hemos configurado un runner tipo Docker, que se ejecuta como un container separado de Gitlab. Este runner, para cada job que se le asigna,
+crea a su vez un container Docker con la imagen que se indique en el propio job, y és en este container donde se ejecutan los scripts, que se escriben en el lenguaje de shell asociado a la imagen docker, es decir, "sh", "bash", "PowerShell", etc.
+- Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job.
+- Gitlab dispone de varios mecanismos para "pasar" información de un job a otro. Posiblemente el más usado es el "cache", en el que podemos incluir uno o más directorios de trabajo que cada job "lee" al inciarse y "escribe" al finalizar. Un ejemplo típico de uso es el repositorio de dependencias de maven. Si está en cache, se descargarán sólamente una vez y estarán a disposicion de los diferentes jobs.
+- Un elemento clave en la definición del pipeline son las "variables". En Gitlab, existen varios niveles de variables:
+* Variables predefinidas de Gitlab: Todas ellas comienzan con "CI_" y pueden contener tanto información estática como dinámica. Por ejemplo, CI_PROJECT_ID
+contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contiene el nombre del branch sobre el que está trabajando el pipeline (dinámica).
+* Variables de Grupo: Se definen en la configuración del grupo de proyectos. Pueden estar enmascaradas, para que no sean visibles en logs (p.e. passwords). Al estar asociadas al grupo, sólo los usuarios de nivel "Mantainer" en el grupo tienen derecho a visualizarlas y modificarlas. Aunque se trata de un mecaniso bastante simple, nos permite "ahorrarnos" un getor de secretos (p.e. Vault) en las fases de CI/CD.
+* Variables de Proyecto: Similares a las anteriores, sólo que específicas del proyecto
+* Variables de Pipeline: Están asociadas al pipeline del proyecto y son modificables tanto por Mantainers como por Developers. Pueden definirse en alguno de los includes, o bien en el .yml principal.
+* Variables de Job: Son específicas de cada job, y tienen vigencia sólo durante la ejecución de dicho job.
+* Variables de Entorno: Específicas de cada script. Normalmente son variables de trabajo, aunque es posible pasarlas a jobs subsiguientes mediante el mecanismo de paso de artefactos "dotenv" que comentaremos más adelante.
+
+- El pipeline se dispara al ocurrir determinados eventos (commit, push, merge_request). Tanto a nivel pipeline como individualmente por job podemos "filtrar" los eventos que nos interese. En este ejemplo, en las reglas a nivel pipeline hemos definido que sólo nos interesan los eventos "push".
+- Gitlab dispone de muchos otros mecanismos (pipelines multiproyecto, triggres externos, webhooks, etc.) que no han sido necesarios en este ejemplo, por lo que no entramos en su descripción. 
+
+== Descripción de las librerías
+
+=== Layout
+
+Se ha creado un proyecto Git denominado "cicd-librerias" dentro del grupo de proyectos "comunytek". En este grupo de proyectos se encuentra también el proyecto "selfwebspringboot" que usaremos como ejemplo de la implementación de las librerías.
+
+- En _cicd-librerias_ se han creado 3 carpetas:
+
+* ejemplos_cfg: Incluye ejemplos de configuraciones en los proyectos base, tales como ".gitlab-ci.yml", "pom.xml", etc.
+* pipelines: Contiene los includes principales para los diferentes entornos. En esta versión sólo está definido el relativo a maven/java.
+* jobs: Contiene una carpeta para cada entorno (en este ejemplo, solamente maven), y en cada carpeta, los includes de cada job del pipeline.
+
+- En _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml", como ejemplo de integrción de las librerías _cicd-librerias_.
+
+=== Variables
+
+==== De Grupo
+
+A nivel del grupo de proyectos (en este caso "comunytek") es necesario definir las siguientes variables:
+
+CICD_USER:: Usuario de gitlab con suficientes derechos para llamar a la API de Gitlab en relación al proyecto. Normalmente será un Mantainer.
+CICD_PASSWD:: Password del usuario anterior.
+CICD_TOKEN:: Personal token creado para el usuario anterior (en settings de usuario).
+CICD_EMAIL:: Dirección de correo del usuario anterior.
+CICD_HOST:: Nombre del host donde se encuentra instalado Gitlab (p.e. "git2.comunytek.com").
+CICD_REGISTRY_HOST:: Nombre del host para el acceso al registry Docker. Aunque se trata del propio Gitlab, atiende a un puerto distinto, por lo que hemos de discriminarlo por el nombre del host (p.e. "https://registry2.comunytek.com").
+CICD_SSH_KEY:: Variable tipo "file" que contiene la clave SSH privada para el acceso al host de despliegue.
+CICD_DEPLOY_USER:: Usuario con el que se realizará la conexión SSH con el servidor de despliegue.
+CICD_DEPLOY_HOST:: Nombre o IP del servidor de despliegue.
+SONAR_HOST_URL:: Url completa del host donde está instalado Sonarqube (p.e. "https://sonar2.comunytek.com").
+SONAR_HOST_TOKEN:: Token generado en Sonar para acceso externo mediante la API.
+
+==== De pipeline (ocultas)
+
+==== De pipeline (editables)
+
+=== Pipeline del proyecto e include principal
+
+=== Jobs específicos para maven
+
+
+
 
