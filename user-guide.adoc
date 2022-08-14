@@ -232,7 +232,7 @@ como es el caso de este ejemplo.
 - También mediante reglas, podemos definir si permitimos o no que el job falle y, en consecuencia, que el pipeline continue. Por ejemplo, en un job que ejecute Sonar, permitimos que falle en la rama "develop", al no tartarse de un release a producción.
 - Podemos incluir en el job un "before_script" y un "after_script", además del "script" principal. Por ejemplo, podemos definir un after_script que se debe ejecutar sólo si el job falla, para hacer rollout o preparar una fase posterior.
 - En gitlab debemos tener uno o más "runners" que se encargan de gestionar la ejecución de los jobs, lanzando un "executor" específico para ese job. En este ejemplo, hemos configurado un runner tipo Docker, que se ejecuta como un container separado de Gitlab. Este runner, para cada job que se le asigna,
-crea a su vez un container Docker con la imagen que se indique en el propio job, y és en este container donde se ejecutan los scripts, que se escriben en el lenguaje de shell asociado a la imagen docker, es decir, "sh", "bash", "PowerShell", etc.
+crea a su vez un container Docker con la imagen que se indique en el propio job, y es en este container donde se ejecutan los scripts, que se escriben en el lenguaje de shell asociado a la imagen docker, es decir, "sh", "bash", "PowerShell", etc.
 - Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job.
 - Gitlab dispone de varios mecanismos para "pasar" información de un job a otro. Posiblemente el más usado es el "cache", en el que podemos incluir uno o más directorios de trabajo que cada job "lee" al inciarse y "escribe" al finalizar. Un ejemplo típico de uso es el repositorio de dependencias de maven. Si está en cache, se descargarán sólamente una vez y estarán a disposicion de los diferentes jobs.
 - Un elemento clave en la definición del pipeline son las "variables". En Gitlab, existen varios niveles de variables:
@@ -281,9 +281,107 @@ SONAR_HOST_TOKEN:: Token generado en Sonar para acceso externo mediante la API.
 
 ==== De pipeline (ocultas)
 
+En el include principal del pipeline se definen un conjunto de variables que quedan ocultas para los Developers, y que se han utilizado como base para implementar los diferentes flujos. Un Manager de Grupo puede modificar el comportamiento del pipeline sin más que actualizar estas variables. También es posible (si se desea) definir alguna de estas variables en el archivo ".gitlab-ci.yml" del proyecto, el cual, a priori, es editable por los Developers.
+
+IGNORE_AUX_BRANCHES:: No ejecutar el pipeline en ramas auxiliares (aquellas distintas de 'master' y 'develop').
+Si se define a "true", el resto de flags relacionados con ramas auxiliares no tienen efecto.
+Como excepcion, la rama identificada como HOTFIX_BRANCH (si existe) siempre pasa.
+COMPILE_AUX_BRANCHES:: Compilar o no ante un push en ramas auxiliares.
+SONAR_AUX_BRANCHES:: Pasar o no Sonar en ramas auxiliares. En cualquier caso se admite que falle.
+TEST_AUX_BRANCHES:: Pasar o no test unitarios en ramas auxiliares. En cualquier caso se admite que falle.
+ALLOW_FAILURE_IN_SONAR_DEVELOP:: Permitir fallo al pasar Sonar en rama develop.
+ALLOW_FAILURE_IN_TEST_DEVELOP:: Permitir fallo al pasar tests unitarios en rama develop.
+ALLOW_RELEASE_IN_DEVELOP:: Permitir versiones release (no son SNAPSHOT) en rama develop. Normalmente será "false", pero puede haber circunstancias específicas en que sea necesario permitirlo. Nótese que nunca permitimos versiones SNAPSHOT en rama master.
+REGISTER_DEVELOP:: Registrar, generar imagen docker y tag de la rama 'develop'. Debe indicarse a "true"
+si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA o staging.
+Si se establece como "false", el pipeline termina con la generación del fat-jar y su
+almacenamiento temporal como artefacto.
+
 ==== De pipeline (editables)
 
+Se trata de variables definidas en el ".gitlab-ci.yml" del proyecto y que son, por tanto, editables por los Developers, para tratar circunstancias específicas.
+
+SNAPSHOT_NUMBER:: Si registramos, creamos docker y tag, etc. en SNAPSHOT podemos agregar (opcionalmente)
+un numero de snapshot a la vesion del proyecto para identificar registros y tag. Nótese que, si la versión en el pom junto con este indentificador ya está registrada, el job de registro terminará con error, y el pipeline se interrumpirá.
+HOTFIX_BRANCH:: Indicar la rama de hotfix en la que estamos trabajando, si es que existe. En esta rama, se ejecuta todo el pipeline,
+aunque las etapas sonar y test admiten errores.
+Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
+HOTFIX_NUMBER:: Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
+En la version del proyecto, se respeta la que se indica en el pom.xml. 
+
 === Pipeline del proyecto e include principal
+
+En el proyecto _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml" con el contenido siguiente:
+
+------------------------------------------------------------
+variables:
+  SNAPSHOT_NUMBER: "005"
+  HOTFIX_BRANCH: ""
+  HOTFIX_NUMBER: "002"
+include:
+   project: 'comunytek/cicd-librerias'
+   ref: master
+   file: 'pipelines/maven-springboot-simple.yml'
+------------------------------------------------------------
+
+Como puede verse, simplemente se definen las variables de pipeline editables, y se incluye el resto de la definición del pipeline tomada del proyecto _cicd-librerias_.
+
+El include pricipal sólo es editable por Managers de Grupo. En este ejemplo, mostramos a continuación un extracto de su contenido.
+
+------------------------------------------------------------
+variables:
+  ##
+  # Variables Básicas del pipeline
+  ##
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"    # Home de sonar, para caching
+  GIT_DEPTH: "0"  # No usar shallow clone (es un proyecto pequeño)
+  MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"    # Localizacion del repositorio maven
+  ORIGIN_URL: "https://oauth2:${CICD_TOKEN}@${CICD_HOST}/${CI_PROJECT_PATH}.git"  # Url externa de gitlab
+  ##
+  # Variables de pipeline ocultas.
+  # Si se desea, y para mayor seguridad, pueden definirse como variables CI/CD de grupo.
+  #
+  IGNORE_AUX_BRANCHES: "false"
+  COMPILE_AUX_BRANCHES: "true"
+  ...
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG        # No ejecutar en tags                   
+      when: never
+    # No ejecutar este pipeline en ramas auxiliares, si así esta configurado
+    - if: $IGNORE_AUX_BRANCHES == "true" && $CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_REF_NAME != "master" && $CI_COMMIT_REF_NAME != $HOTFIX_BRANCH
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'push'    # Ejecutar sólo en push 
+
+image: ck-maven-executor:1.0.0     # Imagen por defecto
+
+cache:
+  # Definimos la clave del cache como el nombre del branch en el que hacemos push, de este modo
+  # separamos la informacion cacheada para cada rama, para no interferir en otros pipelines.
+  key: "$CI_COMMIT_REF_NAME"
+
+# Etapas posibles del pipeline
+stages:
+  - prepare
+  - compile
+  - sonar
+  - test
+  - build
+  - register
+  - docker
+  - tag
+  - deploy
+
+# Includes, uno por job
+include: 
+  - project: 'comunytek/cicd-librerias'
+    ref: master
+    file: 
+      - 'jobs/maven/prepare-simple.yml'
+      - 'jobs/maven/compile-simple.yml'
+      ...
+------------------------------------------------------------
 
 === Jobs específicos para maven
 
