@@ -13,11 +13,11 @@ habituales. No se ha pretendido hacer comparativas de productos y, menos aún, e
 cómo hacer las cosas. El proyecto es, simplemente, un demostrador del "ahorro" de costes y tiempo de aprendizaje
 para establecer cadenas CI/CD no demasiado complejas. 
 
-WARNING: En esta primera versión la etapa de despliegue se realiza de manera muy simple (mediante SSH), 
+En esta primera versión la etapa de despliegue se realiza de manera muy simple (mediante SSH), 
 y se limita a proyectos maven sobre java/SpringBoot o similares. Partiendo de este template es muy sencillo
 agregar las configuraciones correspondientes a otros entornos, tales como node.js, python, Angular, etc.
 
-NOTE: En versiones posteriores está previsto incluir jobs más complejos para las etapas CD, concretamente para Terraform,
+En versiones posteriores está previsto incluir jobs más complejos para las etapas CD, concretamente para Terraform,
 Helm/Kubernetes y Ansible.
  
 == Versiones
@@ -326,7 +326,7 @@ include:
 
 Como puede verse, simplemente se definen las variables de pipeline editables, y se incluye el resto de la definición del pipeline tomada del proyecto _cicd-librerias_.
 
-El include pricipal sólo es editable por Managers de Grupo. En este ejemplo, mostramos a continuación un extracto de su contenido.
+El include principal sólo es editable por Managers de Grupo. En este ejemplo, mostramos a continuación un extracto de su contenido.
 
 ------------------------------------------------------------
 variables:
@@ -343,7 +343,7 @@ variables:
   #
   IGNORE_AUX_BRANCHES: "false"
   COMPILE_AUX_BRANCHES: "true"
-  ...
+  ... resto de variables
 
 workflow:
   rules:
@@ -380,11 +380,26 @@ include:
     file: 
       - 'jobs/maven/prepare-simple.yml'
       - 'jobs/maven/compile-simple.yml'
-      ...
+      ... resto de includes
 ------------------------------------------------------------
 
 === Jobs específicos para maven
 
+Consulte el código yaml de cada job para ver el detalle de su funcionalidad. A continuación indicamos algunos comentarios aclaratorios.
 
+==== Prepare
+
+Para esta etapa se ha definido el job en el archivo "jobs/maven/prepare-simple.yml". Este job se ejecuta incondicionalmente en todas las
+ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES está a true (todo el pipeline simplemente se ignora). El job prepara el entorno para la ejecución de jobs posteriores.
+
+- Define los directorios que forman parte del cache.
+- Calcula una serie de variables de entorno, útiles para todo el pipeline.
+- Si existe el directorio "target", ejecuta "mvn clean".
+- Copia las claves y valores de las variables de entorno a un archivo temporal "prepare.env".
+- Pasa el contenido de "prepare.env" al resto del pipeline mediante un artefacto de tipo "reports" y clave "dotenv". Las variables contenidas en este archivo son accesibles en todo el pipeline.
+
+==== Compile
+
+Para esta etapa se ha definido el job en el archivo "jobs/maven/compile-simple.yml".
 
 
