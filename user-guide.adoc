@@ -389,7 +389,7 @@ Consulte el código yaml de cada job para ver el detalle de su funcionalidad. A 
 
 ==== Prepare
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/prepare-simple.yml[jobs/maven/prepare-simple.yml]. Este job se ejecuta incondicionalmente en todas las
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/prepare-simple.yml[]. Este job se ejecuta incondicionalmente en todas las
 ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES está a true (todo el pipeline simplemente se ignora). El job prepara el entorno para la ejecución de jobs posteriores.
 
 - Define los directorios que forman parte del cache.
@@ -400,6 +400,6 @@ ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES 
 
 ==== Compile
 
-Para esta etapa se ha definido el job en el archivo "jobs/maven/compile-simple.yml".
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/compile-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. En este ejemplo, el job es bastante simple:
 
-
+- 
