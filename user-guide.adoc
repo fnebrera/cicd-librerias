@@ -402,4 +402,32 @@ ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES 
 
 Para esta etapa se ha definido el job en el archivo link:jobs/maven/compile-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. En este ejemplo, el job es bastante simple:
 
-- 
+- Define los directorios de la cache.
+- Ejecuta "mvn compile". Si se produce un error de compilación, el pipeline se detiene.
+
+==== Sonar
+
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag SONAR_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. Se ejecuta Sonarqube sobre el código fuente para localizar bugs, code-smells y vulnerabilidades SAST.
+
+- Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_SONAR_DEVELOP se defina como true.
+- En ramas auxiliares se pasa Sonar sólo en archivos modificados, mientras que en el resto de ramas se pasa a todo el código. 
+- Se ejecuta "mvn validate sonar:sonar".
+
+==== Test
+
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/test-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag TEST_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. El objetivo del job es pasar los test unitarios definidos para el proyecto.
+
+- Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_TEST_DEVELOP se defina como true.
+- Se ejecuta "mvn test".
+
+==== Build
+
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple.yml[]. Este job se ejecuta incondicionalmente en master, develop y hotfix al hacer push. No se ejecuta en ramas auxiliares. Se trata de construir el artefacto objeto del proyecto. En el caso de maven/SpringBoot se trataría del llamado "fat-jar".
+
+- Se ejecuta "mvn package". Si da error, se detiene el pipeline.
+- Si estamos en la rama master y la versión del proyecto es SNAPSHOT, salimos con error 2 (no se permite SNAPSHOT en master).
+- Si estamos en la rama develop, la versión del proyecto NO es SNAPSHOT y el flag "ALLOW_RELEASE_IN_DEVELOP" es false, salimos con error 3 (no se permite release en develop).
+- Si estamos en develop y el flag REGISTER_DEVELOP es false, salimos con error 4 (la rama develop no se registra), con lo que detenemos el pipeline.
+- Si salimos con error, generamos un artefacto compuesto por el fat-jar, el pom y el .gitlab-ci.yml. Este artefacto está disponible para su descarga durante un periodo de 2 horas. La idea es que, si se genera alguno de los errores anteriores, el pipeline se detenga, pero dispongamos del artefacto para pruebas adicionales, condiciones no contempladas, etc.
+
+
