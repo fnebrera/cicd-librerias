@@ -24,6 +24,7 @@ variables:
   # CICD_SSH_KEY: File (clave privada de acceso SSH a los hosts de deploy)
   # CICD_DEPLOY_USER: antonio
   # CICD_DEPLOY_HOST: 192.168.1.32
+  # CICD_DEPLOY_HOST_SNAPSHOT: 192.168.1.32
   # SONAR_HOST_URL: "https://sonar2.comunytek.com"
   # SONAR_HOST_TOKEN: "bbbbbbbbbbbbbbbbbbbb"
   #

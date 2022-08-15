@@ -15,7 +15,9 @@ tag-job:
     SEGUIR: "false"
 
   rules:
-    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
+      when: manual
+    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       when: manual
 
   cache:

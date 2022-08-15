@@ -238,7 +238,7 @@ crea a su vez un container Docker con la imagen que se indique en el propio job,
 - Un elemento clave en la definición del pipeline son las "variables". En Gitlab, existen varios niveles de variables:
 * Variables predefinidas de Gitlab: Todas ellas comienzan con "CI_" y pueden contener tanto información estática como dinámica. Por ejemplo, CI_PROJECT_ID
 contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contiene el nombre del branch sobre el que está trabajando el pipeline (dinámica).
-* Variables de Grupo: Se definen en la configuración del grupo de proyectos. Pueden estar enmascaradas, para que no sean visibles en logs (p.e. passwords). Al estar asociadas al grupo, sólo los usuarios de nivel "Mantainer" en el grupo tienen derecho a visualizarlas y modificarlas. Aunque se trata de un mecaniso bastante simple, nos permite "ahorrarnos" un getor de secretos (p.e. Vault) en las fases de CI/CD.
+* Variables de Grupo: Se definen en la configuración del grupo de proyectos. Pueden estar enmascaradas, para que no sean visibles en logs (p.e. passwords). Al estar asociadas al grupo, sólo los usuarios de nivel "Mantainer" en el grupo tienen derecho a visualizarlas y modificarlas. Aunque se trata de un mecaniso bastante simple, nos permite "ahorrarnos" un gestor de secretos (p.e. Vault) en las fases de CI/CD.
 * Variables de Proyecto: Similares a las anteriores, sólo que específicas del proyecto
 * Variables de Pipeline: Están asociadas al pipeline del proyecto y son modificables tanto por Mantainers como por Developers. Pueden definirse en alguno de los includes, o bien en el .yml principal.
 * Variables de Job: Son específicas de cada job, y tienen vigencia sólo durante la ejecución de dicho job.
@@ -276,6 +276,7 @@ CICD_REGISTRY_HOST:: Nombre del host para el acceso al registry Docker. Aunque s
 CICD_SSH_KEY:: Variable tipo "file" que contiene la clave SSH privada para el acceso al host de despliegue.
 CICD_DEPLOY_USER:: Usuario con el que se realizará la conexión SSH con el servidor de despliegue.
 CICD_DEPLOY_HOST:: Nombre o IP del servidor de despliegue.
+CICD_DEPLOY_HOST_SNAPSHOT:: Nombre o IP del servidor de despliegue para UAT, QA, o staging (versiones SNAPSHOT).
 SONAR_HOST_URL:: Url completa del host donde está instalado Sonarqube (p.e. "https://sonar2.comunytek.com").
 SONAR_HOST_TOKEN:: Token generado en Sonar para acceso externo mediante la API.
 
@@ -430,4 +431,6 @@ Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple
 - Si estamos en develop y el flag REGISTER_DEVELOP es false, salimos con error 4 (la rama develop no se registra), con lo que detenemos el pipeline.
 - Si salimos con error, generamos un artefacto compuesto por el fat-jar, el pom y el .gitlab-ci.yml. Este artefacto está disponible para su descarga durante un periodo de 2 horas. La idea es que, si se genera alguno de los errores anteriores, el pipeline se detenga, pero dispongamos del artefacto para pruebas adicionales, condiciones no contempladas, etc.
 
+==== Register
 
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/register-simple.yml[]. Este job se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. No se ejecuta en ramas auxiliares.

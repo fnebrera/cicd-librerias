@@ -15,7 +15,8 @@ pkg-register-job:
 
   rules:
     # Hacemos register solo en develop, master y hotfix (si lo hay)
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
+    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:
