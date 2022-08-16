@@ -61,10 +61,10 @@ En este proyecto se ha intentado minimizar:
 - La complejidad de la definición de
 pipelines, todo ello en en base al empleo de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones.
 
-[sidebar]
-.Importante
+[TIP]
+.*Importante*
 --
-Independientemente de cuál sea su formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filisofía de los pipelines  de CI/CD.
+Independientemente de cuál sea su formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filosofía de los pipelines  de CI/CD.
 --
 
 == Entorno de desarrollo
