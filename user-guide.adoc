@@ -386,7 +386,7 @@ include:
 
 === Jobs específicos para maven
 
-Consulte el código yaml de cada job para ver el detalle de su funcionalidad. A continuación indicamos algunos comentarios aclaratorios.
+Consulte el código _yaml_ de cada job para ver el detalle de su funcionalidad. A continuación indicamos algunos comentarios aclaratorios.
 
 ==== Prepare
 
@@ -401,14 +401,14 @@ ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES 
 
 ==== Compile
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/compile-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. En este ejemplo, el job es bastante simple:
+El job en se define en link:jobs/maven/compile-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false (o bien el flag IGNORE_AUX_BRANCHES está a false, lo que aplica a todo el pipeline). También se ejecuta en la rama hotfix (si existe). En este ejemplo, el job es bastante simple:
 
 - Define los directorios de la cache.
 - Ejecuta "mvn compile". Si se produce un error de compilación, el pipeline se detiene.
 
 ==== Sonar
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag SONAR_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. Se ejecuta Sonarqube sobre el código fuente para localizar bugs, code-smells y vulnerabilidades SAST.
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag SONAR_AUX_BRANCHES está a false. También se ejecuta en la rama hotfix (si existe). Se ejecuta Sonarqube sobre el código fuente para localizar bugs, code-smells y vulnerabilidades SAST.
 
 - Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_SONAR_DEVELOP se defina como true.
 - En ramas auxiliares se pasa Sonar sólo en archivos modificados, mientras que en el resto de ramas se pasa a todo el código. 
@@ -416,7 +416,7 @@ Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple
 
 ==== Test
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/test-simple.yml[]. Este job se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag TEST_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. El objetivo del job es pasar los test unitarios definidos para el proyecto.
+Job definido en link:jobs/maven/test-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag TEST_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. El objetivo del job es pasar los test unitarios definidos para el proyecto.
 
 - Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_TEST_DEVELOP se defina como true.
 - Se ejecuta "mvn test".
@@ -433,4 +433,35 @@ Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple
 
 ==== Register
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/register-simple.yml[]. Este job se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. No se ejecuta en ramas auxiliares.
+Job definido en link:jobs/maven/register-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. No se ejecuta en ramas auxiliares. Este job asume que se ha ejecutado la etapa "build" y diponemos, por tanto, del "fat-jar" en la cache. Para que el job ejecute con éxito, se precisan unos requisitos previos:
+
+- Habilitar (si no lo está) el "Package Registry" de Gitlab y configurarlo para que no acepte duplicados.
+- Configurar, en el pom.xml, los registries para snapshot y release (dentro del elemento <distributionManagement>).
+- Crear un archivo "ci_settings.xml" definiendo las credenciales de acceso a el/los registries.
+- En el directorio "ejemplos_cfg/maven" pueden verse ejemplos para un proyecto real.
+
+El job prepara un artifact ID del siguiente modo:
+
+- En rama master, el ID es la versión del proyecto en el pom (debe ser de release). Como es lógico, no puede registrarse la misma versión más de una vez.
+- En rama develop, y si es SNAPSHOT, se agrega a la versión del proyecto el valor de la variable SNAPSHOT_NUMBER, con lo quedaría algo como "5.0.6-SNAPSHOT.003". De este modo, podemos liberar para UAT o staging más de una versión intermedia, en forma de "release candidate", pero manteniendo registrada toda la historia de este SNAPSHOT.
+- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), agregamos a la versión del proyecto la cadena "-DEVELOP" seguida del SNAPSHOT_NUMBER, es decir, algo como "5.0.6-DEVELOP.003". Es una situación bastante rara, puesto que se sale de la normativa básica de flujo, pero hemos dejado abierta esta posibilidad para acomodar circunstancias excepcionales.
+- En rama hotfix (si existe), agregamos a la versión del proyecto la cadena "-HOTFIX" seguida del HOTFIX_NUMBER, es decir, algo como "5.0.6-HOTFIX.002".
+
+Finalmente, creamos un tar con los fuentes y registramos un artefacto compuesto por el fat-jar, el pom y el tar:
+
+----------------------------------------------------
+      SRC_FILE="./{PRJ_VERS}-src.tgz"
+      tar czf ${SRC_FILE} ./src/*
+      mvn validate deploy:deploy-file -s ci_settings.xml \
+      -Durl="${REG_URL}" \
+      -DrepositoryId="gitlab-maven" \
+      -Dfile="${JAR_FILE}" \
+      -DpomFile="pom.xml" \
+      ${VERSION} \
+      -Dfiles=${SRC_FILE} \
+      -Dclassifiers=src \
+      -Dtypes=tgz
+----------------------------------------------------
+
+==== Docker
+
