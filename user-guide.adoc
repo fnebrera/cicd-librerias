@@ -229,7 +229,7 @@ como es el caso de este ejemplo.
 - El pipeline se compone de etapas (stages), y de definiciones de trabajos (jobs) asociados a las diferentes etapas. Puede haber más de un job asociado a un stage, bien sea para que se ejecuten en paralelo o úno sólo de ellos en función de los valores de ciertas variables.
 - En cada job se definen reglas (rules) para incluir o no este job en el pipeline, y en qué condiciones de ejecución. Por ejemplo, un job "manual" quedará bloqueado en el pipeline hasta que sea lanzado por un Mantainer.
 - Cuando se dispara un evento CI/CD, Gitlab analiza todas las reglas y monta de manera dinámica un pipeline que contiene sólamente los jobs en los que se cumplen las reglas. Esto nos permite tener "n" pipelines distintos, cada uno asociado a un conjunto de reglas. Como puede verse, se trata de una modalidad de trabajo muy diferente a la de Jenkins o Artifactory.
-- También mediante reglas, podemos definir si permitimos o no que el job falle y, en consecuencia, que el pipeline continue. Por ejemplo, en un job que ejecute Sonar, permitimos que falle en la rama "develop", al no tartarse de un release a producción.
+- También mediante reglas, podemos definir si permitimos o no que el job falle y, en consecuencia, que el pipeline continue. Por ejemplo, en un job que ejecute Sonar, permitimos que falle en la rama "develop", al no tratarse de un release a producción.
 - Podemos incluir en el job un "before_script" y un "after_script", además del "script" principal. Por ejemplo, podemos definir un after_script que se debe ejecutar sólo si el job falla, para hacer rollout o preparar una fase posterior.
 - En gitlab debemos tener uno o más "runners" que se encargan de gestionar la ejecución de los jobs, lanzando un "executor" específico para ese job. En este ejemplo, hemos configurado un runner tipo Docker, que se ejecuta como un container separado de Gitlab. Este runner, para cada job que se le asigna,
 crea a su vez un container Docker con la imagen que se indique en el propio job, y es en este container donde se ejecutan los scripts, que se escriben en el lenguaje de shell asociado a la imagen docker, es decir, "sh", "bash", "PowerShell", etc.
@@ -249,6 +249,10 @@ contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contien
 
 == Descripción de las librerías
 
+En esta primera versión del proyecto, empleamos únicamente dos productos: Gitlab y SonarQube. Esto contrasta con los 4, 5 o 6 productos que se emplean habitulamnete en cadenas CI/CD. Estos dos productos, además, resultan muy familiares tanto a ingenieros DevOps como a desarrolladores.
+
+En el proyecto se demuestra, además, que Gitlab CI/CD puede sustituir perfectamente a Jenkins o TeamCity, y con un lenguaje de definición de pipelines muy simple y de rápida curva de aprendizaje.
+
 === Layout
 
 Se ha creado un proyecto Git denominado "cicd-librerias" dentro del grupo de proyectos "comunytek". En este grupo de proyectos se encuentra también el proyecto "selfwebspringboot" que usaremos como ejemplo de la implementación de las librerías.
@@ -259,7 +263,7 @@ Se ha creado un proyecto Git denominado "cicd-librerias" dentro del grupo de pro
 * pipelines: Contiene los includes principales para los diferentes entornos. En esta versión sólo está definido el relativo a maven/java.
 * jobs: Contiene una carpeta para cada entorno (en este ejemplo, solamente maven), y en cada carpeta, los includes de cada job del pipeline.
 
-- En _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml", como ejemplo de integrción de las librerías _cicd-librerias_.
+- En _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml", como ejemplo de integración de las librerías _cicd-librerias_.
 
 === Variables
 
@@ -465,3 +469,195 @@ Finalmente, creamos un tar con los fuentes y registramos un artefacto compuesto 
 
 ==== Docker
 
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/docker-simple.yml[]. Este job se ejecuta incondicionalmente en master y hotfix al hacer push. No se ejecuta en ramas auxiliares. Adicionalmente puede ejecutarse en develop si REGISTER_DEVELOP es true.Sólo se ejecuta si existe, en la raiz del proyecto, un archivo "Dockerfile".
+
+El job prepara un Image ID del siguiente modo:
+
+- En rama master, agregamos al Id base la cadena "/release". Nótese que el Component Registry SI admite duplicados.
+- En rama develop, y si es SNAPSHOT, se agrega al Id base la cadena "/snapshot", y a la versión de proyecto el SNAPSHOT_NUMBER.
+- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), agregamos al Id base cadena "/develop-release", y a la versión de proyecto el SNAPSHOT_NUMBER.
+- En rama hotfix (si existe), agregamos al Id de base la cadena "/hotfix", y a la versión de proyecto el HOTFIX_NUMBER.
+
+El job guarda el IMG_TAG generado en el archivo "prepare.env", y lo pasa como artefacto a etapas posteriores. Además:
+
+- Crea la imagen Docker en base al Dockerfile.
+- Hace login al Component Container de nuestro Gitlab.
+- Registra la imagen mediante "docker push".
+
+-------------------------------------------------
+    - 'echo "IMG_TAG=${IMG_TAG}" >> prepare.env'
+    - docker -v
+    - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
+    - docker build -t $IMG_TAG .
+    - docker push $IMG_TAG 
+-------------------------------------------------
+
+==== Tag
+
+Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual". Esto significa que queda bloqueado dentro de la cadena del pipeline hasta que se libere manualmente. En gitlab, no existe, por el momento, un mecanismo directo de interacción con la consola pero podemos, de forma indirecta, controlar el flujo. Por ejemplo, en este caso, se ha definido una variable de job llamada SEGUIR, con valor inicial false. Si en el job pulsamos el icono de "play", la variable no cambiará su valor. Por contra, si pulsamos sobre el nombre del job, se nos presenta un formulario en el que podemos agregar o modificar el valor de variables locales. En este ejemplo, podemos definir la variable SEGUIR a true, con lo que podemos, en el script, continuar la ejecución o pasar a la siguiente etapa:
+
+-------------------------------------------------
+  variables:
+    SEGUIR: "false"
+  script:
+    - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 0; }'
+-------------------------------------------------
+
+A continuación el job computa un TagID, de acuerdo los siguientes criterios:
+
+- Si estamos en la rama master, el TagID se forma con la cadena "release-" seguida de la versión del proyecto, es decir, algo como "release-5.0.6".
+- En rama develop, y si es SNAPSHOT, se forma con la cadena "snapshot-", la versión de proyecto y el SNAPSHOT_NUMBER. Algo como "snapshot-5.0.6-SNAPSHOT.003".
+- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), se forma con cadena "develop-release-", la versión de proyecto y el SNAPSHOT_NUMBER. Algo como "develop-release-5.0.6.003".
+- En rama hotfix (si existe), se forma con la cadena "hotfix-", la versión de proyecto y el HOTFIX_NUMBER. Algo como "hotfix-5.0.6.002".
+
+Con este Id se genera un tag. Nótese que los TagID no pueden repetirse. 
+
+-------------------------------------------------
+    - git config user.name "$CICD_USER"
+    - git config user.email "$CICD_EMAIL"
+    - git remote remove origin
+    - git remote add origin ${ORIGIN_URL}
+    - git tag -a $TAG -m "Build $TAG"
+    - git push origin $TAG
+-------------------------------------------------
+
+==== Deploy
+
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[].
+En esta primera versión este job se ha planteado de una forma muy simple, aunque en próximas versiones se incorporarán aspectos de IaC y despliegues más sofisticados. En este ejemplo, se parte de la siguiente situación:
+
+- Debemos desplegar la imagen Docker generada en etapas anteriores en un host remoto, al que tenemos acceso sólo mediante SSH empleando clave privada. El host remoto será el de producción (rama master) o bien el de UAT o staging (rama develop, siempre que REGISTER_DEVELOP sea true). No se hace deploy ni en hotfix ni en ramas auxiliares.
+- En el host remoto están preinstalados docker y docker-compose, así como los volúmenes y network empleados por nginx y selfwebspringboot.
+- La configuración de docker está basada en dos archivos que emplean la designación por defecto de docker-compose, es decir "docker-compose.yml" y "docker-compose.override.yml". Este último archivo será reescrito por el job, con un contenido similar a este:
+
+-------------------------------------------------
+services:
+    selfweb:
+        image: registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.003
+-------------------------------------------------
+
+Donde la entrada "image:" es el TagId creado anteriormente en la etapa "docker", que incluye el host del registry.
+
+Este job es también manual, y emplea el mismo mecanismo para seguir o no que el utilizado en la etapa "tag".
+
+La parte interesante del script es ésta:
+-------------------------------------------------
+      CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST}"
+      [[ $IS_SNAPSHOT == "true" ]] && CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST_SNAPSHOT}"
+      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CONN_STRING} "
+      cd selfweb &&
+      docker-compose down &&
+      echo 'services:' > docker-compose.override.yml &&
+      echo '    selfweb:' >> docker-compose.override.yml &&
+      echo '        image: ${IMG_TAG}' >> docker-compose.override.yml &&
+      docker-compose up -d &&
+      docker ps
+      "
+-------------------------------------------------
+
+== Casos de uso
+
+Para los casos de uso que siguen, se parte de la siguiente configuración de variables:
+
+* IGNORE_AUX_BRANCHES: false
+* COMPILE_AUX_BRANCHES: true
+* SONAR_AUX_BRANCHES: true
+* TEST_AUX_BRANCHES: false
+* ALLOW_FAILURE_IN_SONAR_DEVELOP: false
+* ALLOW_FAILURE_IN_TEST_DEVELOP: false
+* ALLOW_RELEASE_IN_DEVELOP: false
+* REGISTER_DEVELOP: true
+* SNAPSHOT_NUMBER: "003"
+* HOTFIX_BRANCH: "Hotfix-Issue-23056"
+* HOTFIX_NUMBER: "002"
+
+=== Ramas auxiliares
+
+Habitualmente un único desarrollador trabajará en la rama "X", en su PC personal, y con un repositorio git local clonado inicialmente desde el servidor Gitlab.
+
+- Periódicamente, hará commit  de los cambios realizados a su repositorio local.
+- Sea por razones de backup, por haber finalizado un sprint, etc., hará push de la rama auxiliar, lo que disparará el pipeline.
+- Dado que IGNORE_AUX_BRANCHES es false, el pipeline se ejecuta, con los stages:
+* prepare: Comportamiento normal.
+* complile: Se ejecuta, al ser COMPILE_AUX_BRANCHES = true.
+* sonar: Se ejecuta, al ser SONAR_AUX_BRANCHES = true. Se pasa sonar sólo a los archivos modificados y se permite errores.
+* NO se ejecuta la etapa test, al ser TEST_AUX_BRANCHES = false.
+
+Como puede verse, se trata símplemente de verificar que el código fuente actual compila sin errores y pasa o no sonar.
+
+=== Rama develop
+
+El tratamiento de esta rama es bastante más complejo, puesto que en su desarrollo pueden intervenir varias personas. Además, si el flag REGISTER_DEVELOP es true, vamos a hacer un despliegue "oficial" a UAT o staging, por lo que hemos de ser cuidadosos.
+
+- A medida que los desarrolladores van finalizando su trabajo en su rama "X, Y,..", hacen lo siguiente:
+* Hacen pull de la rama develop, para obtener el último código disponible.
+* Hacen merge (en local) de su rama "X" sobre develop. Si hay conflictos, deben resolverse en la rama "X" y repetir el proceso.
+* Notifican al Project Leader que su trabajo está concluido, al menos provisionalmente.
+
+- El Project Leader, una vez finalizadas todas las ramas que conforman el SNAPSHOT, hace lo siguiente:
+* Hace pull de develop a su repositorio local.
+* Para cada una de las ramas auxiliares que conforman el SNAPSHOT hace merge en local de la rama auxiliar sobre develop. Si todavía quedan conflictos, deben resolverse entre los desarrolladores, y repetir el circuito.
+* Una vez resueltos los conflictos, actualiza el pom de develop con la versión fijada para el SNAPSHOT. Si admitimos snapshots incrementales, se define el número de snapshot en la variable SNAPSHOT_NUMBER.
+* Hace push de la rama develop, lo que dispara el pipeline.
+
+- Con esta configuración, el pipeline funcionará del siguiente modo:
+
+* prepare: Comportamiento normal.
+* compile: Comportamiento normal.
+* sonar: Se pasa para todo el código, y NO se admiten errores (ALLOW_FAILURE_IN_SONAR_DEVELOP = false).
+* test: Se pasan tests unitarios, y NO se admiten errores (ALLOW_FAILURE_IN_TEST_DEVELOP = false).
+* build: Se crea el "fat-jar" y, posteriormente, se verifican condiciones para continuar el pipeline. Si no se cumplen, se genera un artefacto con el .jar y el pom, el cual queda disponible para download por un corto periodo de tiempo (en el ejemplo 2 horas). Una de las condiciones para continuar es que REGISTER_DEVELOP valga true. Si, a pesar de estar en la rama develop, la versión del proyecto NO es SNAPSHOT, y dado que ALLOW_RELEASE_IN_SNAPSHOT es false, el pipeline se interrumpirá.
+* register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
+* tag: Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se crea un nuevo Tag con Id único que incluye el SNAPSHOT_NUMBER.
+* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se despliega la imegen docker generada en la etapa "docker" anterior en el host definido por CICD_SSH_DEPLOY_HOST_SNAPSHOT, usando SSH sobre un entorno preconfigurado.
+
+=== Rama master
+
+En el modelo de flujo que hemos seleccionado, la rama master contiene únicamente la última versión para producción (release). Es por ello que el trabajo sobre esta rama es muy delicado, estando su manejo reservado a usuarios de nivel Mantainer y, preferentemente, al Project Leader.
+
+- Una vez que último SNAPSHOT ha sido aprobado, el Project Leader hace lo siguiente:
+* Hace pull de develop a su repositorio local, y se asegura de que se trata de la versión SNAPSHOT aprobada para producción.
+* Para evitar errores, hace pull de master, y comprueba que se trata de la última versión de release.
+* Hace merge de develop sobre master, y resuelve los eventuales conflictos con la ayuda del resto del equipo.
+* Modifica la versión del proyecto en master para eliminar la cadena "-SNAPSHOT".
+* Hace push de master, lo que dispara el pipeline.
+
+- Con esta configuración, el pipeline funcionará del siguiente modo:
+
+* prepare: Comportamiento normal.
+* compile: Comportamiento normal.
+* sonar: Se pasa para todo el código, y NO se admiten errores.
+* test: Se pasan tests unitarios, y NO se admiten errores.
+* build: Se crea el "fat-jar" y, se verifica que la versión del proyecto NO es SNAPSHOT. Si no se cumple, se genera un artefacto con el .jar y el pom, el cual queda disponible para download por un corto periodo de tiempo (en el ejemplo 2 horas) y se interrumpe el pipeline.
+* register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
+* tag: Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se crea un nuevo Tag con Id único (la versión del proyecto).
+* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se despliega la imegen docker generada en la etapa "docker" anterior en el host definido por CICD_SSH_DEPLOY_HOST, usando SSH sobre un entorno preconfigurado.
+
+=== Rama hotfix
+
+En este ejemplo se ha dejado bastante libertad al tratamiento de eventuales ramas hotfix, puesto que cada organización tiene su ropia normativa, que deberá implementarse en la definición final del pipeline.
+
+- Si es preciso crear y liberar un hotfix, se procederá del siguiente modo:
+* El project leader creará, a partir del tag de la versión de release implicada, una nueva rama, designada de acuerdo con la normativa de la organización (p.e. un Issue #). Para que la nueva rama sea considerada hotfix, se modificará la variable HOTFIX_BRANCH para que contenga el nombre de dicha rama. El HOTFIX_NUMBER se definirá con un valor inicial, p.e. "001". Si posteriormente es preciso repetir el registro, este número se deberá ir incrementando.
+* El desarrollo del parche se realizará bien en la propia rama de hotfix (si e trata de un trabajo de menor cuantía), o bien en una o más ramas auxiliares con las que después de hará merge sobre la de hotfix.
+* Una vez finalizado el hotfix, se hará push de su rama, lo que disparará el pipeline.
+* Nótese que, dependiendo de la normativa de la organización, los cambios realizados o bien se repetirán sobre el trabajo en curso en SNAPSHOT, o bien se incluirá la rama hotfix en una de las que se hará merge sobre develop antes de liberar el SNAPSHOT.
+* Una vez finalizado el pipeline con éxito, lo normal es que se elimine la rama de hotfix.
+
+- Con esta configuración, el pipeline funcionará del siguiente modo:
+
+* prepare: Comportamiento normal.
+* compile: Comportamiento normal.
+* sonar: Se pasa para todo el código, y SI se admiten errores.
+* test: Se pasan tests unitarios, y SI se admiten errores.
+* build: Se crea el "fat-jar" y no se hacen más comprobaciones.
+* register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, por lo que a la versión del proyecto se agrega el HOTFIX_NUMBER, y el artefacto se convierte en el "single source of truth" de las diferentes versiones hotfix registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
+* tag: NO se ejecuta.
+* deploy: NO se ejecuta.
+
+== Conclusión
+
+En el presente proyecto se ha comprobado que es posible obtener un ahorro importante, tanto en horas/hombre como en curva de aprendizaje, empleando Gitlab CI/CD como herramnienta básica del proceso, frente a otras soluciones multi-producto, aunque, lógicamente, no se llegue al nivel de sofisticación y complejidad que pueden aportar las mismas. Adicionalmente, la definición de pipelines realizada, si bien es sólo un ejemplo, puede emplearse como "template" y adaptarse a los requisitos de muchas organizaciones.
