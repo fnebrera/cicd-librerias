@@ -1,6 +1,6 @@
 = Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.0, 13/08/2022
+1.0.0, 18/08/2022
 :toc:
 :toclevels: 3
 :icons: font
@@ -31,8 +31,8 @@ Helm/Kubernetes y Ansible.
 
 |1.0.0
 |FNG
-|13/08/2022
-|Primera versión CI para maven/java
+|18/08/2022
+|Primera versión CI/CD para maven/java
 
 |===
 
@@ -59,7 +59,7 @@ En este proyecto se ha intentado minimizar:
 
 - El número de productos implicados.
 - La complejidad de la definición de
-pipelines, todo ello en en base al empleo de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones.
+pipelines, todo ello en base al empleo de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones.
 
 [TIP]
 .*Importante*
@@ -245,7 +245,7 @@ contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contien
 * Variables de Entorno: Específicas de cada script. Normalmente son variables de trabajo, aunque es posible pasarlas a jobs subsiguientes mediante el mecanismo de paso de artefactos "dotenv" que comentaremos más adelante.
 
 - El pipeline se dispara al ocurrir determinados eventos (commit, push, merge_request). Tanto a nivel pipeline como individualmente por job podemos "filtrar" los eventos que nos interese. En este ejemplo, en las reglas a nivel pipeline hemos definido que sólo nos interesan los eventos "push".
-- Gitlab dispone de muchos otros mecanismos (pipelines multiproyecto, triggres externos, webhooks, etc.) que no han sido necesarios en este ejemplo, por lo que no entramos en su descripción. 
+- Gitlab dispone de muchos otros mecanismos (pipelines multiproyecto, triggers externos, webhooks, etc.) que no han sido necesarios en este ejemplo, por lo que no entramos en su descripción. 
 
 == Descripción de las librerías
 
@@ -469,7 +469,7 @@ Finalmente, creamos un tar con los fuentes y registramos un artefacto compuesto 
 
 ==== Docker
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/docker-simple.yml[]. Este job se ejecuta incondicionalmente en master y hotfix al hacer push. No se ejecuta en ramas auxiliares. Adicionalmente puede ejecutarse en develop si REGISTER_DEVELOP es true.Sólo se ejecuta si existe, en la raiz del proyecto, un archivo "Dockerfile".
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/docker-simple.yml[]. Este job se ejecuta incondicionalmente en master y hotfix al hacer push. No se ejecuta en ramas auxiliares. Adicionalmente puede ejecutarse en develop si REGISTER_DEVELOP es true. Sólo se ejecuta si existe, en la raiz del proyecto, un archivo "Dockerfile".
 
 El job prepara un Image ID del siguiente modo:
 
@@ -660,4 +660,4 @@ En este ejemplo se ha dejado bastante libertad al tratamiento de eventuales rama
 
 == Conclusión
 
-En el presente proyecto se ha comprobado que es posible obtener un ahorro importante, tanto en horas/hombre como en curva de aprendizaje, empleando Gitlab CI/CD como herramnienta básica del proceso, frente a otras soluciones multi-producto, aunque, lógicamente, no se llegue al nivel de sofisticación y complejidad que pueden aportar las mismas. Adicionalmente, la definición de pipelines realizada, si bien es sólo un ejemplo, puede emplearse como "template" y adaptarse a los requisitos de muchas organizaciones.
+En el presente proyecto se ha comprobado que es posible obtener un ahorro importante, tanto en horas/hombre como en curva de aprendizaje, empleando Gitlab CI/CD como herramienta básica del proceso, frente a otras soluciones multi-producto, aunque, lógicamente, no se llegue al nivel de sofisticación y complejidad que pueden aportar las mismas. Adicionalmente, la definición de pipelines realizada, si bien es sólo un ejemplo, puede emplearse como "template" y adaptarse a los requisitos de muchas organizaciones.
