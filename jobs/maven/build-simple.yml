@@ -57,7 +57,7 @@ build-job:
   #
   artifacts:
     when: on_failure
-    name: "Build ${CI_COMMIT_NAME} en pipeline interrumpido"
+    name: "Build ${CI_COMMIT_REF_NAME} en pipeline interrumpido"
     paths:
       - ./target/*.jar
       - ./pom.xml

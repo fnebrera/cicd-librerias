@@ -6,7 +6,7 @@
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
-# 1.0.0 FNG 26/07/2022 Version inicial
+# 1.0.0 FNG 13/08/2022 Version inicial
 #
 ########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 docker-register-job:
@@ -20,8 +20,8 @@ docker-register-job:
     DOCKER_TLS_CERTDIR: "/certs"
 
   rules:
-    # Creamos y registramos imagen Docker solo en develop, master y hotfix (si lo hay)
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
+    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:
@@ -34,6 +34,9 @@ docker-register-job:
       \n=============================================================================================="
     # Solo si es un proyecto Docker
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
+    # Necesitamos el fat-jar
+    - JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
+    - '[[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }'
     #
     # Preparamos tagid. Las reglas actuales son:
     #   - En <master> no se admite SNAPSHOT. Se registra en 'release' con el Id del proyecto.

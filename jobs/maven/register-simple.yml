@@ -15,7 +15,8 @@ pkg-register-job:
 
   rules:
     # Hacemos register solo en develop, master y hotfix (si lo hay)
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
+    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
 
   cache:
     paths:
@@ -38,7 +39,7 @@ pkg-register-job:
     # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
     #
     - |
-      VERSION=""
+      VERSION="-Dversion=$PRJ_VERS"
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
@@ -64,9 +65,9 @@ pkg-register-job:
                       exit 2
                   fi
                   #
-                  # Agregamos numero de snapshot, si lo hay, precedido de "DEV"
+                  # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP"
                   #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEV.${SNAPSHOT_NUMBER}"
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP.${SNAPSHOT_NUMBER}"
               fi
               ;;
           ${HOTFIX_BRANCH})
@@ -88,7 +89,7 @@ pkg-register-job:
       #
       # Deploy
       #
-      mvn deploy:deploy-file -s ci_settings.xml \
+      mvn validate deploy:deploy-file -s ci_settings.xml \
       -Durl="${REG_URL}" \
       -DrepositoryId="gitlab-maven" \
       -Dfile="${JAR_FILE}" \
@@ -97,6 +98,6 @@ pkg-register-job:
       -Dfiles=${SRC_FILE} \
       -Dclassifiers=src \
       -Dtypes=tgz
-  
+
   ################################## E O F ##########################################
 

@@ -18,7 +18,9 @@ deploy-job:
 
   rules:
     # Hacemos deploy solo en develop y master, y en manual
-    - if: $CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_REF_NAME == "master"
+    - if: $CI_COMMIT_REF_NAME == "master"
+      when: manual
+    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true"
       when: manual
 
   before_script:
@@ -38,7 +40,9 @@ deploy-job:
     # Solo si es un proyecto Docker
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
     - >
-      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST} "
+      CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST}"
+      [[ $IS_SNAPSHOT == "true" ]] && CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST_SNAPSHOT}"
+      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CONN_STRING} "
       cd selfweb &&
       docker-compose down &&
       echo 'services:' > docker-compose.override.yml &&
