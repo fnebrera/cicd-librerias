@@ -1,0 +1,48 @@
+#########################################################################################################
+# Pasar Sonarqube para verificar la calidad del codigo. Se ejecuta para cualquier push, para evitar
+# pasar a etapas posteriores si no se pasan los niveles de calidad requeridos.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+#########################################################################################################
+sonar-job:
+  stage: sonar
+
+  rules:
+    # En rama master no permitimos errores
+    - if: $CI_COMMIT_REF_NAME == "master"
+      allow_failure: false
+    # En rama develop permitimos errores si el flag esta definido
+    - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_SONAR_DEVELOP == "true"
+      allow_failure: true
+    - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_SONAR_DEVELOP == "false"
+      allow_failure: false
+    # Hotfixes pasan sonar, pero permitimos errores
+    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+      allow_failure: true
+    # Pasamos sonar a cualquier otro branch dependiendo del correspondiente flag,
+    # pero tambien debe haber un compile o un test previo, para tener los .class
+    - if: $SONAR_AUX_BRANCHES == "true" && $COMPILE_AUX_BRANCHES == "true"
+      allow_failure: true
+    
+  cache:
+    paths:
+      - ./.m2/repository
+      - ./.sonar/cache
+      - target
+
+  script:
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa SONAR en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
+    - 'SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=true"'
+    # En ramas master, develop y hotfix, forzamos analizar todo el codigo y no solo los cambios
+    - '[[ $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop"  || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH ]] && SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=false"'
+    - 'echo " Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"'
+    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true $SKIP_UNCHANGED
+
+################################## E O F ##########################################
+

@@ -1,0 +1,103 @@
+#########################################################################################################
+# Registra el artefacto en el Package Registry de Gitlab. Se ejecuta en la fase "registry".
+# Para que este job funcione, el Package Registry debe estar configurado en el pom.xml.
+# Adicionamente debe existir un archivo 'ci_setting.xml' con las credenciales para el registry.
+# Se ejecuta solo para ramas master, develop y hotfix (si existe).
+# Se cachea el directorio /target, que habra sido populado previamente por la etapa build.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.0 FNG 26/07/2022 Version inicial
+#
+#########################################################################################################
+pkg-register-job:
+  stage: register
+
+  rules:
+    # Hacemos register solo en develop, master y hotfix (si lo hay)
+    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
+    - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+
+  cache:
+    paths:
+      - ./.m2/repository
+      - target
+
+  script:
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
+    #
+    # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
+    #
+    # - mvn deploy -s ci_settings.xml -DskipTests
+    #
+    # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado, empleando
+    # deploy-file.
+    # Además, como hemos configurado el registry para que no admita duplicados,
+    # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
+    #
+    - |
+      VERSION="-Dversion=$PRJ_VERS"
+      JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
+      [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
+      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+      #
+      # En que rama estamos?
+      #
+      case ${CI_COMMIT_REF_NAME} in
+          master)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
+                  exit 2
+              fi
+              ;;
+          develop)
+              if [[ $IS_SNAPSHOT == "true" ]]; then
+                  #
+                  # Agregamos numero de snapshot, si lo hay
+                  #
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}.${SNAPSHOT_NUMBER}"
+              else
+                  if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+                      echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
+                      exit 2
+                  fi
+                  #
+                  # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP"
+                  #
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP.${SNAPSHOT_NUMBER}"
+              fi
+              ;;
+          ${HOTFIX_BRANCH})
+              #
+              # Agregamos numero de hotfix, si lo hay, precedido de "HOTFIX"
+              #
+              [[ -z $HOTFIX_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-HOTFIX.${HOTFIX_NUMBER}"
+              ;;
+          *)
+              echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
+              exit 2          
+              ;;
+      esac
+      #
+      # Preparamos los fuentes, en formato tgz
+      #
+      SRC_FILE="./{PRJ_VERS}-src.tgz"
+      tar czf ${SRC_FILE} ./src/*
+      #
+      # Deploy
+      #
+      mvn validate deploy:deploy-file -s ci_settings.xml \
+      -Durl="${REG_URL}" \
+      -DrepositoryId="gitlab-maven" \
+      -Dfile="${JAR_FILE}" \
+      -DpomFile="pom.xml" \
+      ${VERSION} \
+      -Dfiles=${SRC_FILE} \
+      -Dclassifiers=src \
+      -Dtypes=tgz
+
+  ################################## E O F ##########################################
+
