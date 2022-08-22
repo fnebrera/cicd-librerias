@@ -1,4 +1,4 @@
-# Proyecto _cicd-librerias_
+# ![Logo](img/vassblue.png) Proyecto **cicd-librerias**
 
 Este proyecto representa un ejemplo y template de una cadena CI/CD construida con la idea de simplificar el stack
 de productos requeridos, su instalación y, sobre todo, la preparación de pipelines y jobs para los circuitos más

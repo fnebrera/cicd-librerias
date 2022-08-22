@@ -1,4 +1,4 @@
-= image:img/vassblue.png[] Proyecto _cicd-librerias_
+= image:img/vassblue.png[Logo] Proyecto [.underline]#cicd-librerias#
 Faustino Nebrera <faustino.nebrera@vass.es>
 1.0.0, 22/08/2022
 :toc:
