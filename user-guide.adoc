@@ -1,6 +1,6 @@
 = Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.0, 18/08/2022
+1.0.0, 22/08/2022
 :toc:
 :toclevels: 3
 :icons: font
@@ -31,7 +31,7 @@ Helm/Kubernetes y Ansible.
 
 |1.0.0
 |FNG
-|18/08/2022
+|22/08/2022
 |Primera versión CI/CD para maven/java
 
 |===
@@ -47,19 +47,21 @@ Es evidente que instalar (y sobre todo configurar) muchos productos heterogéneo
 permiten simplificar esta tarea mediante soluciones previamente integradas (véase el caso de RedHat OpenShift, los servicios
 CI/CD de Amazon Web Services, etc.) aunque, lógicamente, no se trata de simples black-boxes, puesto que cada organización
 tiene sus propios requisitos de CI/CD. No es lo mismo un pequeño ISV que una gran Entidad Financiera, por lo que siempre es necesario
-hacer "retoques" sobre las configuraciones por defecto.
+hacer "retoques" sobre las configuraciones por defecto, o incluso crearlas desde cero.
 
-Por otra parte, los coordinadores de circuitos tipo _Jenkins(TM)_ se configuran mediante un lenguaje de
+Por otra parte, los coordinadores de tareas tipo _Jenkins(TM)_ se configuran mediante un lenguaje de
 programación que, aunque sencillo, requiere que los ingenieros de DevOps tengan ciertos conocimientos de
 programación y estén familiarizados con el lenguaje en cuestión. Si, además (y es lo habitual) el código debe
-mantenerse como read-only para los 'developers', y debe ser modular (empleando
+mantenerse como read-only para los desarrolladores, y debe ser modular (empleando
 librerías), la curva de aprendizaje suele ser costosa.
 
 En este proyecto se ha intentado minimizar:
 
 - El número de productos implicados.
 - La complejidad de la definición de
-pipelines, todo ello en base al empleo de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones.
+flujos de tareas.
+
+Para ello se han empleado algunas de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones, y se han definido unos pipelines de ejemplo que se han probado en un entorno real, con resultados bastante satisfactorios.
 
 [TIP]
 .*Importante*
@@ -130,6 +132,8 @@ que emplean Selfweb y Nginx, y preinstalado el cliente javascript de Selfweb (Se
 Como normativa se ha escogido el modelo "Git Flow" simplificado. Si bien los pipelines pueden fácilmente adaptarse
 a otros modelos, este es el preferido por muchas organizaciones, y el que se emplea en este momento en los
 proyectos del Clan Comunytek. El modelo es el siguiente:
+
+image::img/gitflow.png[Git Flow]
 
 - Debe existir una rama "master" que además es la de defecto. En esta rama debe estar el código de la última versión
 liberada para producción, o en curso de liberarse. La rama está protegida de modo que sólo los "Mantainers"

@@ -6,7 +6,7 @@
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
-# 1.0.0 FNG 26/07/2022 Version inicial
+# 1.0.0 FNG 22/08/2022 Version inicial
 #
 #########################################################################################################
 variables:
@@ -63,17 +63,17 @@ variables:
   #
   # Permitir o no errores al pasar Sonar en rama 'develop'.
   #
-  ALLOW_FAILURE_IN_SONAR_DEVELOP: "true"
+  ALLOW_FAILURE_IN_SONAR_DEVELOP: "false"
   #
   # Permitir o no errores al pasar tests unitarios en rama 'develop'.
   #
-  ALLOW_FAILURE_IN_TEST_DEVELOP: "true"
+  ALLOW_FAILURE_IN_TEST_DEVELOP: "false"
   #
   # Permitir versiones 'release' en rama 'develop'. Lo normal es que no se permita,
   # pero puede haber circunstancias muy especiales en que sea necesario.
   # NOTA: No permitimos versiones SNAPSHOT en 'master' en ningun caso.
   #
-  ALLOW_RELEASE_IN_DEVELOP: "true"
+  ALLOW_RELEASE_IN_DEVELOP: "false"
   #
   # Registrar, generar imagen docker y tag de la rama 'develop'. Debe indicarse a "true"
   # si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA o staging.

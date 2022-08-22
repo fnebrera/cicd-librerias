@@ -6,12 +6,16 @@
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
-# 1.0.0 FNG 13/08/2022 Version inicial
+# 1.0.0 FNG 22/08/2022 Version inicial
 #
 ########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 docker-register-job:
   stage: docker
 
+  #
+  # Necesitamos ejecutar comandos docker en un container docker, por lo que
+  # se necesita DinD (docker in docker). Esta pareja de imagenes nos da el entorno adecuado.
+  #
   image: docker:20.10.17
   services:
     - docker:20.10.17-dind
