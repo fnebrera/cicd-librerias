@@ -502,7 +502,11 @@ El job guarda el IMG_TAG generado en el archivo "prepare.env", y lo pasa como ar
 
 ==== Tag
 
-Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual". Esto significa que queda bloqueado dentro de la cadena del pipeline hasta que se libere manualmente. En gitlab, no existe, por el momento, un mecanismo directo de interacción con la consola pero podemos, de forma indirecta, controlar el flujo. Por ejemplo, en este caso, se ha definido una variable de job llamada SEGUIR, con valor inicial false. Si en el job pulsamos el icono de "play", la variable no cambiará su valor. Por contra, si pulsamos sobre el nombre del job, se nos presenta un formulario en el que podemos agregar o modificar el valor de variables locales.
+Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual". Esto significa que queda bloqueado dentro de la cadena del pipeline hasta que se libere manualmente. En gitlab, no existe, por el momento, un mecanismo directo de interacción con la consola pero podemos, de forma indirecta, controlar el flujo:
+
+image::img/jobmanual.png[Job manual]
+
+Por ejemplo, en este caso, se ha definido una variable de job llamada SEGUIR, con valor inicial false. Si en el job pulsamos el icono de "play", la variable no cambiará su valor. Por contra, si pulsamos sobre el nombre del job, se nos presenta un formulario en el que podemos agregar o modificar el valor de variables locales.
 En este ejemplo, podemos definir la variable SEGUIR a true, con lo que podemos, en el script, continuar la ejecución o pasar a la siguiente etapa:
 
 -------------------------------------------------
