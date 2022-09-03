@@ -46,7 +46,7 @@ deploy-job:
       cd selfweb &&
       docker-compose down &&
       echo 'services:' > docker-compose.override.yml &&
-      echo '    selfweb:' >> docker-compose.override.yml &&
+      echo '    ${DOCKER_SERVICE_NAME}:' >> docker-compose.override.yml &&
       echo '        image: ${IMG_TAG}' >> docker-compose.override.yml &&
       docker-compose up -d &&
       docker ps
