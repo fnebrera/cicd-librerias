@@ -11,7 +11,7 @@
 tf-prepare-job:
   stage: tf-prepare
 
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2.8
+  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2:v0.43.1
 
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev-fng"
@@ -22,7 +22,7 @@ tf-prepare-job:
 
   script:
     - cd terraform
-    - terraform init
+    - gitlab-terraform init
 
 ################################## E O F ##########################################
 
