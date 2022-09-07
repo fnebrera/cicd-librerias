@@ -22,6 +22,7 @@ tf-prepare-job:
 
   script:
     - cd terraform
+    - gitlab-terraform validate
     - gitlab-terraform init
 
 ################################## E O F ##########################################
