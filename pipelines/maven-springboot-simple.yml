@@ -21,10 +21,6 @@ variables:
   # CICD_EMAIL: "antonio@putin.org"
   # CICD_HOST: "git2.comunytek.com"
   # CICD_REGISTRY_HOST: "https://registry2.comunytek.com"
-  # CICD_SSH_KEY: File (clave privada de acceso SSH a los hosts de deploy)
-  # CICD_DEPLOY_USER: antonio
-  # CICD_DEPLOY_HOST: 192.168.1.32
-  # CICD_DEPLOY_HOST_SNAPSHOT: 192.168.1.32
   # SONAR_HOST_URL: "https://sonar2.comunytek.com"
   # SONAR_HOST_TOKEN: "bbbbbbbbbbbbbbbbbbbb"
   #
@@ -123,6 +119,7 @@ stages:
   - register
   - docker
   - tag
+  - tf-prepare
   - deploy
 
 # Includes, uno por job
@@ -162,6 +159,10 @@ include:
       # tag-job: Genera tag (manual)
       #
       - 'jobs/maven/tag-simple.yml'
+      #
+      # tf-prepare-job: Inicializa terraform y prepara el plan
+      #
+      - 'jobs/maven/tf-prepare-simple.yml'
       #
       # deploy-job: Despliega la nueva imagen docker (manual)
       #

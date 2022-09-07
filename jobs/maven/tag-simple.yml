@@ -15,6 +15,9 @@ tag-job:
     SEGUIR: "false"
 
   rules:
+    # PROVISIONAL
+    - if: $DEBUG_CD == 'true'
+      when: never
     - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
       when: manual
     - if: $CI_COMMIT_REF_NAME == "master"

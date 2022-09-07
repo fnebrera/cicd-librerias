@@ -11,6 +11,9 @@ test-job:
   stage: test
 
   rules:
+    # PROVISIONAL
+    - if: $DEBUG_CD == 'true'
+      when: never
     # En rama develop permitimos errores
     - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP == "true"
       allow_failure: true

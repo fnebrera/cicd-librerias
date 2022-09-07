@@ -11,6 +11,9 @@ compile-job:
   stage: compile
 
   rules:
+    # PROVISIONAL
+    - if: $DEBUG_CD == 'true'
+      when: never
     # Siempre compilamos ramas principales.
     - if: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master'
     # Hotfixes se compilan en cualquier caso

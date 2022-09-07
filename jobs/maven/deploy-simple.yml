@@ -1,13 +1,14 @@
 #########################################################################################################
 # Conecta con el host de destino del deploy y regenera el docker-compose
 # usando la imagen generada en la etapa docker.
-# Para este ejemplo podemos usar develop o master. En un caso real, sólo en master.
+# Sólo se ejecuta en master.
 # Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor 'true' en el
 # momento de lanzar el job.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
+# 1.0.1 FNG 06/09/2022 Se incorporan resultados de Terraform
 #
 #########################################################################################################
 deploy-job:
@@ -17,14 +18,13 @@ deploy-job:
     SEGUIR: "false"
 
   rules:
-    # Hacemos deploy solo en develop y master, y en manual
+    # Hacemos deploy solo en master, y en manual
     - if: $CI_COMMIT_REF_NAME == "master"
-      when: manual
-    - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true"
       when: manual
 
   before_script:
-    - chmod 400 $CICD_SSH_KEY
+    # Definir prmisos estrictos en la clave privada
+    - chmod 400 $DEPLOY_SSH_KEY
 
   script:
     - >
@@ -39,11 +39,12 @@ deploy-job:
     - 'echo "IMG_TAG: ${IMG_TAG}"'
     # Solo si es un proyecto Docker
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
+    # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa terraform
+    - '[[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }'
     - >
-      CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST}"
-      [[ $IS_SNAPSHOT == "true" ]] && CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST_SNAPSHOT}"
-      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CONN_STRING} "
-      cd selfweb &&
+      CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "
+      cd $DEPLOY_SSH_PATH &&
       docker-compose down &&
       echo 'services:' > docker-compose.override.yml &&
       echo '    ${DOCKER_SERVICE_NAME}:' >> docker-compose.override.yml &&

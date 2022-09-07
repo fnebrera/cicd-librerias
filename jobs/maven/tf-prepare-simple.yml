@@ -1,0 +1,28 @@
+#########################################################################################################
+# Prepara el provisionado terraform, incluyendo el plan, para que pueda ser revisado antes de lanzar
+# el apply.
+# Sólo se ejecuta en master.
+#
+# Vers  Por Fecha      Notas
+# ----- --- ---------- ----------------------------------------------------------------------------------
+# 1.0.1 FNG 07/09/2022 Version inicial
+#
+#########################################################################################################
+tf-prepare-job:
+  stage: tf-prepare
+
+  image: hashicorp/terraform:1.2.8
+
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "dev-fng"
+
+  cache:
+    paths:
+      - ./terraform/.terraform
+
+  script:
+    - cd terraform
+    - terraform init
+
+################################## E O F ##########################################
+
