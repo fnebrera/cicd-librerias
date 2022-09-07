@@ -11,7 +11,7 @@
 tf-prepare-job:
   stage: tf-prepare
 
-  image: hashicorp/terraform:1.2.8
+  image: registry.gitlab.com/gitlab-org/terraform-images/stable:1.2.8
 
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev-fng"
@@ -21,7 +21,7 @@ tf-prepare-job:
       - ./terraform/.terraform
 
   script:
-    - cd terraform
+    - cd ./terraform
     - terraform init
 
 ################################## E O F ##########################################
