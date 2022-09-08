@@ -18,20 +18,24 @@ tf-prepare-job:
 
   cache:
     paths:
-      - ./terraform/.terraform
+      - $TF_ROOT/.terraform
 
   script:
-    - cd terraform
-    # Lo elimino para crearlo bien
-    - rm -Rf .terraform
+    - cd $TF_ROOT
     - |
       if ! [[ -d .terraform ]]; then
+        echo "No existe el directorio .terraform, llamamos a terraform init"
         gitlab-terraform init \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
           -backend-config="address=$TF_ADDRESS"
       fi
-    - gitlab-terraform plan
+      gitlab-terraform plan -out=tfplan
+      gitlab-terraform show -json tfplan
 
+  artifacts:
+    paths:
+      - $TF_ROOT/tfplan
+      
 ################################## E O F ##########################################
 

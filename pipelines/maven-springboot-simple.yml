@@ -32,6 +32,7 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"
   # Como acceder a nuestro gitlab desde un executor
   ORIGIN_URL: "https://oauth2:${CICD_TOKEN}@${CICD_HOST}/${CI_PROJECT_PATH}.git"
+  TF_ROOT: "${CI_PROJECT_DIR}/terraform"
   ##
   # Variables del pipeline que solo debe modificar el manager del grupo.
   # Si se desea, y para mayor seguridad, pueden definirse como variables CI/CD de grupo.
