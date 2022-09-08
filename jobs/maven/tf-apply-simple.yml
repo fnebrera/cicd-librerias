@@ -33,10 +33,11 @@ tf-apply-job:
         gitlab-terraform apply
         TF_VM_IP=$(gitlab-terraform output -raw hyperv_instance_ip)
       fi
-      echo "TF_VM_IP=${TF_VM_IP}" >> prepare.env
+      echo "TF_VM_IP=${TF_VM_IP}" >> ${CI_PROJECT_DIR}/prepare.env
+    - cd $CI_PROJECT_DIR
 
   artifacts:
     reports:
       dotenv: prepare.env
-      
+
 ################################## E O F ##########################################
