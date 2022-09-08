@@ -24,12 +24,19 @@ tf-apply-job:
   script:
     - cd $TF_ROOT
     - |
-      if [[ $DEBUG_DEPLOY_ACTION == "destroy" ]]; then
+      TF_VM_IP=""
+      if [[ ${DEBUG_DEPLOY_ACTION} == "destroy" ]]; then
         echo "INFO ejecutando terraform destroy"
         gitlab-terraform destroy
       else
         echo "INFO ejecutando terraform apply"
         gitlab-terraform apply
+        TF_VM_IP=$(gitlab-terraform output -raw hyperv_instance_ip)
       fi
+      echo "TF_VM_IP=${TF_VM_IP}" >> prepare.env
 
+  artifacts:
+    reports:
+      dotenv: prepare.env
+      
 ################################## E O F ##########################################
