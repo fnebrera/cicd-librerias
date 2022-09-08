@@ -21,6 +21,9 @@ deploy-job:
     # Hacemos deploy solo en master, y en manual
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
+    # Para DEBUG
+    - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
+      when: manual
 
   before_script:
     # Definir prmisos estrictos en la clave privada
@@ -41,15 +44,16 @@ deploy-job:
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
     # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa terraform
     - '[[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }'
+    - 'echo "TF_VM_IP: $TF_VM_IP"'
     - >
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "
-      cd $DEPLOY_SSH_PATH &&
-      docker-compose down &&
-      echo 'services:' > docker-compose.override.yml &&
-      echo '    ${DOCKER_SERVICE_NAME}:' >> docker-compose.override.yml &&
-      echo '        image: ${IMG_TAG}' >> docker-compose.override.yml &&
-      docker-compose up -d &&
+      #cd $DEPLOY_SSH_PATH &&
+      #docker-compose down &&
+      #echo 'services:' > docker-compose.override.yml &&
+      #echo '    ${DOCKER_SERVICE_NAME}:' >> docker-compose.override.yml &&
+      #echo '        image: ${IMG_TAG}' >> docker-compose.override.yml &&
+      #docker-compose up -d &&
       docker ps
       "
 

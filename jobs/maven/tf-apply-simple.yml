@@ -33,7 +33,7 @@ tf-apply-job:
     - |
       TF_VM_IP=""
       # DEBUG mostrar contenido del directorio, incluyendo el cache
-      [[ ${DEBUG_DEPLOY} == "true" ]] && { echo "INFO El contenido actual de TF_ROOT es:"; ls -al; }
+      [[ ${DEBUG_CD} == "true" ]] && { echo "INFO El contenido actual de TF_ROOT es:"; ls -al; }
       # Accion por defecto "apply"
       if [[ ${ACCION} == "apply" ]]; then
         echo "INFO ejecutando terraform apply"
