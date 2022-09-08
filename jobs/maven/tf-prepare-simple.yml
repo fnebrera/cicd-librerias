@@ -22,13 +22,19 @@ tf-prepare-job:
 
   script:
     - cd $TF_ROOT
+    # Quitar!!
+    - rm -Rf .terraform
     - |
       if ! [[ -d .terraform ]]; then
         echo "INFO: No existe el directorio .terraform, llamamos a terraform init"
         gitlab-terraform init \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
-          -backend-config="address=$TF_ADDRESS"
+          -backend-config="address=$TF_ADDRESS" \
+          -backend-config="lock_address=$TF_ADDRESS/lock" \
+          -backend-config="unlock_address=$TF_ADDRESS/lock" \
+          -backend-config="lock_method=POST" \
+          -backend-config="unlock_method=DELETE"
       fi
       echo "INFO: Creando el plan de despliegue"
       gitlab-terraform plan
