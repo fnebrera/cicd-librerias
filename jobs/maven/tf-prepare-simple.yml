@@ -24,12 +24,13 @@ tf-prepare-job:
     - cd $TF_ROOT
     - |
       if ! [[ -d .terraform ]]; then
-        echo "No existe el directorio .terraform, llamamos a terraform init"
+        echo "INFO: No existe el directorio .terraform, llamamos a terraform init"
         gitlab-terraform init \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
           -backend-config="address=$TF_ADDRESS"
       fi
+      echo "INFO: Creando el plan de despliegue"
       gitlab-terraform plan
       gitlab-terraform plan-json
 
