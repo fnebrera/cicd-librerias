@@ -24,16 +24,12 @@ tf-prepare-job:
     - cd terraform
     #- gitlab-terraform validate
     - |
-      [[ -d .terraform ]] || \
-      gitlab-terraform init \
-        -backend-config=\""username=$TF_USERNAME"\" \
-        -backend-config=\""password=$TF_PASSWORD"\" \
-        -backend-config=\""address=$TF_ADDRESS"\" \
-        -backend-config=\""lock_address=$TF_ADDRESS/lock"\" \ 
-        -backend-config=\""unlock_address=$TF_ADDRESS/lock"\" \
-        -backend-config=\""lock_method=POST"\" \
-        -backend-config=\""unlock_method=DELETE"\" \
-        -backend-config=\""retry_wait_min=5"\"
+      if ! [[ -d .terraform ]]; then
+        ARGS=-backend-config=\""username=$TF_USERNAME"\"
+        ARGS=$ARGS -backend-config=\""password=$TF_PASSWORD"\"
+        ARGS=$ARGS -backend-config=\""address=$TF_ADDRESS"\"
+        gitlab-terraform init $ARGS
+      fi
     - gitlab-terraform plan
 
 ################################## E O F ##########################################
