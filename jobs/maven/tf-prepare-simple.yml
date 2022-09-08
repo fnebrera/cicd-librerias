@@ -26,6 +26,8 @@ tf-prepare-job:
       \nEjecutando etapa TF_PREPARE en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
     - cd $TF_ROOT
+    # DEBUG forzamos limpieza del archivo .terraform del cache
+    - '[[ -d .terraform ]] && rm -Rf .terraform'
     - |
       if ! [[ -f .terraform.lock.hcl ]]; then
         echo "INFO: No existe el archivo .terraform.lock.hcl, llamamos a terraform init"
