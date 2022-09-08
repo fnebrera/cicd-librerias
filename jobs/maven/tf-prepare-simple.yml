@@ -30,12 +30,14 @@ tf-prepare-job:
           -backend-config="password=$TF_PASSWORD" \
           -backend-config="address=$TF_ADDRESS"
       fi
-      gitlab-terraform plan -out=tfplan
-      gitlab-terraform show -json tfplan
+      gitlab-terraform plan
+      gitlab-terraform plan-json
 
   artifacts:
     paths:
-      - $TF_ROOT/tfplan
-      
+      - ${TF_ROOT}/plan.cache
+    reports:
+      terraform: ${TF_ROOT}/plan.json
+
 ################################## E O F ##########################################
 
