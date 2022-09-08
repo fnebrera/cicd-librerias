@@ -16,7 +16,10 @@ tf-apply-job:
     ACCION: "apply"
 
   rules:
-    - if: $CI_COMMIT_REF_NAME == "dev-fng"
+    - if: $CI_COMMIT_REF_NAME == "master"
+      when: manual
+    # DEBUG
+    - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
       when: manual
 
   cache:

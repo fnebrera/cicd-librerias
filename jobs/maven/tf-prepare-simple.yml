@@ -14,7 +14,9 @@ tf-prepare-job:
   image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2:v0.43.1
 
   rules:
-    - if: $CI_COMMIT_REF_NAME == "dev-fng"
+    - if: $CI_COMMIT_REF_NAME == "master"
+    # DEBUG
+    - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
 
   cache:
     paths:
@@ -26,8 +28,6 @@ tf-prepare-job:
       \nEjecutando etapa TF_PREPARE en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
     - cd $TF_ROOT
-    # DEBUG forzamos limpieza del archivo .terraform del cache
-    - '[[ -d .terraform ]] && rm -Rf .terraform'
     - |
       if ! [[ -f .terraform.lock.hcl ]]; then
         echo "INFO: No existe el archivo .terraform.lock.hcl, llamamos a terraform init"
