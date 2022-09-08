@@ -16,13 +16,14 @@ tf-prepare-job:
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev-fng"
 
-  #cache:
-  #  paths:
-  #    - ./terraform/.terraform
+  cache:
+    paths:
+      - ./terraform/.terraform
 
   script:
     - cd terraform
-    #- gitlab-terraform validate
+    # Lo elimino para crearlo bien
+    - rm -Rf .terraform
     - |
       if ! [[ -d .terraform ]]; then
         gitlab-terraform init \
