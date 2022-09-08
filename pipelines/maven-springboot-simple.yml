@@ -121,6 +121,7 @@ stages:
   - docker
   - tag
   - tf-prepare
+  - tf-apply
   - deploy
 
 # Includes, uno por job
@@ -164,6 +165,10 @@ include:
       # tf-prepare-job: Inicializa terraform y prepara el plan
       #
       - 'jobs/maven/tf-prepare-simple.yml'
+      #
+      # tf-apply-job: Ejecuta terraform appply usando el plan definido enel job anterior
+      #
+      - 'jobs/maven/tf-apply-simple.yml'
       #
       # deploy-job: Despliega la nueva imagen docker (manual)
       #

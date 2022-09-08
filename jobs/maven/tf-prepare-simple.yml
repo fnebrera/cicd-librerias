@@ -40,10 +40,12 @@ tf-prepare-job:
       gitlab-terraform plan-json
 
   artifacts:
+    name: "Selfweb terraform plan"
     paths:
       - ${TF_ROOT}/plan.cache
     reports:
       terraform: ${TF_ROOT}/plan.json
+    expire_in: 1 hour
 
 ################################## E O F ##########################################
 
