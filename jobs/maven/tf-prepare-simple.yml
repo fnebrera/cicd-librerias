@@ -16,14 +16,24 @@ tf-prepare-job:
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev-fng"
 
-  cache:
-    paths:
-      - ./terraform/.terraform
+  #cache:
+  #  paths:
+  #    - ./terraform/.terraform
 
   script:
     - cd terraform
     - gitlab-terraform validate
-    - gitlab-terraform init
+    - >
+      [[ -d .terraform ]] || 
+      gitlab-terraform init
+        -backend-config="address=$TF_ADDRESS"
+        -backend-config="lock_address=$TF_ADDRESS/lock" 
+        -backend-config="unlock_address=$TF_ADDRESS/lock"
+        -backend-config="username=$TF_USERNAME"
+        -backend-config="password=$TF_PASSWORD"
+        -backend-config="lock_method=POST"
+        -backend-config="unlock_method=DELETE"
+        -backend-config="retry_wait_min=5"
     - gitlab-terraform plan
 
 ################################## E O F ##########################################
