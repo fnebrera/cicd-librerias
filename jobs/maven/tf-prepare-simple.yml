@@ -28,6 +28,7 @@ tf-prepare-job:
         ARGS=-backend-config=\""username=$TF_USERNAME"\"
         ARGS=$ARGS -backend-config=\""password=$TF_PASSWORD"\"
         ARGS=$ARGS -backend-config=\""address=$TF_ADDRESS"\"
+        echo "args: $ARGS"
         gitlab-terraform init $ARGS
       fi
     - gitlab-terraform plan
