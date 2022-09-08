@@ -12,6 +12,9 @@ tf-apply-job:
 
   image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2:v0.43.1
 
+  variables:
+    ACCION: "apply"
+
   rules:
     - if: $CI_COMMIT_REF_NAME == "dev-fng"
       when: manual
@@ -22,16 +25,24 @@ tf-apply-job:
       - $TF_ROOT/.terraform.lock.hcl
 
   script:
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa TF_APPLY en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
     - cd $TF_ROOT
     - |
       TF_VM_IP=""
-      if [[ ${DEBUG_DEPLOY_ACTION} == "destroy" ]]; then
-        echo "INFO ejecutando terraform destroy"
-        gitlab-terraform destroy
-      else
+      # DEBUG mostrar contenido del directorio, incluyendo el cache
+      [[ ${DEBUG_DEPLOY} == "true" ]] && { echo "INFO El contenido actual de TF_ROOT es:"; ls -al; }
+      # Accion por defecto "apply"
+      if [[ ${ACCION} == "apply" ]]; then
         echo "INFO ejecutando terraform apply"
         gitlab-terraform apply
         TF_VM_IP=$(gitlab-terraform output -raw hyperv_instance_ip)
+        echo "INFO IP de la maquina virtual: ${TF_VM_IP}"
+      else
+        echo "INFO ejecutando terraform $ACCION"
+        gitlab-terraform $ACCION
       fi
       echo "TF_VM_IP=${TF_VM_IP}" >> ${CI_PROJECT_DIR}/prepare.env
     - cd $CI_PROJECT_DIR

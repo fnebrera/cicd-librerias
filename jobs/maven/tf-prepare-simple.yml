@@ -22,6 +22,10 @@ tf-prepare-job:
       - $TF_ROOT/.terraform.lock.hcl
 
   script:
+    - >
+      echo -e "==============================================================================================
+      \nEjecutando etapa TF_PREPARE en $CI_COMMIT_REF_NAME
+      \n=============================================================================================="
     - cd $TF_ROOT
     - |
       if ! [[ -d .terraform ]]; then
@@ -38,6 +42,8 @@ tf-prepare-job:
       echo "INFO: Creando el plan de despliegue"
       gitlab-terraform plan
       gitlab-terraform plan-json
+      # DEBUG mostrar contenido del directorio, incluyendo el cache
+      [[ ${DEBUG_DEPLOY} == "true" ]] && { echo "INFO: El contenido actual de TF_ROOT es:"; ls -al; }
 
   artifacts:
     name: "Selfweb terraform plan"
