@@ -25,11 +25,10 @@ tf-prepare-job:
     #- gitlab-terraform validate
     - |
       if ! [[ -d .terraform ]]; then
-        ARGS="-backend-config='username=$TF_USERNAME'"
-        ARGS="$ARGS -backend-config='password=$TF_PASSWORD'"
-        ARGS="$ARGS -backend-config='address=$TF_ADDRESS'"
-        echo "args: $ARGS"
-        gitlab-terraform init $ARGS
+        gitlab-terraform init \
+          -backend-config="username=$TF_USERNAME" \
+          -backend-config="password=$TF_PASSWORD" \
+          -backend-config="address=$TF_ADDRESS"
       fi
     - gitlab-terraform plan
 
