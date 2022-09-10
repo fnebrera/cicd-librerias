@@ -39,7 +39,7 @@ tf-apply-job:
       # Accion por defecto "apply"
       if [[ ${ACCION} == "apply" ]]; then
         echo "INFO ejecutando terraform apply"
-        gitlab-terraform apply
+        terraform apply -input=false "plan.cache"
         TF_VM_IP=$(gitlab-terraform output -raw hyperv_instance_ip)
         echo "INFO IP de la maquina virtual: ${TF_VM_IP}"
       else

@@ -1,6 +1,8 @@
 #########################################################################################################
 # Prepara el provisionado terraform, incluyendo el plan, para que pueda ser revisado antes de lanzar
 # el apply.
+# No usamos gitlab-terraform porque en este proyecto no nos aporta nada, más bien nos lía. Si
+# se quiere volver a usar, basta con sustituir los comandos 'gitlab-terraform' por 'terraform'.
 # Sólo se ejecuta en master.
 #
 # Vers  Por Fecha      Notas
@@ -31,7 +33,7 @@ tf-prepare-job:
     - |
       if ! [[ -f .terraform.lock.hcl ]]; then
         echo "INFO: No existe el archivo .terraform.lock.hcl, llamamos a terraform init"
-        gitlab-terraform init \
+        terraform init \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
           -backend-config="address=$TF_ADDRESS" \
@@ -40,9 +42,10 @@ tf-prepare-job:
           -backend-config="lock_method=POST" \
           -backend-config="unlock_method=DELETE"
       fi
-      echo "INFO: Creando el plan de despliegue"
-      gitlab-terraform plan
-      gitlab-terraform plan-json
+      echo "INFO Verificando configuración de terraform"
+      terraform validate -input=false
+      echo "INFO Creando el plan de despliegue"
+      terraform plan -input=false -out="plan.cache"
       # DEBUG mostrar contenido del directorio, incluyendo el cache
       [[ ${DEBUG_CD} == "true" ]] && { echo "INFO: El contenido actual de TF_ROOT es:"; ls -al; }
 
@@ -50,8 +53,6 @@ tf-prepare-job:
     name: "Selfweb terraform plan"
     paths:
       - ${TF_ROOT}/plan.cache
-    reports:
-      terraform: ${TF_ROOT}/plan.json
     expire_in: 1 hour
 
 ################################## E O F ##########################################

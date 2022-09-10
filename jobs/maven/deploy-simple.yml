@@ -43,7 +43,7 @@ deploy-job:
     - 'echo "TF_VM_IP: $TF_VM_IP"'
     # Solo si es un proyecto Docker
     - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
-    # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa terraform
+    # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa tf-apply
     - '[[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }'
     - >
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
