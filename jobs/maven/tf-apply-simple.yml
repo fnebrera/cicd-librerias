@@ -25,7 +25,8 @@ tf-apply-job:
   cache:
     paths:
       - $TF_ROOT/.terraform.lock.hcl
-
+      - $TF_ROOT/.terraform
+      
   script:
     - >
       echo -e "==============================================================================================

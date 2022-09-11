@@ -23,6 +23,7 @@ tf-prepare-job:
   cache:
     paths:
       - $TF_ROOT/.terraform.lock.hcl
+      - $TF_ROOT/.terraform
 
   script:
     - >
@@ -31,10 +32,8 @@ tf-prepare-job:
       \n=============================================================================================="
     - cd $TF_ROOT
     - |
-      # DEBUG
-      rm .terraform.lock.hcl
-      if ! [[ -f .terraform.lock.hcl ]]; then
-        echo "INFO: No existe el archivo .terraform.lock.hcl, llamamos a terraform init"
+      if ! [[ -d .terraform ]]; then
+        echo "INFO: No existe el directorio .terraform, llamamos a terraform init"
         terraform init -input=false -reconfigure \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
