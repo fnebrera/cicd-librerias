@@ -14,7 +14,7 @@ tf-apply-job:
 
   variables:
     SKIP: "false"
-    ACCION: "apply"
+    ACTION: "apply"
 
   rules:
     - if: $CI_COMMIT_REF_NAME == "master"
@@ -41,8 +41,8 @@ tf-apply-job:
       # DEBUG mostrar contenido del directorio, incluyendo el cache
       [[ ${DEBUG_CD} == "true" ]] && { echo "INFO El contenido actual de TF_ROOT es:"; ls -al; }
       # Accion por defecto "apply"
-      echo "INFO ejecutando terraform ${ACCION}"
-      case ${ACCION} in
+      echo "INFO ejecutando terraform ${ACTION}"
+      case ${ACTION} in
         apply)
           terraform apply -input=false "plan.cache"
           TF_VM_IP=$(terraform output -raw hyperv_instance_ip)
@@ -52,9 +52,9 @@ tf-apply-job:
           terraform destroy -auto-approve
           rm .terraform.lock.hcl
           rm -Rf .terraform
-        ;;
+          ;;
         *)
-          terraform $ACCION
+          terraform $ACTION
           ;;
       esac
       echo "TF_VM_IP=${TF_VM_IP}" >> ${CI_PROJECT_DIR}/prepare.env
