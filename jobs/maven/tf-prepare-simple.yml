@@ -31,6 +31,8 @@ tf-prepare-job:
       \n=============================================================================================="
     - cd $TF_ROOT
     - |
+      # DEBUG
+      rm .terraform.lock.hcl
       if ! [[ -f .terraform.lock.hcl ]]; then
         echo "INFO: No existe el archivo .terraform.lock.hcl, llamamos a terraform init"
         terraform init -input=false \
