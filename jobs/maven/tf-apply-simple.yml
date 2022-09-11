@@ -37,15 +37,21 @@ tf-apply-job:
       # DEBUG mostrar contenido del directorio, incluyendo el cache
       [[ ${DEBUG_CD} == "true" ]] && { echo "INFO El contenido actual de TF_ROOT es:"; ls -al; }
       # Accion por defecto "apply"
-      if [[ ${ACCION} == "apply" ]]; then
-        echo "INFO ejecutando terraform apply"
-        terraform apply -input=false "plan.cache"
-        TF_VM_IP=$(gitlab-terraform output -raw hyperv_instance_ip)
-        echo "INFO IP de la maquina virtual: ${TF_VM_IP}"
-      else
-        echo "INFO ejecutando terraform $ACCION"
-        gitlab-terraform $ACCION
-      fi
+      echo "INFO ejecutando terraform ${ACCION}"
+      case ${ACCION} in
+        apply)
+          terraform apply -input=false "plan.cache"
+          TF_VM_IP=$(terraform output -raw hyperv_instance_ip)
+          echo "INFO IP de la maquina virtual: ${TF_VM_IP}"
+          ;;
+        destroy)
+          terraform destroy -auto-approve
+          rm .terraform.lock.hcl
+        ;;
+        *)
+          terraform $ACCION
+          ;;
+      esac
       echo "TF_VM_IP=${TF_VM_IP}" >> ${CI_PROJECT_DIR}/prepare.env
     - cd $CI_PROJECT_DIR
 

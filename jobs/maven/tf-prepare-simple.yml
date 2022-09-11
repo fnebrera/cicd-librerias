@@ -33,7 +33,7 @@ tf-prepare-job:
     - |
       if ! [[ -f .terraform.lock.hcl ]]; then
         echo "INFO: No existe el archivo .terraform.lock.hcl, llamamos a terraform init"
-        terraform init \
+        terraform init -input=false \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
           -backend-config="address=$TF_ADDRESS" \
@@ -43,7 +43,7 @@ tf-prepare-job:
           -backend-config="unlock_method=DELETE"
       fi
       echo "INFO Verificando configuración de terraform"
-      terraform validate -input=false
+      terraform validate
       echo "INFO Creando el plan de despliegue"
       terraform plan -input=false -out="plan.cache"
       # DEBUG mostrar contenido del directorio, incluyendo el cache
