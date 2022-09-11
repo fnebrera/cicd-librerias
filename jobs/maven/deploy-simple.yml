@@ -15,7 +15,7 @@ deploy-job:
   stage: deploy
 
   variables:
-    SEGUIR: "false"
+    SKIP: "false"
 
   rules:
     # Hacemos deploy solo en master, y en manual
@@ -34,15 +34,13 @@ deploy-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DEPLOY en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-    #
-    # Para continuar, debe entrar SEGUIR=true
-    #
-    - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 0; }'
+    # En todas las etapas manuales hacemos lo mismo
+    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - 'echo "DOCKER_PRJ: ${DOCKER_PRJ}"'
     - 'echo "IMG_TAG: ${IMG_TAG}"'
     - 'echo "TF_VM_IP: $TF_VM_IP"'
     # Solo si es un proyecto Docker
-    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No existe Dockerfile. Esta etapa no se ejecuta."; exit 0; }'
+    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }'
     # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa tf-apply
     - '[[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }'
     - >

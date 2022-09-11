@@ -32,10 +32,6 @@ tf-prepare-job:
       \n=============================================================================================="
     - cd $TF_ROOT
     - |
-      # Prueba estupida
-      echo "Entra un valor:"
-      read valor1
-      echo "Has entrado $valor1"
       if ! [[ -d .terraform ]]; then
         echo "INFO: No existe el directorio .terraform, llamamos a terraform init"
         terraform init -input=false -reconfigure \

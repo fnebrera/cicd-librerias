@@ -13,6 +13,7 @@ tf-apply-job:
   image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2:v0.43.1
 
   variables:
+    SKIP: "false"
     ACCION: "apply"
 
   rules:
@@ -32,6 +33,8 @@ tf-apply-job:
       echo -e "==============================================================================================
       \nEjecutando etapa TF_APPLY en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+    # En todas las etapas manuales hacemos lo mismo
+    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - cd $TF_ROOT
     - |
       TF_VM_IP=""
