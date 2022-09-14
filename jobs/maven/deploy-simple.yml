@@ -49,17 +49,16 @@ deploy-job:
       # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa tf-apply
       [[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }
       # Preparamos el bat que vamos a ajecutar con sftp (es un archivo temporal)
-      echo "mkdir -p ${DEPLOY_SSH_PATH}" > sftp.bat
+      echo "mkdir ${DEPLOY_SSH_PATH}" > sftp.bat
       echo "cd ${DEPLOY_SSH_PATH}" >> sftp.bat
       echo "rmdir deploy" >> sftp.bat
       echo "put deploy" >> sftp.bat 
       echo "chmod +x deploy/deploy.sh" >> sftp.bat 
       # DEBUG
-      echo "INFO Ejecutando el siguiente sftp bat:"
-      cat sftp.bat
+      echo -e "INFO Ejecutando el siguiente sftp bat:"\n----------------------------------------"
+      cat sftp.bat && echo "----------------------------------------"
       # Lanzar el sftp
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
-      #sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -b sftp.bat ${CONN_STRING}
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -b sftp.bat ${CONN_STRING}
       [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
       # Ejecutamos el comando remoto de deploy
