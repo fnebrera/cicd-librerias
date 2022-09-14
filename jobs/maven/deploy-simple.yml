@@ -61,18 +61,22 @@ deploy-job:
       #
       # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
       #
-      echo "put -R deploy" > sftp.bat 
-      echo "chmod +x deploy/deploy.sh" >> sftp.bat 
+      echo "INFO Preparando sftp batch file.."
+      echo "cd ${DEPLOY_SSH_PATH}" > sftp.bat 
+      echo "put -R deploy" >> sftp.bat 
+      echo "chmod 755 deploy/deploy.sh" >> sftp.bat 
       #
       # Lanzar el sftp
       #
+      echo "INFO Ejecutando sftp batch.."
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -b sftp.bat ${CONN_STRING}
       [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
       #
       # Ejecutamos el comando remoto de deploy
       #
-      REMOTE_CMD="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
-      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} \"${REMOTE_CMD}\"
+      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
+      echo "INFO Ejecutando script remoto: ${COMANDO}"
+      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       # Nos bajamos el log y lo mostramos
       # PENDIENTE
 
