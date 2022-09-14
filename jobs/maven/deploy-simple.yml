@@ -55,7 +55,7 @@ deploy-job:
       echo "put deploy" >> sftp.bat 
       echo "chmod +x deploy/deploy.sh" >> sftp.bat 
       # DEBUG
-      echo -e "INFO Ejecutando el siguiente sftp bat:"\n----------------------------------------"
+      echo -e "INFO Ejecutando el siguiente sftp bat:\n----------------------------------------"
       cat sftp.bat && echo "----------------------------------------"
       # Lanzar el sftp
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
