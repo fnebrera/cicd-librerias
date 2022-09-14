@@ -47,8 +47,6 @@ tf-prepare-job:
       terraform validate
       echo "INFO Creando el plan de despliegue"
       terraform plan -input=false -out="plan.cache"
-      # DEBUG mostrar contenido del directorio, incluyendo el cache
-      [[ ${DEBUG_CD} == "true" ]] && { echo "INFO: El contenido actual de TF_ROOT es:"; ls -al; }
 
   artifacts:
     name: "Selfweb terraform plan"

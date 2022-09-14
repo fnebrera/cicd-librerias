@@ -38,8 +38,6 @@ tf-apply-job:
     - cd $TF_ROOT
     - |
       TF_VM_IP=""
-      # DEBUG mostrar contenido del directorio, incluyendo el cache
-      [[ ${DEBUG_CD} == "true" ]] && { echo "INFO El contenido actual de TF_ROOT es:"; ls -al; }
       # Accion por defecto "apply"
       echo "INFO ejecutando terraform ${ACTION}"
       case ${ACTION} in
