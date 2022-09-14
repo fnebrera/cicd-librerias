@@ -34,6 +34,7 @@ deploy-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DEPLOY en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
+
     # En todas las etapas manuales hacemos lo mismo
     '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - |
@@ -66,5 +67,6 @@ deploy-job:
       #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} \"${REMOTE_CMD}\"
       # Nos bajamos el log y lo mostramos
       # PENDIENTE
+
 ################################## E O F ##########################################    
 
