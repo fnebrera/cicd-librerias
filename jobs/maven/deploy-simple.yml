@@ -49,7 +49,8 @@ deploy-job:
       # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa tf-apply
       [[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }
       # Preparamos el bat que vamos a ajecutar con sftp (es un archivo temporal)
-      echo "cd ${DEPLOY_SSH_PATH}" > sftp.bat
+      echo "mkdir -p ${DEPLOY_SSH_PATH}" > sftp.bat
+      echo "cd ${DEPLOY_SSH_PATH}" >> sftp.bat
       echo "rmdir deploy" >> sftp.bat
       echo "put deploy" >> sftp.bat 
       echo "chmod +x deploy/deploy.sh" >> sftp.bat 
