@@ -46,22 +46,29 @@ deploy-job:
       echo "DEPLOY_SSH_SVC_NAME: ${DEPLOY_SSH_SVC_NAME}"
       # Solo si es un proyecto Docker
       # COMENTADO PROVISIONALMENTE [[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }
+      #
       # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa tf-apply
+      #
       [[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }
-      # Preparamos el bat que vamos a ajecutar con sftp (es un archivo temporal)
-      echo "mkdir ${DEPLOY_SSH_PATH}" > sftp.bat
-      echo "cd ${DEPLOY_SSH_PATH}" >> sftp.bat
-      echo "rmdir deploy" >> sftp.bat
-      echo "put deploy" >> sftp.bat 
-      echo "chmod +x deploy/deploy.sh" >> sftp.bat 
-      # DEBUG
-      echo -e "INFO Ejecutando el siguiente sftp bat:\n----------------------------------------"
-      cat sftp.bat && echo "----------------------------------------"
-      # Lanzar el sftp
+      #
+      # Ejecutamos un par de comandos de preparacion del entorno remoto
+      #
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
+      COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; cd ${DEPLOY_SSH_PATH}; [[ -d deploy ]] && rm -Rf deploy"
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} \"${COMANDO}\"
+      #
+      # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
+      #
+      echo "put -R deploy" > sftp.bat 
+      echo "chmod +x deploy/deploy.sh" >> sftp.bat 
+      #
+      # Lanzar el sftp
+      #
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -b sftp.bat ${CONN_STRING}
       [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
+      #
       # Ejecutamos el comando remoto de deploy
+      #
       REMOTE_CMD="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
       #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} \"${REMOTE_CMD}\"
       # Nos bajamos el log y lo mostramos
