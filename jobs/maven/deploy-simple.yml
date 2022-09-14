@@ -34,9 +34,8 @@ deploy-job:
       echo -e "==============================================================================================
       \nEjecutando etapa DEPLOY en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
-
     # En todas las etapas manuales hacemos lo mismo
-    '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
+    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - |
       # DEBUG
       echo "DOCKER_PRJ: ${DOCKER_PRJ}"
