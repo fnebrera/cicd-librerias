@@ -74,8 +74,7 @@ deploy-job:
       #
       # Ejecutamos el comando remoto de deploy
       #
-      #COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
-      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh"
+      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
       echo "INFO Ejecutando script remoto: ${COMANDO}"
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       # Nos bajamos el log y lo mostramos
