@@ -54,7 +54,7 @@ deploy-job:
       # Ejecutamos un par de comandos de preparacion del entorno remoto
       #
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
-      COMANDO="( mkdir -p ${DEPLOY_SSH_PATH} && cd ${DEPLOY_SSH_PATH} && rm -Rf deploy )"
+      COMANDO="( mkdir -p ${DEPLOY_SSH_PATH} && cd ${DEPLOY_SSH_PATH} && ls -al && rm -Rf deploy )"
       # DEBUG
       echo "INFO ejecutando: $COMANDO"
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
@@ -74,7 +74,7 @@ deploy-job:
       #
       # Ejecutamos el comando remoto de deploy
       #
-      COMANDO="bash -s ${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
+      COMANDO="( cd ${DEPLOY_SSH_PATH}/deploy && ./deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > deploy.log 2>&1 )"
       echo "INFO Ejecutando script remoto: ${COMANDO}"
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       # Nos bajamos el log y lo mostramos
