@@ -63,7 +63,9 @@ deploy-job:
       #
       COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
       echo "INFO Ejecutando comando remoto ${COMANDO}.."
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" > prep.log
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "pwd &&
+        mkdir -p ${DEPLOY_SSH_PATH} &&
+        rm -Rf ${DEPLOY_SSH_PATH}/deploy"
       if [[ $? != 0 ]]; then
         echo "ERROR No se ha podido ejecutar"
         cat prep.log
