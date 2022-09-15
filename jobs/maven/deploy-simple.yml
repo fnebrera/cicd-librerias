@@ -74,9 +74,10 @@ deploy-job:
       #
       # Ejecutamos el comando remoto de deploy
       #
-      COMANDO="( cd ${DEPLOY_SSH_PATH}/deploy && ./deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > deploy.log 2>&1 )"
-      echo "INFO Ejecutando script remoto: ${COMANDO}"
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
+      #COMANDO="( cd ${DEPLOY_SSH_PATH}/deploy && ./deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > deploy.log 2>&1 )"
+      #echo "INFO Ejecutando script remoto: ${COMANDO}"
+      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} 'bash -s' < deploy.sh  -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME}
       # Nos bajamos el log y lo mostramos
       # PENDIENTE
 
