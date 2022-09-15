@@ -27,7 +27,7 @@ deploy-job:
 
   before_script:
     # Definir prmisos estrictos en la clave privada
-    - chmod 400 $DEPLOY_SSH_KEY
+    - chmod 400 ${DEPLOY_SSH_KEY}
 
   script:
     - >
@@ -61,16 +61,13 @@ deploy-job:
       # directorio del proyecto. Como en sftp el comando mkdir no tiene la opcion -p, hay que hacerlo
       # mediante ssh. Por contra, si estamos haciendo un update, eliminamos el directorio deploy anterior.
       #
-      #COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
-      #echo "INFO Ejecutando comando remoto ${COMANDO}.."
-      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "pwd &&
-      #  mkdir -p ${DEPLOY_SSH_PATH} &&
-      #  rm -Rf ${DEPLOY_SSH_PATH}/deploy"
-      #if [[ $? != 0 ]]; then
-      #  echo "ERROR No se ha podido ejecutar"
-      #  cat prep.log
-      #  exit 1
-      #fi
+      COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
+      echo "INFO Ejecutando comando remoto ${COMANDO}.."
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}"
+      if [[ $? != 0 ]]; then
+        echo "ERROR No se ha podido ejecutar la fase de preparacion"
+        exit 1
+      fi
       #
       # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
       #
