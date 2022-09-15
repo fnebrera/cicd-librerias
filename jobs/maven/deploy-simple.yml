@@ -61,9 +61,10 @@ deploy-job:
       # directorio del proyecto. Como en sftp el comando mkdir no tiene la opcion -p, hay que hacerlo
       # mediante ssh. Por contra, si estamos haciendo un update, eliminamos el directorio deploy anterior.
       #
-      COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
+      COMANDO="( mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy )"
       echo "INFO Ejecutando comando remoto ${COMANDO}.."
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}"
+      [[ $? != 0 ]] && { echo "ERROR No se ha podido ejecutar"; exit 1; }
       #
       # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
       #
@@ -84,8 +85,8 @@ deploy-job:
       #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       echo "INFO Ejecutando script deploy/deploy.sh"
       #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} < deploy/deploy.sh
-      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh"
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
+      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}"
       # Nos bajamos el log y lo mostramos
       # PENDIENTE
 
