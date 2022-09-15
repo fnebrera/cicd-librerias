@@ -53,20 +53,23 @@ deploy-job:
       #
       [[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }
       #
-      # Ejecutamos un par de comandos de preparacion del entorno remoto
+      # Cadena de conexion a la VM que acabamos de provisionar
       #
       CONN_STRING="${DEPLOY_SSH_USER}@${TF_VM_IP}"
-      COMANDO="( mkdir -p ${DEPLOY_SSH_PATH} && cd ${DEPLOY_SSH_PATH} && ls -al && rm -Rf deploy )"
-      # DEBUG
-      echo "INFO ejecutando: $COMANDO"
+      #
+      # Si es la primera vez que hacemos deploy de este proyecto en esta maquina, tenemos que crear el
+      # directorio del proyecto. Como en sftp el comando mkdir no tiene la opcion -p, hay que hacerlo
+      # mediante ssh. Por contra, si estamos haciendo un update, eliminamos el directorio deploy anterior.
+      #
+      COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
+      echo "INFO Ejecutando comando remoto ${COMANDO}.."
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       #
       # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
       #
       echo "INFO Preparando sftp batch file.."
-      echo "cd ${DEPLOY_SSH_PATH}" > sftp.bat 
-      echo "put deploy" >> sftp.bat 
-      echo "chmod 755 deploy/deploy.sh" >> sftp.bat 
+      echo "put deploy ${DEPLOY_SSH_PATH}" > sftp.bat 
+      echo "chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh" >> sftp.bat 
       #
       # Lanzar el sftp
       #
@@ -74,13 +77,15 @@ deploy-job:
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r -b sftp.bat ${CONN_STRING}
       [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
       #
-      # Ejecutamos el comando remoto de deploy
+      # Ejecutamos el comando de deploy
       #
       #COMANDO="( cd ${DEPLOY_SSH_PATH}/deploy && ./deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > deploy.log 2>&1 )"
       #echo "INFO Ejecutando script remoto: ${COMANDO}"
       #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       echo "INFO Ejecutando script deploy/deploy.sh"
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} < deploy/deploy.sh
+      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} < deploy/deploy.sh
+      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh"
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
       # Nos bajamos el log y lo mostramos
       # PENDIENTE
 
