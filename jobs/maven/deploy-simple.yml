@@ -87,11 +87,15 @@ deploy-job:
       prueba=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot
       COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${prueba} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
       echo "INFO Ejecutando script remoto: ${COMANDO}"
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}"
-      ret=$?
-      #echo "INFO Log del script:"
-      #cat deploy.log
-      [[ $ret != 0 ]] && { echo "ERROR El script no se ha ejecutado correctamente"; exit 1; }
+      ret=0
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$? 
+      echo "INFO El shell ha terminado con codigo $ret"
+      echo "INFO Descargando log del script:"
+      sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
+      get ${DEPLOY_SSH_PATH}/deploy/deploy.log
+      EoF
+      cat deploy.log
+      [[ $ret != 0 ]] && { echo "ERROR El script no se ha ejecutado correctamente"; exit $ret; }
       echo "INFO Etapa deploy finalizada con exito"
 
 ################################## E O F ##########################################    
