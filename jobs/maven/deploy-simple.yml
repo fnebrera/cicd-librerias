@@ -38,11 +38,11 @@ deploy-job:
     - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - |
       # DEBUG
-      echo "DOCKER_PRJ: ${DOCKER_PRJ}"
-      echo "IMG_TAG: ${IMG_TAG}"
-      echo "TF_VM_IP: $TF_VM_IP"
-      echo "TF_VAR_VM_NAME: $TF_VAR_VM_NAME"
-      echo "DEPLOY_SSH_PATH: ${DEPLOY_SSH_PATH}"
+      echo "DOCKER_PRJ         : ${DOCKER_PRJ}"
+      echo "IMG_TAG            : ${IMG_TAG}"
+      echo "TF_VM_IP           : $TF_VM_IP"
+      echo "TF_VAR_VM_NAME     : $TF_VAR_VM_NAME"
+      echo "DEPLOY_SSH_PATH    : ${DEPLOY_SSH_PATH}"
       echo "DEPLOY_SSH_SVC_NAME: ${DEPLOY_SSH_SVC_NAME}"
       #
       # Solo si es un proyecto Docker
@@ -59,7 +59,7 @@ deploy-job:
       #
       # Si es la primera vez que hacemos deploy de este proyecto en esta maquina, tenemos que crear el
       # directorio del proyecto. Como en sftp el comando mkdir no tiene la opcion -p, hay que hacerlo
-      # mediante ssh. Por contra, si estamos haciendo un update, eliminamos el directorio deploy anterior.
+      # mediante ssh. Ademas, y por si estamos haciendo un update, eliminamos el directorio deploy anterior.
       #
       COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
       echo "INFO Ejecutando comando remoto ${COMANDO}.."
@@ -83,15 +83,14 @@ deploy-job:
       #
       # Ejecutamos el comando de deploy
       #
-      #COMANDO="( cd ${DEPLOY_SSH_PATH}/deploy && ./deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > deploy.log 2>&1 )"
-      #echo "INFO Ejecutando script remoto: ${COMANDO}"
-      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} '${COMANDO}'
-      echo "INFO Ejecutando script deploy/deploy.sh"
-      #ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} < deploy/deploy.sh
-      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}"
-      # Nos bajamos el log y lo mostramos
-      # PENDIENTE
+      COMANDO="( ${DEPLOY_SSH_PATH}/deploy/deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${IMG_TAG} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} )"
+      echo "INFO Ejecutando script remoto: ${COMANDO}"
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" > deploy.log 2>&1
+      ret=$?
+      echo "INFO Log del script:"
+      cat deploy.log
+      [[ $ret != 0 ]] && { echo "ERROR El script no se ha ejecutado correctamente"; exit 1; }
+      echo "INFO Etapa deploy finalizada con exito"
 
 ################################## E O F ##########################################    
 
