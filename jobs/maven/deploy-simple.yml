@@ -63,22 +63,27 @@ deploy-job:
       #
       COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
       echo "INFO Ejecutando comando remoto ${COMANDO}.."
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}"
-      if [[ $? != 0 ]]; then
-        echo "ERROR No se ha podido ejecutar la fase de preparacion"
+      ret=0
+      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$?
+      if [[ $ret != 0 ]]; then
+        echo "ERROR No se ha podido ejecutar la fase de preparacion. Error $ret"
         exit 1
       fi
       #
       # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
       #
-      echo "INFO Preparando sftp batch file.."
-      echo "put deploy ${DEPLOY_SSH_PATH}" > sftp.bat 
-      echo "chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh" >> sftp.bat 
+      #echo "INFO Preparando sftp batch file.."
+      #echo "put deploy ${DEPLOY_SSH_PATH}" > sftp.bat 
+      #echo "chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh" >> sftp.bat 
       #
       # Lanzar el sftp
       #
-      echo "INFO Ejecutando sftp batch.."
-      sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r -b sftp.bat ${CONN_STRING}
+      echo "INFO Ejecutando sftp para subir el directorio deploy a la VM remota.."
+      # sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r -b sftp.bat ${CONN_STRING}
+      sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
+      put deploy ${DEPLOY_SSH_PATH}
+      chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh
+      EoF
       [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
       #
       # Ejecutamos el comando de deploy
@@ -95,8 +100,8 @@ deploy-job:
       get ${DEPLOY_SSH_PATH}/deploy/deploy.log
       EoF
       cat deploy.log
-      [[ $ret != 0 ]] && { echo "ERROR El script no se ha ejecutado correctamente"; exit $ret; }
-      echo "INFO Etapa deploy finalizada con exito"
+      echo "INFO Etapa deploy finalizada con codigo de retorno $ret"
+      exit $ret
 
 ################################## E O F ##########################################    
 
