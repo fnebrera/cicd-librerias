@@ -89,8 +89,27 @@ deploy-job:
       # Ejecutamos el comando de deploy
       #
       # PRUEBAS!!!!
-      prueba=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.006
-      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh -s ${DEPLOY_SSH_SVC_NAME} -i ${prueba} -d ${DEPLOY_SSH_PATH} -n ${TF_VAR_VM_NAME} > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
+      IMG_TAG=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.006
+      #COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh"
+      #COMANDO="${COMAMNDO} -s ${DEPLOY_SSH_SVC_NAME}"
+      #COMANDO="${COMAMNDO} -i ${IMG_TAG}"
+      #COMANDO="${COMAMNDO} -d ${DEPLOY_SSH_PATH}"
+      #COMANDO="${COMAMNDO} -n ${TF_VAR_VM_NAME}"
+      #COMANDO="${COMAMNDO} -u ${CICD_USER}"
+      #COMANDO="${COMAMNDO} -p ${CICD_PASSWD}"
+      #COMANDO="${COMAMNDO} -r {CICD_REGISTRY_HOST}"
+      #COMANDO="${COMAMNDO} > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
+      
+      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh \
+      -s ${DEPLOY_SSH_SVC_NAME} \
+      -i ${IMG_TAG} \
+      -d ${DEPLOY_SSH_PATH} \
+      -n ${TF_VAR_VM_NAME} \
+      -u ${CICD_USER} \
+      -p ${CICD_PASSWD} \
+      -r {CICD_REGISTRY_HOST} \
+      > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
+
       echo "INFO Ejecutando script remoto: ${COMANDO}"
       ret=0
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$? 
