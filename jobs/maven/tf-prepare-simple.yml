@@ -20,11 +20,6 @@ tf-prepare-job:
     # DEBUG
     - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
 
-  cache:
-    paths:
-      - $TF_ROOT/.terraform.lock.hcl
-      - $TF_ROOT/.terraform
-
   script:
     - >
       echo -e "==============================================================================================
