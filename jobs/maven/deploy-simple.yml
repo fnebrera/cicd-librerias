@@ -2,8 +2,6 @@
 # Conecta con el host de destino del deploy y regenera el docker-compose
 # usando la imagen generada en la etapa docker.
 # Sólo se ejecuta en master.
-# Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor 'true' en el
-# momento de lanzar el job.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -21,7 +19,8 @@ deploy-job:
     # Hacemos deploy solo en master, y en manual
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
-    # Para DEBUG
+
+    # Para DEBUG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
       when: manual
 
@@ -99,8 +98,9 @@ deploy-job:
       echo "----------------------------------------------------------------------------------------"
       ret=0
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$? 
+      echo "INFO El codigo de retorno del script ha sido: $ret"
       echo "----------------------------------------------------------------------------------------"
-      echo "INFO Descargando y mostrando log del script:"
+      echo "INFO Descargando y mostrando log del script"
       echo "----------------------------------------------------------------------------------------"
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
       get ${DEPLOY_SSH_PATH}/deploy/deploy.log

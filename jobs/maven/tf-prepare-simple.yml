@@ -32,21 +32,18 @@ tf-prepare-job:
       \n=============================================================================================="
     - cd $TF_ROOT
     - |
-      # Si no existe el directoro .terraform, aun no hemos inicializado
-      # PRUEBA
-      #if ! [[ -d .terraform ]]; then
-        echo "----------------------------------------------------------------------------------------"
-        echo "INFO: No existe el directorio .terraform, llamamos a terraform init"
-        echo "----------------------------------------------------------------------------------------"
-        terraform init -input=false -reconfigure \
-          -backend-config="username=$TF_USERNAME" \
-          -backend-config="password=$TF_PASSWORD" \
-          -backend-config="address=$TF_ADDRESS" \
-          -backend-config="lock_address=$TF_ADDRESS/lock" \
-          -backend-config="unlock_address=$TF_ADDRESS/lock" \
-          -backend-config="lock_method=POST" \
-          -backend-config="unlock_method=DELETE"
-      #fi
+      echo "----------------------------------------------------------------------------------------"
+      echo "INFO Inicializando Terraform usando el backed Gitlab.."
+      echo "----------------------------------------------------------------------------------------"
+      terraform init -input=false \
+      -backend-config="username=$TF_USERNAME" \
+      -backend-config="password=$TF_PASSWORD" \
+      -backend-config="address=$TF_ADDRESS" \
+      -backend-config="lock_address=$TF_ADDRESS/lock" \
+      -backend-config="unlock_address=$TF_ADDRESS/lock" \
+      -backend-config="lock_method=POST" \
+      -backend-config="unlock_method=DELETE" \
+      -backend-config="retry_wait_min=5"
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Verificando configuración de terraform"
       echo "----------------------------------------------------------------------------------------"

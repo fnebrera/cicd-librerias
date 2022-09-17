@@ -37,6 +37,9 @@ tf-apply-job:
     - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - cd $TF_ROOT
     - |
+      echo "----------------------------------------------------------------------------------------"
+      echo "INFO Inicializando Terraform usando el backed Gitlab.."
+      echo "----------------------------------------------------------------------------------------"
       terraform init -input=false \
       -backend-config="username=$TF_USERNAME" \
       -backend-config="password=$TF_PASSWORD" \
@@ -44,7 +47,8 @@ tf-apply-job:
       -backend-config="lock_address=$TF_ADDRESS/lock" \
       -backend-config="unlock_address=$TF_ADDRESS/lock" \
       -backend-config="lock_method=POST" \
-      -backend-config="unlock_method=DELETE"
+      -backend-config="unlock_method=DELETE" \
+      -backend-config="retry_wait_min=5"
       
       TF_VM_IP=""
       # Accion por defecto "apply"
