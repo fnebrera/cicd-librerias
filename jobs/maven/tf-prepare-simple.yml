@@ -35,7 +35,7 @@ tf-prepare-job:
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
-      terraform init -input=false -reconfigure \
+      terraform init -input=false \
       -backend-config="username=$TF_USERNAME" \
       -backend-config="password=$TF_PASSWORD" \
       -backend-config="address=$TF_ADDRESS" \
