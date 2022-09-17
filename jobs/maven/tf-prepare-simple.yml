@@ -32,8 +32,12 @@ tf-prepare-job:
       \n=============================================================================================="
     - cd $TF_ROOT
     - |
-      if ! [[ -d .terraform ]]; then
+      # Si no existe el directoro .terraform, aun no hemos inicializado
+      # PRUEBA
+      #if ! [[ -d .terraform ]]; then
+        echo "----------------------------------------------------------------------------------------"
         echo "INFO: No existe el directorio .terraform, llamamos a terraform init"
+        echo "----------------------------------------------------------------------------------------"
         terraform init -input=false -reconfigure \
           -backend-config="username=$TF_USERNAME" \
           -backend-config="password=$TF_PASSWORD" \
@@ -42,11 +46,18 @@ tf-prepare-job:
           -backend-config="unlock_address=$TF_ADDRESS/lock" \
           -backend-config="lock_method=POST" \
           -backend-config="unlock_method=DELETE"
-      fi
+      #fi
+      echo "----------------------------------------------------------------------------------------"
       echo "INFO Verificando configuración de terraform"
+      echo "----------------------------------------------------------------------------------------"
       terraform validate
+      echo "----------------------------------------------------------------------------------------"
       echo "INFO Creando el plan de despliegue"
+      echo "----------------------------------------------------------------------------------------"
       terraform plan -input=false -out="plan.cache"
+      echo "=============================================================================================="
+      echo "INFO Etapa TF_PREPARE finalizada con exito"
+      echo "=============================================================================================="
 
   artifacts:
     name: "Selfweb terraform plan"

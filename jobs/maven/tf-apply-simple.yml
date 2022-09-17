@@ -37,9 +37,19 @@ tf-apply-job:
     - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - cd $TF_ROOT
     - |
+      terraform init -input=false -reconfigure \
+        -backend-config="username=$TF_USERNAME" \
+        -backend-config="password=$TF_PASSWORD" \
+        -backend-config="address=$TF_ADDRESS" \
+        -backend-config="lock_address=$TF_ADDRESS/lock" \
+        -backend-config="unlock_address=$TF_ADDRESS/lock" \
+        -backend-config="lock_method=POST" \
+        -backend-config="unlock_method=DELETE"
       TF_VM_IP=""
       # Accion por defecto "apply"
+      echo "----------------------------------------------------------------------------------------"
       echo "INFO ejecutando terraform ${ACTION}"
+      echo "----------------------------------------------------------------------------------------"
       case ${ACTION} in
         apply)
           terraform apply -input=false "plan.cache"
@@ -56,6 +66,9 @@ tf-apply-job:
           ;;
       esac
       echo "TF_VM_IP=${TF_VM_IP}" >> ${CI_PROJECT_DIR}/prepare.env
+      echo "=============================================================================================="
+      echo "INFO Etapa TF_APPLY finalizada con exito"
+      echo "=============================================================================================="
     - cd $CI_PROJECT_DIR
 
   artifacts:

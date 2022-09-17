@@ -47,7 +47,7 @@ deploy-job:
       #
       # Solo si es un proyecto Docker
       #
-      # COMENTADO PROVISIONALMENTE [[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }
+      # PROVISIONAL!!!!! [[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }
       #
       # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto, y TF_VM_IP nos la ha devuelto la etapa tf-apply
       #
@@ -62,35 +62,29 @@ deploy-job:
       # mediante ssh. Ademas, y por si estamos haciendo un update, eliminamos el directorio deploy anterior.
       #
       COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
+      echo "----------------------------------------------------------------------------------------"
       echo "INFO Ejecutando comando remoto ${COMANDO}.."
+      echo "----------------------------------------------------------------------------------------"
       ret=0
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$?
       if [[ $ret != 0 ]]; then
         echo "ERROR No se ha podido ejecutar la fase de preparacion. Error $ret"
         exit 1
       fi
-      #
-      # Preparamos el bat que vamos a ajecutar con sftp (es un pequeño archivo temporal)
-      #
-      #echo "INFO Preparando sftp batch file.."
-      #echo "put deploy ${DEPLOY_SSH_PATH}" > sftp.bat 
-      #echo "chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh" >> sftp.bat 
-      #
-      # Lanzar el sftp
-      #
-      echo "INFO Ejecutando sftp para subir el directorio deploy a la VM remota.."
-      # sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r -b sftp.bat ${CONN_STRING}
+      echo "----------------------------------------------------------------------------------------"
+      echo "INFO Ejecutando sftp para subir el directorio deploy a la maquina remota.."
+      echo "----------------------------------------------------------------------------------------"
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
       put deploy ${DEPLOY_SSH_PATH}
       chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh
       EoF
       [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
+      
       #
       # Ejecutamos el comando de deploy
       #
       # PRUEBAS!!!!
       IMG_TAG=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.006
-
       COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh \
       -s ${DEPLOY_SSH_SVC_NAME} \
       -i ${IMG_TAG} \
@@ -100,17 +94,21 @@ deploy-job:
       -p ${CICD_PASSWD} \
       -r ${CICD_REGISTRY_HOST} \
       > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
-
-      echo "INFO Ejecutando script remoto: ${COMANDO}"
+      echo "----------------------------------------------------------------------------------------"
+      echo "INFO Ejecutando script remoto deploy.sh"
+      echo "----------------------------------------------------------------------------------------"
       ret=0
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$? 
-      echo "INFO El shell ha terminado con codigo $ret"
-      echo "INFO Descargando log del script:"
+      echo "----------------------------------------------------------------------------------------"
+      echo "INFO Descargando y mostrando log del script:"
+      echo "----------------------------------------------------------------------------------------"
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
       get ${DEPLOY_SSH_PATH}/deploy/deploy.log
       EoF
       cat deploy.log
+      echo "=============================================================================================="
       echo "INFO Etapa deploy finalizada con codigo de retorno $ret"
+      echo "=============================================================================================="
       exit $ret
 
 ################################## E O F ##########################################    
