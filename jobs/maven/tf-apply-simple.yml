@@ -25,7 +25,8 @@ tf-apply-job:
 
   cache:
     paths:
-      - ./.terraform.lock.hcl
+      - .terraform.lock.hcl
+      - .terraform
 
   script:
     - >
@@ -39,7 +40,7 @@ tf-apply-job:
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
-      terraform init -input=false -reconfigure \
+      terraform init -input=false \
       -backend-config="username=$CICD_USER" \
       -backend-config="password=$CICD_TOKEN" \
       -backend-config="address=$TF_BACKED_ADDRESS" \
@@ -62,7 +63,6 @@ tf-apply-job:
           ;;
         destroy)
           terraform destroy -auto-approve
-          rm .terraform.lock.hcl
           ;;
         *)
           terraform $ACTION
