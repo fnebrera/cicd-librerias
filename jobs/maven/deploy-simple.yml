@@ -36,11 +36,14 @@ deploy-job:
     # En todas las etapas manuales hacemos lo mismo
     - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - |
-      # PRUEBAS !!!!!!!!!!!!
-      [[ -z ${IMG_TAG} && ${DEBUG_CD} == 'true' ]] && IMG_TAG=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.006 
+      # PRUEBAS QUITAR !!!!!!!!!!!!
+      if [[ -z ${IMG_TAG} && ${DEBUG_CD} == 'true' ]]; then
+        IS_DOCKER_PRJ="true"
+        IMG_TAG=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.006 
+      fi
 
       # DEBUG
-      echo "IS_DOCKER_PRJ         : ${IS_DOCKER_PRJ}"
+      echo "IS_DOCKER_PRJ      : ${IS_DOCKER_PRJ}"
       echo "IMG_TAG            : ${IMG_TAG}"
       echo "TF_VM_IP           : $TF_VM_IP"
       echo "TF_VAR_VM_NAME     : $TF_VAR_VM_NAME"
