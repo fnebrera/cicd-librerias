@@ -22,8 +22,8 @@ tf-prepare-job:
 
   cache:
     paths:
-      - .terraform.lock.hcl
-      - .terraform
+      - terraform/.terraform.lock.hcl
+      - terraform/.terraform
 
   script:
     - >
@@ -35,6 +35,7 @@ tf-prepare-job:
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
+
       terraform init -input=false -reconfigure \
       -backend-config="username=$CICD_USER" \
       -backend-config="password=$CICD_TOKEN" \

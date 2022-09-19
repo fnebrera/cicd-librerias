@@ -25,8 +25,8 @@ tf-apply-job:
 
   cache:
     paths:
-      - .terraform.lock.hcl
-      - .terraform
+      - terraform/.terraform.lock.hcl
+      - terraform/.terraform
 
   script:
     - >
