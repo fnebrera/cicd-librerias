@@ -52,19 +52,19 @@ build-job:
           exit 4
         fi
       fi
-      echo "Build finalizado con exito"
+      echo "INFO Build finalizado con exito"
 
   #
-  # En caso de error, generamos un artefacto que expira en 2 horas, por si el
+  # En caso de error, generamos un artefacto que expira en 8 horas, por si el
   # usuario desea conservar el .jar o alguno de los archivos de configuracion.
   #
   artifacts:
     when: on_failure
-    name: "Build ${CI_COMMIT_REF_NAME} en pipeline interrumpido"
+    name: "Build ${CI_COMMIT_REF_NAME} en pipeline erroneo"
     paths:
       - ./target/*.jar
       - ./pom.xml
       - ./.gitlab-ci.yml
-    expire_in: 2 hours
+    expire_in: 8 hours
 
   ################################## E O F ##########################################

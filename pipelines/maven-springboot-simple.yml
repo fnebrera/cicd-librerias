@@ -7,12 +7,13 @@
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
+# 1.0.1 FNG 18/09/2022 Se agrega provisioning con Terraform y se mejora etapa de deploy.
 #
 #########################################################################################################
 variables:
   ##
   # Globales. Deben definirse en la cofiguracion de CI/CD del grupo, de modo que solo sean accesibles
-  # para los usuarios con role 'manager'.
+  # para los usuarios con role 'mantainer'.
   ##
   #
   # CICD_USER: "antonio"
@@ -24,7 +25,7 @@ variables:
   # SONAR_HOST_URL: "https://sonar2.comunytek.com"
   # SONAR_HOST_TOKEN: "bbbbbbbbbbbbbbbbbbbb"
   #
-  ##
+  # 
   # Basicas del pipeline
   ##
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
@@ -112,6 +113,9 @@ cache:
 
 # Etapas posibles del pipeline
 stages:
+  #
+  # CI
+  #
   - prepare
   - compile
   - sonar
@@ -120,6 +124,9 @@ stages:
   - register
   - docker
   - tag
+  #
+  # CD
+  #
   - tf-prepare
   - tf-apply
   - deploy

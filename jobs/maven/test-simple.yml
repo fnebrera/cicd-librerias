@@ -11,7 +11,7 @@ test-job:
   stage: test
 
   rules:
-    # PROVISIONAL
+    # PROVISIONAL !!!!!!!!!!!!!!!!!!!!!
     - if: $DEBUG_CD == 'true'
       when: never
     # En rama develop permitimos errores
@@ -24,7 +24,7 @@ test-job:
     # Hotfixes pasan tests, pero permitimos errores
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       allow_failure: true
-    # Compilamos cualquier otro branch dependiendo del correspondiente flag, y permitimos errores
+    # Pasamos tests cualquier otro branch dependiendo del correspondiente flag, y permitimos errores
     - if: $TEST_AUX_BRANCHES == "true"
       allow_failure: true
     

@@ -1,6 +1,6 @@
 #########################################################################################################
 # Compilar proyecto maven para ver que no hay errores. Se ejecuta para cualquier push,
-# y siempre antes de cualquier otro job que requiera conocer la version del proyecto.
+# y siempre antes de cualquier otro job que requiera los .class del proyecto.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -11,16 +11,14 @@ compile-job:
   stage: compile
 
   rules:
-    # PROVISIONAL
+     # PROVISIONAL!!!!!!!!!!!!!!
     - if: $DEBUG_CD == 'true'
       when: never
-    # Siempre compilamos ramas principales.
-    - if: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master'
-    # Hotfixes se compilan en cualquier caso
-    - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
+    # Siempre compilamos ramas principales, asi como rama Hotfix, si la hay
+    - if: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master' || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
     # Tambien compilamos cualquier otro branch dependiendo del correspondiente flag.
     - if: $COMPILE_AUX_BRANCHES == 'true'
-    
+
   cache:
     paths:
       - ./.m2/repository

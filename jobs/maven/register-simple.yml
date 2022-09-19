@@ -4,6 +4,7 @@
 # Adicionamente debe existir un archivo 'ci_setting.xml' con las credenciales para el registry.
 # Se ejecuta solo para ramas master, develop y hotfix (si existe).
 # Se cachea el directorio /target, que habra sido populado previamente por la etapa build.
+# La ejecucion es manual. Si queremos saltar este stage, debemos definir SKIP=true.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -75,9 +76,9 @@ pkg-register-job:
                       exit 2
                   fi
                   #
-                  # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP"
+                  # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP-RELEASE"
                   #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP.${SNAPSHOT_NUMBER}"
+                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP-RELEASE.${SNAPSHOT_NUMBER}"
               fi
               ;;
           ${HOTFIX_BRANCH})

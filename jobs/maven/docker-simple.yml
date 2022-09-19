@@ -40,7 +40,7 @@ docker-register-job:
       \nEjecutando etapa DOCKER en $CI_COMMIT_REF_NAME
       \n=============================================================================================="
     # Solo si es un proyecto Docker
-    - '[[ $DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }'
+    - '[[ $IS_DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }'
     # Necesitamos el fat-jar
     - JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
     - '[[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }'

@@ -15,7 +15,7 @@ prepare-job:
       - ./.m2/repository
       - target
 
-  # PROVISIONAL
+  # PROVISIONAL !!!!!!!!!!!!!!!!!!!!!!!!!!
   rules:
     - if: $DEBUG_CD == 'true'
       when: never
@@ -37,9 +37,9 @@ prepare-job:
     #
     # Es un proyecto Docker?
     #
-    - 'DOCKER_PRJ="false"'
-    - '[[ -f "Dockerfile" ]] && DOCKER_PRJ="true"'
-    - 'echo "¿Es un proyecto Docker?: ${DOCKER_PRJ}"'
+    - 'IS_DOCKER_PRJ="false"'
+    - '[[ -f "Dockerfile" ]] && IS_DOCKER_PRJ="true"'
+    - 'echo "¿Es un proyecto Docker?: ${IS_DOCKER_PRJ}"'
     #
     # Es una version SNAPSHOT?
     #
@@ -47,7 +47,7 @@ prepare-job:
     - '[[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"'
     - 'echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"'
     #
-    # Limpiar el directorio target, si es que existe (no deberia)
+    # Limpiar el directorio target, si es que existe
     #
     - '[[ -d "target" ]] && mvn clean'
     #
@@ -55,7 +55,7 @@ prepare-job:
     #
     - 'echo "PRJ_VERS=$PRJ_VERS" > prepare.env'
     - 'echo "PRJ_NAME=$PRJ_NAME" >> prepare.env'
-    - 'echo "DOCKER_PRJ=$DOCKER_PRJ" >> prepare.env'
+    - 'echo "IS_DOCKER_PRJ=$IS_DOCKER_PRJ" >> prepare.env'
     - 'echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env'
 
   #    

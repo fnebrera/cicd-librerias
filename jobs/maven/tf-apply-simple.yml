@@ -1,10 +1,10 @@
 #########################################################################################################
 # Aplica el provisionado terraform, usando el plan generado previmente por tf-prepare
-# Sólo se ejecuta en master.
+# IMPORTANTE: Por el momento sólo se ejecuta en master.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
-# 1.0.1 FNG 08/09/2022 Version inicial
+# 1.0.1 FNG 19/09/2022 Version inicial
 #
 #########################################################################################################
 tf-apply-job:
@@ -19,7 +19,7 @@ tf-apply-job:
   rules:
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
-    # DEBUG
+    # DEBUG QUITAR !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
       when: manual
 
@@ -39,9 +39,10 @@ tf-apply-job:
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
+      TF_ADDRESS="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}"
       terraform init -input=false \
-      -backend-config="username=$TF_USERNAME" \
-      -backend-config="password=$TF_PASSWORD" \
+      -backend-config="username=$CICD_USER" \
+      -backend-config="password=$CICD_TOKEN" \
       -backend-config="address=$TF_ADDRESS" \
       -backend-config="lock_address=$TF_ADDRESS/lock" \
       -backend-config="unlock_address=$TF_ADDRESS/lock" \
@@ -63,7 +64,6 @@ tf-apply-job:
         destroy)
           terraform destroy -auto-approve
           rm .terraform.lock.hcl
-          rm -Rf .terraform
           ;;
         *)
           terraform $ACTION
