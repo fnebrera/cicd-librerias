@@ -39,13 +39,12 @@ tf-apply-job:
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
-      TF_ADDRESS="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}"
       terraform init -input=false \
       -backend-config="username=$CICD_USER" \
       -backend-config="password=$CICD_TOKEN" \
-      -backend-config="address=$TF_ADDRESS" \
-      -backend-config="lock_address=$TF_ADDRESS/lock" \
-      -backend-config="unlock_address=$TF_ADDRESS/lock" \
+      -backend-config="address=$TF_BACKED_ADDRESS" \
+      -backend-config="lock_address=$TF_BACKED_ADDRESS/lock" \
+      -backend-config="unlock_address=$TF_BACKED_ADDRESS/lock" \
       -backend-config="lock_method=POST" \
       -backend-config="unlock_method=DELETE" \
       -backend-config="retry_wait_min=5"
