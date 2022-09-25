@@ -1,7 +1,6 @@
 ############################################################################
-# Ejemplo de .gitlab-ci.yml. Debe estar en el root del proyecto a tratar.
 # Usamos el pipeline simple para maven y springboot.
-# El codigo en el proyecto "cicd-librerias" puede ser empleado
+# El codigo en el proyecto "cicd-librerias" puede ser consultado
 # por cualquier miembro del grupo "comunytek", pero sólo pueden
 # editarlo los managers. El pipeline que usamos en este proyecto es:
 #
@@ -10,13 +9,36 @@
 ############################################################################
 
 variables:
+  ##
+  # Del proyecto. Deben definirse en la configuracion CI/CD del proyecto, de modo que solo sean accesibles
+  # para usuarios del proyecto con role 'mantainer'. Para el proyecto selfwebspringboot son las siguientes:
+  ##
   #
-  # Si registramos, creamos docker y tag, etc. en SNAPSHOT podemos agregar (opcionalmente)
+  # Para Terraform:
+  #
+  # TF_VAR_HYPERV_HOST: Nombre o IP del host Hyper-V donde vamos a crear/destruir la VM
+  # TF_VAR_HYPERV_USER: Usuario de login del host Hyper-V (debe tener derechos de Administrador)
+  # TF_VAR_HYPERV_PASSWD: Password de dicho usuario
+  # TF_VAR_VM_NAME: Nombre que queremos dar a la VM
+  # TF_VAR_HYPERV_SEED_DISK: Disco semilla del que partimos para crear el de la VM (path completo)
+  # TF_VAR_HYPERV_VHD_PATH: Path completo del disco que vamos a crear para la VM
+  #
+  # Para deploy
+  #
+  # DEPLOY_SSH_USER: Usuario a emplear para conectar por SSH con la VM creada
+  # DEPLOY_SSH_KEY: Variable tipo 'File' que contiene la clave privada para acceder por SSH a la nueva VM
+  # DEPLOY_SSH_PATH: Path donde vamos a instalar/actualizar el producto
+  # DEPLOY_SSH_SVC_NAME: Nombre del servicio docker que vamos a crear/instalar
+  #
+  ##
+  # Variables accesibles a todos los usuarios con role 'developer' o superior
+  ##
+  # Si registramos, creamos docker y tag de SNAPSHOT, debemos asignar
   # un numero de snapshot a la vesion del proyecto para identificar registros y tag.
   #
-  SNAPSHOT_NUMBER: "002"
+  SNAPSHOT_NUMBER: "005"
   #
-  # Si estamos en una rama de hotfix, se ejecuta todo el pipeline,
+  # Si estamos en una rama de hotfix, se ejecuta todo el pipeline de la CI,
   # aunque las etapas sonar y test admiten errores.
   # Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
   # Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
@@ -24,6 +46,9 @@ variables:
   #
   HOTFIX_BRANCH: ""
   HOTFIX_NUMBER: "002"
+  #
+  # PROVISIONAL!!!!!!!!!!!!!!!: Para ejecutar solo las etapas necesarias para debug de CD
+  DEBUG_CD: "true"
 
 #
 # Pipeline predefinido
@@ -32,7 +57,8 @@ include:
    project: 'comunytek/cicd-librerias'
    ref: master
    file: 'pipelines/maven-springboot-simple.yml'
-
+   
+# Actualizado el 19/09/2022 a las 22:31
 ############################# E O F ##############################
 
    

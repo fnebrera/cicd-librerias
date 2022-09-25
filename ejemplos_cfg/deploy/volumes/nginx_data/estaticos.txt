@@ -1,0 +1,1 @@
+En este directorio estarian todos los archivos estaticos que debe servir nginx.

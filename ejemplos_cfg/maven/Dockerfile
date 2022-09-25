@@ -1,7 +1,4 @@
-#
-# Ejemplo de Dockerfile:
-# Crear imagen de un servidor REST escrito en java/springboot
-# 
+# Crear imagen del servidor SelfWeb (selfwebspringboot) 
 
 FROM azul/zulu-openjdk:15
 
@@ -13,8 +10,6 @@ ENV LC_ALL es_ES.UTF-8
 RUN mkdir -p /var/log/selfweb
 RUN mkdir -p /config
 
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-COPY ./src/main/resources/application.properties /config/application.properties
+COPY target/*.jar app.jar
 
 ENTRYPOINT ["java","-jar","/app.jar"]

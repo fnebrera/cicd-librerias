@@ -1,6 +1,6 @@
 = image:img/vassblue.png[Logo] Proyecto [.underline]#cicd-librerias#
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.1, 20/09/2022
+1.0.1, 25/09/2022
 :toc:
 :toclevels: 3
 :icons: font
@@ -34,7 +34,7 @@ En versiones posteriores está previsto replicar una parte de las librerías par
 
 |1.0.1
 |FNG
-|20/09/2022
+|25/09/2022
 |Se agrega provisioning con Terraform y se generaliza el deploy usando bash y ssh
 
 |===
@@ -69,7 +69,7 @@ Para ello se han empleado algunas de las capacidades CI/CD que Gitlab ofrece en 
 [TIP]
 .*Importante*
 --
-Independientemente de cuál sea tu formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filosofía de los pipelines  de CI/CD.
+Independientemente de cuál sea tu formación previa en CI/CD, la lectura de este documento puede serte útil para afianzar conceptos básicos y entender la filosofía de los pipelines  de CI/CD.
 --
 
 == Entorno de desarrollo
@@ -119,18 +119,16 @@ productos instalados son:
 - Gitlab-runner: latest
 - Sonarqube 9.5.0-community
 - PostgreSQL 12.2 (requerido por Sonar)
-- Nginx 1.21.6
-- Portainer ce:2.14.1
+- Nginx 1.21.6 (proxy inverso)
+- Portainer ce:2.14.1 (monitorización Docker)
 
 == Visión general de la solución
 
 === Proyecto de trabajo
 
-Las librerías de pipelines y jobs se encuentran en el proyecto "cicd-librerias", y se describirán con mayor detalle más adelante. Este
-proyecto se maneja en la workstation empleando Visual Studio Code.
+Las librerías de pipelines y jobs se encuentran en el proyecto "cicd-librerias", y se describirán con mayor detalle más adelante. Este proyecto se maneja en la workstation empleando Visual Studio Code.
 
-Como proyecto de trabajo, se ha escogido la aplicación Selfweb de Comunytek, y concretamente el server REST (selfwebspingboot). Se
-trata de una aplicación java que emplea el framework SpringBoot. Como gestor de proyectos se emplea maven. En la carpeta "ejemplos_cfg"
+Como proyecto de trabajo, se ha escogido la aplicación Selfweb de Comunytek, y concretamente el server REST (selfwebspingboot). Se trata de una aplicación java que emplea el framework SpringBoot. Como gestor de proyectos se emplea maven. En la carpeta "ejemplos_cfg"
 puede verse el pom.xml de dicho proyecto, así como otros ejemplos de archivos de configuración. Este proyecto
 se maneja en la workstation empleando Eclipse.
 
@@ -219,13 +217,13 @@ ejemplo. Nótese que Nexus, por ejemplo, incorpora esta funcionalidad en un mód
 
 ==== Provisionado
 
-Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar terraform en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform apply'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa.
+Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar _Terraform(TM)_ en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform apply'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa.
 
 Un aspecto muy interesante es que Gitlab puede actuar como backend del status Terraform del proyecto, evitando así que el eventual acceso simultáteno pueda provocar comportamientos indeseados. 
 
 ==== Despliegue
 
-En esta primera versión, el despliegue de la imagen Docker generada se realiza de una manera relativamente simple (utilizando bash y ssh).
+En esta primera versión, el despliegue de la imagen Docker generada se realiza de una manera relativamente simple (utilizando bash, sftp y ssh).
 Gitlab puede integrar diferentes plataformas auxiliares tipo Helmet/Kubernetes, Ansible, etc. por lo que en posteriores versiones
 de este proyecto se trabajará con estas posibilidades. 
 
@@ -263,7 +261,7 @@ contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contien
 
 == Descripción de las librerías
 
-En esta primera versión del proyecto, empleamos únicamente dos productos: Gitlab y SonarQube. Esto contrasta con los 4, 5 o 6 productos que se emplean habitulamnete en cadenas CI/CD. Estos dos productos, además, resultan muy familiares tanto a ingenieros DevOps como a desarrolladores.
+En esta primera versión del proyecto, empleamos únicamente tres productos: Gitlab, SonarQube y Terraform. Esto contrasta con los 4, 5 o 6 productos que se emplean habitulamnete en cadenas CI/CD. Estos dos productos, además, resultan muy familiares tanto a ingenieros DevOps como a desarrolladores.
 
 En el proyecto se demuestra, además, que Gitlab CI/CD puede sustituir perfectamente a Jenkins o TeamCity, y con un lenguaje de definición de pipelines muy simple y de rápida curva de aprendizaje.
 
@@ -295,10 +293,6 @@ CICD_TOKEN:: Personal token creado para el usuario anterior (en settings de usua
 CICD_EMAIL:: Dirección de correo del usuario anterior.
 CICD_HOST:: Nombre del host donde se encuentra instalado Gitlab (p.e. "git2.comunytek.com").
 CICD_REGISTRY_HOST:: Nombre del host para el acceso al registry Docker. Aunque se trata del propio Gitlab, atiende a un puerto distinto, por lo que hemos de discriminarlo por el nombre del host (p.e. "https://registry2.comunytek.com").
-CICD_SSH_KEY:: Variable tipo "file" que contiene la clave SSH privada para el acceso al host de despliegue.
-CICD_DEPLOY_USER:: Usuario con el que se realizará la conexión SSH con el servidor de despliegue.
-CICD_DEPLOY_HOST:: Nombre o IP del servidor de despliegue.
-CICD_DEPLOY_HOST_SNAPSHOT:: Nombre o IP del servidor de despliegue para UAT, QA, o staging (versiones SNAPSHOT).
 SONAR_HOST_URL:: Url completa del host donde está instalado Sonarqube (p.e. "https://sonar2.comunytek.com").
 SONAR_HOST_TOKEN:: Token generado en Sonar para acceso externo mediante la API.
 
@@ -320,6 +314,26 @@ si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA
 Si se establece como "false", el pipeline termina con la generación del fat-jar y su
 almacenamiento temporal como artefacto.
 
+==== Del proyecto
+
+Se trata de variables con valores específicos para cada proyecto, pero que sólo deben ser editables por usuarios de nivel "Mantainer". Se definen en los settings CI/CD del proyecto.
+
+===== Específicas para provisionado con Terraform sobre Hyper-V 
+
+TF_VAR_HYPERV_HOST:: Nombre o IP del host Hyper-V donde vamos a crear/destruir la VM
+TF_VAR_HYPERV_USER:: Usuario de login del host Hyper-V (debe tener derechos de Administrador)
+TF_VAR_HYPERV_PASSWD:: Password de dicho usuario
+TF_VAR_VM_NAME:: Nombre que queremos dar a la VM
+TF_VAR_HYPERV_SEED_DISK:: Disco semilla del que partimos para crear el de la VM (path completo)
+TF_VAR_HYPERV_VHD_PATH:: Path completo del disco que vamos a crear para la VM
+
+===== Específicas para despliegue como stack Docker
+
+DEPLOY_SSH_USER:: Usuario a emplear para conectar por SSH con la VM creada
+DEPLOY_SSH_KEY:: Variable tipo 'File' que contiene la clave privada para acceder por SSH a la nueva VM
+DEPLOY_SSH_PATH:: Path donde vamos a instalar/actualizar el producto
+DEPLOY_SSH_SVC_NAME:: Nombre del servicio docker que vamos a crear/instalar
+
 ==== De pipeline (editables)
 
 Se trata de variables definidas en el ".gitlab-ci.yml" del proyecto y que son, por tanto, editables por los Developers, para tratar circunstancias específicas.
@@ -331,7 +345,6 @@ aunque las etapas sonar y test admiten errores.
 Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
 HOTFIX_NUMBER:: Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
 En la version del proyecto, se respeta la que se indica en el pom.xml.
-DOCKER_SERVICE_NAME:: Nombre del servicio en el docker-compose que corresponde a la imagen Docker que hemos de instalar o actualizar al hacer deploy. 
 
 === Pipeline del proyecto e include principal
 
@@ -395,6 +408,8 @@ stages:
   - register
   - docker
   - tag
+  - tf-prepare
+  - tf-apply
   - deploy
 
 # Includes, uno por job
@@ -463,11 +478,27 @@ Job definido en link:jobs/maven/register-simple.yml[]. Se ejecuta en master, hot
 - Crear un archivo "ci_settings.xml" definiendo las credenciales de acceso a el/los registries.
 - En el directorio "ejemplos_cfg/maven" pueden verse ejemplos para un proyecto real.
 
+Este job (como otros varios del pipeline) se ha definido como "manual". Esto significa que queda bloqueado dentro de la cadena de ejecución hasta que se libere manualmente. En gitlab, no existe, por el momento, un mecanismo directo de interacción con la consola pero podemos, de forma indirecta, controlar el flujo:
+
+image::img/jobmanual.png[Job manual]
+
+Por ejemplo, en este caso, se ha definido una variable de job llamada SKIP, con valor inicial false. Si en el job pulsamos el icono de "play", la variable no cambiará su valor. Por contra, si pulsamos sobre el nombre del job, se nos presenta un formulario en el que podemos agregar o modificar el valor de variables locales.
+En este ejemplo, podemos definir la variable SKIP a true, con lo que podemos, en el script, saltanos la ejecución de este job y pasar a la siguiente etapa:
+
+-------------------------------------------------
+  variables:
+    SKIP: "false"
+  script:
+    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
+
+-------------------------------------------------
+
+
 El job prepara un artifact ID del siguiente modo:
 
 - En rama master, el ID es la versión del proyecto en el pom (debe ser de release). Como es lógico, no puede registrarse la misma versión más de una vez.
 - En rama develop, y si es SNAPSHOT, se agrega a la versión del proyecto el valor de la variable SNAPSHOT_NUMBER, con lo quedaría algo como "5.0.6-SNAPSHOT.003". De este modo, podemos liberar para UAT o staging más de una versión intermedia, en forma de "release candidate", pero manteniendo registrada toda la historia de este SNAPSHOT.
-- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), agregamos a la versión del proyecto la cadena "-DEVELOP" seguida del SNAPSHOT_NUMBER, es decir, algo como "5.0.6-DEVELOP.003". Es una situación bastante rara, puesto que se sale de la normativa básica de flujo, pero hemos dejado abierta esta posibilidad para acomodar circunstancias excepcionales.
+- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), agregamos a la versión del proyecto la cadena "-DEVELOP-RELEASE" seguida del SNAPSHOT_NUMBER, es decir, algo como "5.0.6-DEVELOP-RELEASE.003". Es una situación bastante rara, puesto que se sale de la normativa básica de flujo, pero hemos dejado abierta esta posibilidad para acomodar circunstancias excepcionales.
 - En rama hotfix (si existe), agregamos a la versión del proyecto la cadena "-HOTFIX" seguida del HOTFIX_NUMBER, es decir, algo como "5.0.6-HOTFIX.002".
 
 Finalmente, creamos un tar con los fuentes y registramos un artefacto compuesto por el fat-jar, el pom y el tar:
@@ -513,21 +544,9 @@ El job guarda el IMG_TAG generado en el archivo "prepare.env", y lo pasa como ar
 
 ==== Tag
 
-Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual". Esto significa que queda bloqueado dentro de la cadena del pipeline hasta que se libere manualmente. En gitlab, no existe, por el momento, un mecanismo directo de interacción con la consola pero podemos, de forma indirecta, controlar el flujo:
+Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual".
 
-image::img/jobmanual.png[Job manual]
-
-Por ejemplo, en este caso, se ha definido una variable de job llamada SEGUIR, con valor inicial false. Si en el job pulsamos el icono de "play", la variable no cambiará su valor. Por contra, si pulsamos sobre el nombre del job, se nos presenta un formulario en el que podemos agregar o modificar el valor de variables locales.
-En este ejemplo, podemos definir la variable SEGUIR a true, con lo que podemos, en el script, continuar la ejecución o pasar a la siguiente etapa:
-
--------------------------------------------------
-  variables:
-    SEGUIR: "false"
-  script:
-    - '[[ $SEGUIR != "true" ]] && { echo "WARN: Para ejecutar este job debe establecer la variable SEGUIR a true"; exit 0; }'
--------------------------------------------------
-
-A continuación el job computa un TagID, de acuerdo los siguientes criterios:
+El job computa un TagID, de acuerdo los siguientes criterios:
 
 - Si estamos en la rama master, el TagID se forma con la cadena "release-" seguida de la versión del proyecto, es decir, algo como "release-5.0.6".
 - En rama develop, y si es SNAPSHOT, se forma con la cadena "snapshot-", la versión de proyecto y el SNAPSHOT_NUMBER. Algo como "snapshot-5.0.6-SNAPSHOT.003".
@@ -545,9 +564,17 @@ Con este Id se genera un tag. Nótese que los TagID no pueden repetirse.
     - git push origin $TAG
 -------------------------------------------------
 
+==== Tf-prepare
+
+Se ha definido en link:jobs/maven/tf-prepare-simple.yml[]. Se ejecuta sólamente en master.
+
+==== Tf-apply
+
+Job definido en link:jobs/maven/tf-apply-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual".
+
 ==== Deploy
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[].
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual".
 En esta primera versión este job se ha planteado de una forma muy simple, aunque en próximas versiones se incorporarán aspectos de IaC y despliegues más sofisticados. En este ejemplo, se parte de la siguiente situación:
 
 - Debemos desplegar la imagen Docker generada en etapas anteriores en un host remoto, al que tenemos acceso sólo mediante SSH empleando clave privada. El host remoto será el de producción (rama master) o bien el de UAT o staging (rama develop, siempre que REGISTER_DEVELOP sea true). No se hace deploy ni en hotfix ni en ramas auxiliares.
