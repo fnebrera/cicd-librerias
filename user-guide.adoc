@@ -11,7 +11,7 @@ Este proyecto representa un ejemplo completamente operacional de una cadena CI/C
 DevOps, la instalación de productos requeridos y, sobre todo, la preparación de pipelines y jobs para los circuitos más
 habituales. No se ha pretendido hacer comparativas de productos y, menos aún, establecer una guía estricta de
 cómo hacer las cosas, puesto que cada Compañía y/o Departamento de TI tiene su propia normativa. Por esta razón, las librerías son
-muy flexibles, y puedean adaptarse con muy poco trabajo a diferentes normativas y procedimientos. 
+muy flexibles, y pueden adaptarse con muy poco trabajo a diferentes normativas y procedimientos. 
 
 Esta versión 1.0.1 es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
 bastante genérico y se basa en Terraform. Para deploy, se ha optado por emplear bash y ssh, pensando en entornos no demasiado complejos.
@@ -467,7 +467,7 @@ Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple
 - Si estamos en la rama master y la versión del proyecto es SNAPSHOT, salimos con error 2 (no se permite SNAPSHOT en master).
 - Si estamos en la rama develop, la versión del proyecto NO es SNAPSHOT y el flag "ALLOW_RELEASE_IN_DEVELOP" es false, salimos con error 3 (no se permite release en develop).
 - Si estamos en develop y el flag REGISTER_DEVELOP es false, salimos con error 4 (la rama develop no se registra), con lo que detenemos el pipeline.
-- Si salimos con error, generamos un artefacto compuesto por el fat-jar, el pom y el .gitlab-ci.yml. Este artefacto está disponible para su descarga durante un periodo de 2 horas. La idea es que, si se genera alguno de los errores anteriores, el pipeline se detenga, pero dispongamos del artefacto para pruebas adicionales, condiciones no contempladas, etc.
+- Si salimos con error, generamos un artefacto compuesto por el fat-jar, el pom y el .gitlab-ci.yml. Este artefacto está disponible para su descarga durante un periodo de 8 horas. La idea es que, si se genera alguno de los errores anteriores, el pipeline se detenga, pero dispongamos del artefacto para pruebas adicionales, condiciones no contempladas, etc.
 
 ==== Register
 
@@ -568,43 +568,44 @@ Con este Id se genera un tag. Nótese que los TagID no pueden repetirse.
 
 Se ha definido en link:jobs/maven/tf-prepare-simple.yml[]. Se ejecuta sólamente en master.
 
+En este job se prepara el provisioning basado en _Terraform(TM)_ de acuerdo a la configuración definida en el subdirectorio "terraform" del proyecto. Para este caso concreto, y a efectos de probar un provisionado "on-premises" (la web está llena de ejemplos de provisionado en Cloud), se ha optado por usar un provider para Hyper-V que, aunque se encuentra en versión beta, funciona razonablemente. La configuración define una máquina virtual basada en Alpine, que se construye a partir de un disco virtual "semilla" generado a partir de una imagen ISO de Alpine Linux 3.16.2, sen el que se han preinstalado algunos servicios (docker, ssh, sudo, etc.).
+
+A título de ejemplo, también se ha incorporado la capacidad de Gitlab como "backend" del "state" de terraform, lo que permite controlar el eventual acceso simultáneo desde diferentes equipos o sistemas, evitando posibles errores que podrían resultar gravísimos en entornos de producción.
+
+El job de preparación inicializa el backend, valida la configuración de terraform y crea el "plan" de provisionado en base a los posibles cambios sobre la situación "real" de máquinas, discos, interfaces, etc. El plan generado se pasa a las etapas posteriores en forma de artefacto interno del pipeline.
+
 ==== Tf-apply
 
-Job definido en link:jobs/maven/tf-apply-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual".
+Job definido en link:jobs/maven/tf-apply-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual" para permitir la revisión detallada el plan preparado en la etapa anterior, antes de proceder al provisioning (apply). Como todos los jobs manuales de esta librería, podemos "saltarnos" la ejecución sin más que indicar SKIP=true antes de lanzarlo.
+
+Adicionalmente, se ha previsto la posibilidad de realizar una acción cualquiera de terraform, para lo que debemos definir la variable ACTION con el valor deseado. Por defecto es "apply", pero podemos entrar "destroy" u otro comando terraform válido.
 
 ==== Deploy
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual".
-En esta primera versión este job se ha planteado de una forma muy simple, aunque en próximas versiones se incorporarán aspectos de IaC y despliegues más sofisticados. En este ejemplo, se parte de la siguiente situación:
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual" para que pueda lanzarse sólamente una vez verificado que el provisionado ha sido correcto.
 
-- Debemos desplegar la imagen Docker generada en etapas anteriores en un host remoto, al que tenemos acceso sólo mediante SSH empleando clave privada. El host remoto será el de producción (rama master) o bien el de UAT o staging (rama develop, siempre que REGISTER_DEVELOP sea true). No se hace deploy ni en hotfix ni en ramas auxiliares.
-- En el host remoto están preinstalados docker y docker-compose, así como los volúmenes y network empleados por nginx y selfwebspringboot.
-- La configuración de docker está basada en dos archivos que emplean la designación por defecto de docker-compose, es decir "docker-compose.yml" y "docker-compose.override.yml". Este último archivo será reescrito por el job, con un contenido similar a este:
+En esta primera versión este job se ha planteado de una forma relativamente simple, utilizando sftp, ssh y bash para instalar y/o actualizar un servidor REST basado en SpringBoot (nuestro proyecto ejemplo SelfWeb), así como el servidor Web y el cliente javascript. Esta aproximación nos permite evitar la necesidad de un "agente" remoto, puesto que basta con que la máquina semilla tenga preinstalados el servidor ssh y docker.
+
+Partimos de un paquete de instalación almacenado en el propio Gitlab y que consiste en lo siguiente (ver directorio "deploy" en los ejemplos):
+
+- Un archivo "docker-compose.yml" que define el stack docker sobre el que se ejecutará el sistema. En este archivo hay un "placehorder" donde debemos indicar la imagen docker a instalar, que se habrá generado y registrado en la etapa "docker". Este placeholder se rellena mediante un "docker-compose.override.yml" que se genera de manera automática en tiempo de despliegue, y que tendrá un contenido similar al siguiente:
 
 -------------------------------------------------
 services:
     selfweb:
-        image: registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.003
+        image: registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/release:5.0.6
 -------------------------------------------------
 
-Donde la entrada "image:" es el TagId creado anteriormente en la etapa "docker", que incluye el host del registry.
+- Un árbol de directorios en los que definimos los "volumes" y "networks" que empleará el stack. Cuando alguno de los volúmenes se debe crear, pero no copiar su contenido al destino, debe incluir un archivo llamado "ignore". Si no es así, todo el contenido se copia (y sobrescribe) al destino (/var/lib/docker/volumes/xxx/_data).
+- Un script bash llamado "deploy.sh" que se ocupará de realizar la instalación propiamente dicha (ver ejemplos).
 
-Este job es también manual, y emplea el mismo mecanismo para seguir o no que el utilizado en la etapa "tag".
+De forma muy resumida, el job hace lo siguiente (ver el código fuente para más detalles):
 
-La parte interesante del script es ésta:
--------------------------------------------------
-      CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST}"
-      [[ $IS_SNAPSHOT == "true" ]] && CONN_STRING="${CICD_SSH_DEPLOY_USER}@${CICD_SSH_DEPLOY_HOST_SNAPSHOT}"
-      ssh -o StrictHostKeyChecking=no -i ${CICD_SSH_KEY} ${CONN_STRING} "
-      cd selfweb &&
-      docker-compose down &&
-      echo 'services:' > docker-compose.override.yml &&
-      echo '    ${DOCKER_SERVICE_NAME}:' >> docker-compose.override.yml &&
-      echo '        image: ${IMG_TAG}' >> docker-compose.override.yml &&
-      docker-compose up -d &&
-      docker ps
-      "
--------------------------------------------------
+- Modifica los permisos del archivo temporal ${DEPLOY_SSH_KEY} (que contiene la clave privada para la conexión ssh), para que sean exactamente "400" tal como requiere OpenSSH.
+- Empleando ssh, crea (si no existe) en la máquina de despliegue el directorio destino de la instalación, que se habrá definido mediante la variable ${DEPLOY_SSH_PATH}. Elimina (de existir) el directorio de trabajo "deploy".
+- Empleando sftp, copia el directorio "deploy" del proyecto a la máquina remota.
+- Ejecuta, de manera remota, el script "deploy.sh" y guarda el log de la ejecución.
+- Descarga dicho log mediante sftp y lo muestra en la salida del job.
 
 == Casos de uso
 
@@ -631,7 +632,7 @@ Habitualmente un único desarrollador trabajará en la rama "X", en su PC person
 - Sea por razones de backup, por haber finalizado un sprint, etc., hará push de la rama auxiliar, lo que disparará el pipeline.
 - Dado que IGNORE_AUX_BRANCHES es false, el pipeline se ejecuta, con los stages:
 * prepare: Comportamiento normal.
-* complile: Se ejecuta, al ser COMPILE_AUX_BRANCHES = true.
+* compile: Se ejecuta, al ser COMPILE_AUX_BRANCHES = true.
 * sonar: Se ejecuta, al ser SONAR_AUX_BRANCHES = true. Se pasa sonar sólo a los archivos modificados y se permite errores.
 * NO se ejecuta la etapa test, al ser TEST_AUX_BRANCHES = false.
 
@@ -642,7 +643,7 @@ Como puede verse, se trata símplemente de verificar que el código fuente actua
 El tratamiento de esta rama es bastante más complejo, puesto que en su desarrollo pueden intervenir varias personas. Además, si el flag REGISTER_DEVELOP es true, vamos a hacer un despliegue "oficial" a UAT o staging, por lo que hemos de ser cuidadosos.
 
 - A medida que los desarrolladores van finalizando su trabajo en su rama "X, Y,..", hacen lo siguiente:
-* Hacen pull de la rama develop, para obtener el último código disponible.
+* Hacen fetch / diff / pull de la rama develop, para obtener el último código disponible.
 * Hacen merge (en local) de su rama "X" sobre develop. Si hay conflictos, deben resolverse en la rama "X" y repetir el proceso.
 * Notifican al Project Leader que su trabajo está concluido, al menos provisionalmente.
 
@@ -659,10 +660,12 @@ El tratamiento de esta rama es bastante más complejo, puesto que en su desarrol
 * sonar: Se pasa para todo el código, y NO se admiten errores (ALLOW_FAILURE_IN_SONAR_DEVELOP = false).
 * test: Se pasan tests unitarios, y NO se admiten errores (ALLOW_FAILURE_IN_TEST_DEVELOP = false).
 * build: Se crea el "fat-jar" y, posteriormente, se verifican condiciones para continuar el pipeline. Si no se cumplen, se genera un artefacto con el .jar y el pom, el cual queda disponible para download por un corto periodo de tiempo (en el ejemplo 2 horas). Una de las condiciones para continuar es que REGISTER_DEVELOP valga true. Si, a pesar de estar en la rama develop, la versión del proyecto NO es SNAPSHOT, y dado que ALLOW_RELEASE_IN_SNAPSHOT es false, el pipeline se interrumpirá.
-* register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* register: Se ejecuta de forma manual. Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
 * docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
 * tag: Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se crea un nuevo Tag con Id único que incluye el SNAPSHOT_NUMBER.
-* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se despliega la imegen docker generada en la etapa "docker" anterior en el host definido por CICD_SSH_DEPLOY_HOST_SNAPSHOT, usando SSH sobre un entorno preconfigurado.
+* tf-prepare: NO se ejecuta.
+* tf-apply: NO se ejecuta.
+* deploy: NO se ejecuta.
 
 === Rama master
 
@@ -682,10 +685,12 @@ En el modelo de flujo que hemos seleccionado, la rama master contiene únicament
 * sonar: Se pasa para todo el código, y NO se admiten errores.
 * test: Se pasan tests unitarios, y NO se admiten errores.
 * build: Se crea el "fat-jar" y, se verifica que la versión del proyecto NO es SNAPSHOT. Si no se cumple, se genera un artefacto con el .jar y el pom, el cual queda disponible para download por un corto periodo de tiempo (en el ejemplo 2 horas) y se interrumpe el pipeline.
-* register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* register: Se ejecuta de forma manual. Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
 * docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
 * tag: Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se crea un nuevo Tag con Id único (la versión del proyecto).
-* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se despliega la imegen docker generada en la etapa "docker" anterior en el host definido por CICD_SSH_DEPLOY_HOST, usando SSH sobre un entorno preconfigurado.
+* tf-prepare: Inicializa el backend de terraform y crea el plan de provisionado.
+* tf-apply: Se ejecuta de forma manual. Aplica el plan terraform anteriormente generado.
+* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se instala o actualiza el producto en entorno de producción.
 
 === Rama hotfix
 
@@ -708,8 +713,12 @@ En este ejemplo se ha dejado bastante libertad al tratamiento de eventuales rama
 * register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, por lo que a la versión del proyecto se agrega el HOTFIX_NUMBER, y el artefacto se convierte en el "single source of truth" de las diferentes versiones hotfix registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
 * docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
 * tag: NO se ejecuta.
+* tf-prepare: NO se ejecuta.
+* tf-apply: NO se ejecuta.
 * deploy: NO se ejecuta.
 
 == Conclusión
 
 En el presente proyecto se ha comprobado que es posible obtener un ahorro importante, tanto en horas/hombre como en curva de aprendizaje, empleando Gitlab CI/CD como herramienta básica del proceso, frente a otras soluciones multi-producto, aunque, lógicamente, no se llegue al nivel de sofisticación y complejidad que pueden aportar las mismas. Adicionalmente, la definición de pipelines realizada, si bien es sólo un ejemplo, puede emplearse como "template" y adaptarse a los requisitos de muchas organizaciones.
+
+Se han incorporado, además, etapas de provisionado y despliegue relativamente sofisticadas, empleando _Terraform(TM)_, ssh, sftp y bash, que son más que suficientes para muchas situaciones reales. 
