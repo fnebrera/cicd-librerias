@@ -1,24 +1,22 @@
 = image:img/vassblue.png[Logo] Proyecto [.underline]#cicd-librerias#
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.0, 22/08/2022
+1.0.1, 20/09/2022
 :toc:
 :toclevels: 3
 :icons: font
 
 == Resumen
 
-Este proyecto representa un ejemplo y template de una cadena CI/CD construida con la idea de simplificar el stack
-de productos requeridos, su instalación y, sobre todo, la preparación de pipelines y jobs para los circuitos más
+Este proyecto representa un ejemplo completamente operacional de una cadena CI/CD construida con la idea de simplificar el stack
+DevOps, la instalación de productos requeridos y, sobre todo, la preparación de pipelines y jobs para los circuitos más
 habituales. No se ha pretendido hacer comparativas de productos y, menos aún, establecer una guía estricta de
-cómo hacer las cosas. El proyecto es, simplemente, un demostrador del "ahorro" de costes y tiempo de aprendizaje
-para establecer cadenas CI/CD no demasiado complejas. 
+cómo hacer las cosas, puesto que cada Compañía y/o Departamento de TI tiene su propia normativa. Por esta razón, las librerías son
+muy flexibles, y puedean adaptarse con muy poco trabajo a diferentes normativas y procedimientos. 
 
-En esta primera versión la etapa de despliegue se realiza de manera muy simple (mediante SSH), 
-y se limita a proyectos maven sobre java/SpringBoot o similares. Partiendo de este template es muy sencillo
-agregar las configuraciones correspondientes a otros entornos, tales como node.js, python, Angular, etc.
+Esta versión 1.0.1 es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
+bastante genérico y se basa en Terraform. Para deploy, se ha optado por emplear bash y ssh, pensando en entornos no demasiado complejos.
 
-En versiones posteriores está previsto incluir jobs más complejos para las etapas CD, concretamente para Terraform,
-Helm/Kubernetes y Ansible.
+En versiones posteriores está previsto replicar una parte de las librerías para incluir proyectos basados en phyton, node.js, .Net.core, etc. También está previsto incorporar la posibilidad de emplear algún producto sofisticado de deploy, tipo Ansible u Octopus. Por último, se trabajará en el provisionado y despliegue de proyectos basados en microservicios (kubernetes, swarm, etc.).
  
 == Versiones
 
@@ -34,18 +32,23 @@ Helm/Kubernetes y Ansible.
 |22/08/2022
 |Primera versión CI/CD para maven/java
 
+|1.0.1
+|FNG
+|20/09/2022
+|Se agrega provisioning con Terraform y se generaliza el deploy usando bash y ssh
+
 |===
 
 :sectnums:
 == Introducción
 
 Los stacks CI/CD más habituales están compuestos de varios productos, especializados cada uno de ellos en un aspecto concreto
-de la cadena o pipeline de la solución final. Es muy frecuente encontrar stacks que incluyen 5 o más
+de la cadena o pipeline de la solución final. Es muy frecuente encontrar stacks que incluyen 6 o más
 productos diferentes: Gitlab, Jenkins, Sonar, Nexus, Vault, Octopus, etc.
 
 Es evidente que instalar (y sobre todo configurar) muchos productos heterogéneos no es un trabajo trivial. Algunos vendors
 permiten simplificar esta tarea mediante soluciones previamente integradas (véase el caso de RedHat OpenShift, los servicios
-CI/CD de Amazon Web Services, etc.) aunque, lógicamente, no se trata de simples black-boxes, puesto que cada organización
+CI/CD de Amazon Web Services o Azure, etc.) aunque, lógicamente, no se trata de simples black-boxes, puesto que cada organización
 tiene sus propios requisitos de CI/CD. No es lo mismo un pequeño ISV que una gran Entidad Financiera, por lo que siempre es necesario
 hacer "retoques" sobre las configuraciones por defecto, o incluso crearlas desde cero.
 
@@ -59,19 +62,26 @@ En este proyecto se ha intentado minimizar:
 
 - El número de productos implicados.
 - La complejidad de la definición de
-flujos de tareas.
+flujos de tareas (pipelines).
 
 Para ello se han empleado algunas de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones, y se han definido unos pipelines de ejemplo que se han probado en un entorno real, con resultados bastante satisfactorios.
 
 [TIP]
 .*Importante*
 --
-Independientemente de cuál sea su formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filosofía de los pipelines  de CI/CD.
+Independientemente de cuál sea tu formación previa en CI/CD, la lectura de este documento puede ser útil para afianzar conceptos básicos y entender la filosofía de los pipelines  de CI/CD.
 --
 
 == Entorno de desarrollo
 
 === Hardware y software de base
+
+Server Hyper-V::
+* Intel Core i7-7567U.
+* 32 GB Memoria
+* 1 TB SSD
+* Windows Server 2022 Standard
+* Hyper-V
 
 Server CI/CD::
 * Máquina virtual en Hyper-V.
@@ -80,12 +90,13 @@ Server CI/CD::
 * Ubuntu 20.04.1
 * Docker 20.10.17 y docker-compose
 
-Server Despliegue::
+Maquinas provisionadas::
 * Maquina virtual en Hyper-V.
-* 4 GB Memoria max.
-* 2 procesadores virtuales.
-* Ubuntu 22.04.1
+* 2 GB Memoria max.
+* 1 procesadores virtuales.
+* Alpine Linux 3.16.2
 * Docker 20.10.17 y docker-compose.
+* Herramientas de base: OpenSSH-server, bash, sudo, etc.
 
 Workstation::
 * Core i7-1165G7
@@ -123,10 +134,6 @@ trata de una aplicación java que emplea el framework SpringBoot. Como gestor de
 puede verse el pom.xml de dicho proyecto, así como otros ejemplos de archivos de configuración. Este proyecto
 se maneja en la workstation empleando Eclipse.
 
-El servidor de despliegue pretende simular un entorno real de producción. Se han preinstalado docker y docker-compose. Adicionalmente
-están preconstruidos los diferentes volúmenes docker
-que emplean Selfweb y Nginx, y preinstalado el cliente javascript de Selfweb (SelfTask).
-
 === Flujo de desarrollo
 
 Como normativa se ha escogido el modelo "Git Flow" simplificado. Si bien los pipelines pueden fácilmente adaptarse
@@ -149,7 +156,7 @@ deben hacer pull de "develop", y merge local de la rama de trabajo sobre "develo
 un tratamiento especial.
 - Una vez preparado en local un SNAPSHOT en "develop" incluyendo todas las ramas auxiliares finalizadas, un "Mantainer" hará
 push de develop, lo que disparará un pipeline CI/CD.
-- Cuando un SNAPSHOT sea autorizado para producción, un "Mantainer" hará merge local de develop sobre master,
+- Cuando un SNAPSHOT sea autorizado para producción, un "Mantainer" hará merge local de 'develop' sobre 'master',
 modificará la versión en el pom (eliminando la cadena "SNAPSHOT"), y hará push de master, lo que disparará un pipeline CI/CD. 
 
 === Gitlab como entorno CI/CD
@@ -183,7 +190,7 @@ específico.
 
 * Si se requieren acciones complejas, el entorno de "shell" está directamente integrado con los jobs. Es muy fácil, además,
 crear librerías de funciones escritas en .sh, .bash, etc. y llamarlas directamente desde un job. En un entorno complejo,
-los ingenieros DevOps peden concentrarse en la creación de pipelines, dejando los detalles de implementación de cada job a los desarrolladores.
+los ingenieros DevOps pueden concentrarse en la creación de la base de los pipelines, dejando determinados detalles de implementación de cada job a los desarrolladores.
 
 Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
 
@@ -198,25 +205,28 @@ De nuevo Gitab se apoya en soluciones de terceros tanto para la ejecución de te
 
 ==== Construcción de Artefactos
 
-La mayor parte de los gestores de proyectos (_maven_, _gradle_, _npm_..) disponen de sus propios mecanismos de detección de dependencias y construcción del/los artefactos finales. En este proyecto nos hemos apoyado en las capacidades de _maven_, como se verá más adelante. La adaptación de los jobs a otros entornos es
-completamente trivial.
+La mayor parte de los gestores de proyectos (_maven_, _gradle_, _npm_..) disponen de sus propios mecanismos de detección de dependencias y construcción del/los artefactos finales. En este proyecto nos hemos apoyado en las capacidades de _maven_, como se verá más adelante. La adaptación de los jobs a otros entornos es bastante simple.
 
 ==== Registro de Artefactos
 
-En este aspecto, el mercado está claramente dominado por dos jugadores clave: _Nexus(TM)_ y _Artifactory(TM)_. Gitlab, sin embargo, dispone de un "Package Registry" compatible con los
-formatos más habituales, y con funcionalidades básicas, que pensamos 
-pueden ser suficientes en muchos casos. Por ello nos hemos basado
-en el propio Gitlab en este apartado.
+En este aspecto, el mercado está claramente dominado por dos jugadores clave: _Nexus(TM)_ y _Artifactory(TM)_. Gitlab, sin embargo, dispone de un "Package Registry" compatible con los formatos más habituales, y con funcionalidades básicas, que pensamos 
+pueden ser suficientes en muchos casos. Por ello nos hemos basado en el propio Gitlab en este apartado.
 
 ==== Registro de Imágenes Docker
 
 También en este apartado Gitlab dispone de un "Component Registry" muy flexible, por lo que es el que se ha empleado en este
-ejemplo.
+ejemplo. Nótese que Nexus, por ejemplo, incorpora esta funcionalidad en un módulo adicional al Nexus Registry, lo que complica su empleo.
+
+==== Provisionado
+
+Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar terraform en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform apply'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa.
+
+Un aspecto muy interesante es que Gitlab puede actuar como backend del status Terraform del proyecto, evitando así que el eventual acceso simultáteno pueda provocar comportamientos indeseados. 
 
 ==== Despliegue
 
-En esta primera versión, el despliegue de la imagen Docker generada se realiza de una manera muy simple (utilizando SSH).
-Gitlab dispone de integraciones directas con Terraform, Helmet/Kubernetes, Ansible, etc. por lo que en posteriores versiones
+En esta primera versión, el despliegue de la imagen Docker generada se realiza de una manera relativamente simple (utilizando bash y ssh).
+Gitlab puede integrar diferentes plataformas auxiliares tipo Helmet/Kubernetes, Ansible, etc. por lo que en posteriores versiones
 de este proyecto se trabajará con estas posibilidades. 
 
 === Un vistazo a Gitlab CI/CD
