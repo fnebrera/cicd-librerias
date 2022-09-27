@@ -20,10 +20,6 @@ deploy-job:
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
 
-    # Para DEBUG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
-      when: manual
-
   before_script:
     # Definir prmisos estrictos en la clave privada
     - chmod 400 ${DEPLOY_SSH_KEY}
@@ -36,12 +32,6 @@ deploy-job:
     # En todas las etapas manuales hacemos lo mismo
     - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - |
-      # PRUEBAS QUITAR !!!!!!!!!!!!
-      if [[ -z ${IMG_TAG} && ${DEBUG_CD} == 'true' ]]; then
-        IS_DOCKER_PRJ="true"
-        IMG_TAG=registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/snapshot:5.0.6-SNAPSHOT.006 
-      fi
-
       # DEBUG
       echo "IS_DOCKER_PRJ      : ${IS_DOCKER_PRJ}"
       echo "IMG_TAG            : ${IMG_TAG}"

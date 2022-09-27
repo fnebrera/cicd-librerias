@@ -12,9 +12,6 @@ sonar-job:
   stage: sonar
 
   rules:
-    # PROVISIONAL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    - if: $DEBUG_CD == 'true'
-      when: never
     # En rama master no permitimos errores
     - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false

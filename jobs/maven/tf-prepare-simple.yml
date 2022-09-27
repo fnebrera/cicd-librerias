@@ -2,7 +2,7 @@
 # Prepara el provisionado terraform, incluyendo el plan, para que pueda ser revisado antes de lanzar
 # el apply.
 # No usamos gitlab-terraform porque en este proyecto no nos aporta nada, más bien nos lía. Si
-# se quiere volver a usar, basta con sustituir los comandos 'gitlab-terraform' por 'terraform'.
+# se quiere volver a usar, basta con sustituir los comandos 'terraform' por 'gitlab-terraform'.
 # IMPORTANTE: Por elmomento sólo se ejecuta en master.
 #
 # Vers  Por Fecha      Notas
@@ -17,13 +17,11 @@ tf-prepare-job:
 
   rules:
     - if: $CI_COMMIT_REF_NAME == "master"
-    # DEBUG QUITAR !!!!!!!!!!!!!!!!!!!!!!
-    - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
 
   cache:
     paths:
-      - terraform/.terraform.lock.hcl
-      - terraform/.terraform
+      - ${TF_ROOT}/.terraform.lock.hcl
+      - ${TF_ROOT}/.terraform
 
   script:
     - >

@@ -15,11 +15,6 @@ prepare-job:
       - ./.m2/repository
       - target
 
-  # PROVISIONAL !!!!!!!!!!!!!!!!!!!!!!!!!!
-  rules:
-    - if: $DEBUG_CD == 'true'
-      when: never
-
   script:
     - >
       echo -e "==============================================================================================

@@ -19,14 +19,11 @@ tf-apply-job:
   rules:
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
-    # DEBUG QUITAR !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    - if: $CI_COMMIT_REF_NAME == "dev-fng" && $DEBUG_CD == "true"
-      when: manual
 
   cache:
     paths:
-      - terraform/.terraform.lock.hcl
-      - terraform/.terraform
+      - ${TF_ROOT}/.terraform.lock.hcl
+      - ${TF_ROOT}/.terraform
 
   script:
     - >
