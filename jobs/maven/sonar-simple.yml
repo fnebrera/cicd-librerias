@@ -6,10 +6,14 @@
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
+# 1.0.1 FNG 05/10/2022 Un solo script
 #
 #########################################################################################################
 sonar-job:
   stage: sonar
+
+  variables:
+    SKIP_UNCHANGED: "false"
 
   rules:
     # En rama master no permitimos errores
@@ -27,6 +31,8 @@ sonar-job:
     # pero tambien debe haber un compile previo, para tener los .class
     - if: $SONAR_AUX_BRANCHES == "true" && $COMPILE_AUX_BRANCHES == "true"
       allow_failure: true
+      variables:
+        SKIP_UNCHANGED: "true"
     
   cache:
     paths:
@@ -35,15 +41,12 @@ sonar-job:
       - target
 
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa SONAR en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    - 'SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=true"'
-    # En ramas master, develop y hotfix, forzamos analizar todo el codigo y no solo los cambios
-    - '[[ $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "develop"  || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH ]] && SKIP_UNCHANGED="-Dsonar.java.skipUnchanged=false"'
-    - 'echo " Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"'
-    - mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true $SKIP_UNCHANGED
+    - |
+      echo "=============================================================================================="
+      echo "Ejecutando etapa SONAR en $CI_COMMIT_REF_NAME"
+      echo "=============================================================================================="
+      echo "Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"
+      mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -Dsonar.java.skipUnchanged=$SKIP_UNCHANGED
 
 ################################## E O F ##########################################
 
