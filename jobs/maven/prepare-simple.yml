@@ -5,6 +5,7 @@
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
+# 1.0.1 FNG 05/10/2022 Transformar en un unico script 
 #
 #########################################################################################################
 prepare-job:
@@ -16,42 +17,42 @@ prepare-job:
       - target
 
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa PREPARE en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    - 'PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)'
-    - '[[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }'
-    - 'echo "Version del proyecto: ${PRJ_VERS}"'
+    - |
+      echo "=============================================================================================="
+      echo "Ejecutando etapa PREPARE en $CI_COMMIT_REF_NAME"
+      echo "=============================================================================================="
+      PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+      [[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }
+      echo "Version del proyecto: ${PRJ_VERS}"
     #
     # Nombre del proyecto
     #
-    - 'PRJ_NAME=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.name -q -DforceStdout)'
-    - '[[ -z ${PRJ_NAME} ]] && { echo "ERROR: No se ha encontrado el nombre del proyecto en el pom.xml"; exit 2; }'
-    - 'echo "Nombre del proyecto: ${PRJ_NAME}"'
+      PRJ_NAME=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.name -q -DforceStdout)
+      [[ -z ${PRJ_NAME} ]] && { echo "ERROR: No se ha encontrado el nombre del proyecto en el pom.xml"; exit 2; }
+      echo "Nombre del proyecto: ${PRJ_NAME}"
     #
     # Es un proyecto Docker?
     #
-    - 'IS_DOCKER_PRJ="false"'
-    - '[[ -f "Dockerfile" ]] && IS_DOCKER_PRJ="true"'
-    - 'echo "¿Es un proyecto Docker?: ${IS_DOCKER_PRJ}"'
+      IS_DOCKER_PRJ="false"
+      [[ -f "Dockerfile" ]] && IS_DOCKER_PRJ="true"
+      echo "¿Es un proyecto Docker?: ${IS_DOCKER_PRJ}"
     #
     # Es una version SNAPSHOT?
     #
-    - 'IS_SNAPSHOT="false"'
-    - '[[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"'
-    - 'echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"'
+      IS_SNAPSHOT="false"
+      [[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"
+      echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"
     #
     # Limpiar el directorio target, si es que existe
     #
-    - '[[ -d "target" ]] && mvn clean'
+      [[ -d "target" ]] && mvn clean
     #
     # Guardar las variables de entorno globales en un fichero .env
     #
-    - 'echo "PRJ_VERS=$PRJ_VERS" > prepare.env'
-    - 'echo "PRJ_NAME=$PRJ_NAME" >> prepare.env'
-    - 'echo "IS_DOCKER_PRJ=$IS_DOCKER_PRJ" >> prepare.env'
-    - 'echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env'
+      echo "PRJ_VERS=$PRJ_VERS" > prepare.env
+      echo "PRJ_NAME=$PRJ_NAME" >> prepare.env
+      echo "IS_DOCKER_PRJ=$IS_DOCKER_PRJ" >> prepare.env
+      echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env
 
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
