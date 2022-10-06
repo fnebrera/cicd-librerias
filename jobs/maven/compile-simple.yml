@@ -25,8 +25,8 @@ compile-job:
     - chmod +x funciones-simple.sh
 
   script:
+    - '. ./funciones-simple.sh'
     - |
-      . ./funciones-simple.sh
       eco_job_banner "COMPILE"
       #echo "=============================================================================================="
       #echo "Ejecutando etapa COMPILE en $CI_COMMIT_REF_NAME"
