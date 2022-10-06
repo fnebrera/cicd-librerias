@@ -11,12 +11,13 @@ test-job:
   stage: test
 
   rules:
-    # En rama develop permitimos errores
+    # En rama master no permitimos errores
+    - if: $CI_COMMIT_REF_NAME == "master"
+      allow_failure: false
+    # En rama develop permitimos o no errores según el flag
     - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP == "true"
       allow_failure: true
     - if: $CI_COMMIT_REF_NAME == "develop" && $ALLOW_FAILURE_IN_TEST_DEVELOP == "false"
-      allow_failure: false
-    - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false
     # Hotfixes pasan tests, pero permitimos errores
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH

@@ -5,22 +5,25 @@
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
-# 1.0.1 FNG 05/10/2022 Transformar en un unico script 
+# 1.0.1 FNG 05/10/2022 Transformar en un unico script y crear libreria bash
 #
 #########################################################################################################
 prepare-job:
   stage: prepare
 
-  cache:
-    paths:
-      - ./.m2/repository
-      - ./target
+  #cache:
+  #  paths:
+  #    - ./.m2/repository
+  #    - ./target
 
   script:
     - |
       echo "=============================================================================================="
       echo "Ejecutando etapa PREPARE en $CI_COMMIT_REF_NAME"
       echo "=============================================================================================="
+      #
+      # Version del proyecto
+      #
       PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
       [[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }
       echo "Version del proyecto: ${PRJ_VERS}"
@@ -43,10 +46,6 @@ prepare-job:
       [[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"
       echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"
       #
-      # Limpiar el directorio target, si es que existe
-      #
-      [[ -d "target" ]] && mvn clean
-      #
       # Guardar las variables de entorno globales en un fichero .env
       #
       echo "PRJ_VERS=$PRJ_VERS" > prepare.env
@@ -54,11 +53,79 @@ prepare-job:
       echo "IS_DOCKER_PRJ=$IS_DOCKER_PRJ" >> prepare.env
       echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env
 
+      #
+      # Creamos la libreria bash, que pasaremos al resto de jobs
+      #
+      cat << EoF > funciones-simple.sh
+      #====================================================================
+      # echo_stage_banner()
+      # Escribe en el log un banner de inicio del job.
+      #
+      # @param   Nombre del job
+      #====================================================================
+      function echo_job_banner() {
+          echo "=============================================================================================="
+          echo "Ejecutando job $1 en $CI_COMMIT_REF_NAME"
+          echo "=============================================================================================="
+      }
+
+      #====================================================================
+      # get_register_version()
+      # Obtiene la version del proyecto a emplear en el package registry, en
+      # funcion de la rama en la que estemos y las variables de pipeline.
+      #
+      # @return   prepara la variable global REG_URL
+      #====================================================================
+      function get_register_version() {
+          REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+          #
+          # En que rama estamos?
+          #
+          case ${CI_COMMIT_REF_NAME} in
+              master)
+                  if [[ $IS_SNAPSHOT == "true" ]]; then
+                      echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
+                      exit 2
+                  fi
+                  ;;
+              develop)
+                  if [[ $IS_SNAPSHOT == "true" ]]; then
+                      #
+                      # Agregamos numero de snapshot, si lo hay
+                      #
+                      [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}.${SNAPSHOT_NUMBER}"
+                  else
+                      if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+                          echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
+                          exit 2
+                      fi
+                      #
+                      # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP-RELEASE"
+                      #
+                      [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP-RELEASE.${SNAPSHOT_NUMBER}"
+                  fi
+                  ;;
+              ${HOTFIX_BRANCH})
+                  #
+                  # Agregamos numero de hotfix, si lo hay, precedido de "HOTFIX"
+                  #
+                  [[ -z $HOTFIX_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-HOTFIX.${HOTFIX_NUMBER}"
+                  ;;
+              *)
+                  echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
+                  exit 2          
+                  ;;
+          esac
+      }
+      EoF
+
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
-  # automaticamente disponibles para el resto del pipeline
+  # automaticamente disponibles para el resto del pipeline. Pasamos tambien la
+  # libreria de funciones bash.
   #
   artifacts:
+    paths: funciones-simple.sh
     reports:
       dotenv: prepare.env
 
