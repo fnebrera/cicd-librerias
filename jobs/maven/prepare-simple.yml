@@ -11,10 +11,10 @@
 prepare-job:
   stage: prepare
 
-  #cache:
-  #  paths:
-  #    - ./.m2/repository
-  #    - ./target
+  cache:
+    paths:
+      - ./.m2/repository
+      - ./target
 
   script:
     - |
