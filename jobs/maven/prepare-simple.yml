@@ -53,10 +53,11 @@ prepare-job:
       echo "IS_DOCKER_PRJ=$IS_DOCKER_PRJ" >> prepare.env
       echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env
 
-      #
+      ###########
       # Creamos la libreria bash, que pasaremos al resto de jobs
-      #
+      ###########
       cat << EoF > funciones-simple.sh
+      #!/bin/bash
       #====================================================================
       # echo_job_banner()
       # Escribe en el log un banner de inicio del job.
