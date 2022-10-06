@@ -9,6 +9,7 @@
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
+# 1.0.1 FNG 06/10/2022 Version inicial
 #
 #########################################################################################################
 pkg-register-job:
@@ -27,68 +28,29 @@ pkg-register-job:
   cache:
     paths:
       - ./.m2/repository
-      - target
+      - ./target
 
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa REGISTER en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    # En todas las etapas manuales hacemos lo mismo
-    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
-    #
-    # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
-    #
-    # - mvn deploy -s ci_settings.xml -DskipTests
-    #
-    # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado, empleando
-    # deploy-file.
-    # Además, como hemos configurado el registry para que no admita duplicados,
-    # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
-    #
     - |
+      echo "=============================================================================================="
+      echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"
+      echo "=============================================================================================="
+      # En todas las etapas manuales hacemos lo mismo
+      [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
+      #
+      # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
+      #
+      # - mvn deploy -s ci_settings.xml -DskipTests
+      #
+      # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado, empleando
+      # deploy-file.
+      # Además, como hemos configurado el registry para que no admita duplicados,
+      # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
+      #
       VERSION="-Dversion=$PRJ_VERS"
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
-      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
-      #
-      # En que rama estamos?
-      #
-      case ${CI_COMMIT_REF_NAME} in
-          master)
-              if [[ $IS_SNAPSHOT == "true" ]]; then
-                  echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
-                  exit 2
-              fi
-              ;;
-          develop)
-              if [[ $IS_SNAPSHOT == "true" ]]; then
-                  #
-                  # Agregamos numero de snapshot, si lo hay
-                  #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}.${SNAPSHOT_NUMBER}"
-              else
-                  if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
-                      echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
-                      exit 2
-                  fi
-                  #
-                  # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP-RELEASE"
-                  #
-                  [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP-RELEASE.${SNAPSHOT_NUMBER}"
-              fi
-              ;;
-          ${HOTFIX_BRANCH})
-              #
-              # Agregamos numero de hotfix, si lo hay, precedido de "HOTFIX"
-              #
-              [[ -z $HOTFIX_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-HOTFIX.${HOTFIX_NUMBER}"
-              ;;
-          *)
-              echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
-              exit 2          
-              ;;
-      esac
+      get_register_version
       #
       # Preparamos los fuentes, en formato tgz
       #
