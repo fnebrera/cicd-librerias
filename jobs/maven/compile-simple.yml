@@ -19,7 +19,7 @@ compile-job:
   cache:
     paths:
       - ./.m2/repository
-      - target
+      - ./target
 
   script:
     - |

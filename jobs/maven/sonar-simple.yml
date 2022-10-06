@@ -38,7 +38,7 @@ sonar-job:
     paths:
       - ./.m2/repository
       - ./.sonar/cache
-      - target
+      - ./target
 
   script:
     - |
