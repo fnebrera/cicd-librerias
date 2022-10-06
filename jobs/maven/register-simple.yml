@@ -47,9 +47,10 @@ pkg-register-job:
       # Además, como hemos configurado el registry para que no admita duplicados,
       # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
       #
-      VERSION="-Dversion=$PRJ_VERS"
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
+      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+      # Obtener version completa (REG_VERSION)
       get_register_version
       #
       # Preparamos los fuentes, en formato tgz
@@ -64,7 +65,7 @@ pkg-register-job:
       -DrepositoryId="gitlab-maven" \
       -Dfile="${JAR_FILE}" \
       -DpomFile="pom.xml" \
-      ${VERSION} \
+      -Dversion=${REG_VERSION} \
       -Dfiles=${SRC_FILE} \
       -Dclassifiers=src \
       -Dtypes=tgz

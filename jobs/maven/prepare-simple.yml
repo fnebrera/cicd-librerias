@@ -74,10 +74,10 @@ prepare-job:
       # Obtiene la version del proyecto a emplear en el package registry, en
       # funcion de la rama en la que estemos y las variables de pipeline.
       #
-      # @return   prepara la variable global REG_URL
+      # @return   prepara la variable global REG_VERSION
       #====================================================================
       function get_register_version() {
-          REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+          REG_VERSION="$PRJ_VERS"
           #
           # En que rama estamos?
           #
@@ -105,7 +105,7 @@ prepare-job:
                       [[ -z $SNAPSHOT_NUMBER ]] || VERSION="-Dversion=${PRJ_VERS}-DEVELOP-RELEASE.${SNAPSHOT_NUMBER}"
                   fi
                   ;;
-              ${HOTFIX_BRANCH})
+              "${HOTFIX_BRANCH}")
                   #
                   # Agregamos numero de hotfix, si lo hay, precedido de "HOTFIX"
                   #
