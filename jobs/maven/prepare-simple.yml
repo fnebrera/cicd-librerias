@@ -58,14 +58,14 @@ prepare-job:
       #
       cat << EoF > funciones-simple.sh
       #====================================================================
-      # echo_stage_banner()
+      # echo_job_banner()
       # Escribe en el log un banner de inicio del job.
       #
       # @param   Nombre del job
       #====================================================================
       function echo_job_banner() {
           echo "=============================================================================================="
-          echo "Ejecutando job $1 en $CI_COMMIT_REF_NAME"
+          echo "Ejecutando job ${1} en ${CI_COMMIT_REF_NAME}"
           echo "=============================================================================================="
       }
 
