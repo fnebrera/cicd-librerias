@@ -23,11 +23,11 @@ compile-job:
 
   before_script:
     - chmod +x funciones-simple.sh
+    - '. ./funciones-simple.sh'
 
   script:
-    - '. ./funciones-simple.sh'
     - |
-      eco_job_banner "COMPILE"
+      echo_job_banner "COMPILE"
       #echo "=============================================================================================="
       #echo "Ejecutando etapa COMPILE en $CI_COMMIT_REF_NAME"
       #echo "=============================================================================================="
