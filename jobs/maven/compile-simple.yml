@@ -27,7 +27,7 @@ compile-job:
 
   script:
     - |
-      echo_job_banner "COMPILE"
+      echo_job_banner 'COMPILE'
       mvn clean compile
 
 ################################## E O F ##########################################
