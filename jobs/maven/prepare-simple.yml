@@ -125,7 +125,8 @@ prepare-job:
   # libreria de funciones bash.
   #
   artifacts:
-    paths: funciones-simple.sh
+    paths: 
+      - funciones-simple.sh
     reports:
       dotenv: prepare.env
 
