@@ -56,7 +56,7 @@ prepare-job:
       ###########
       # Creamos la libreria bash, que pasaremos al resto de jobs
       ###########
-      cat << EoF > funciones-simple.sh
+      << EoF > funciones-simple.sh
       #!/bin/bash
       #====================================================================
       # echo_job_banner()
@@ -120,6 +120,7 @@ prepare-job:
           esac
       }
       EoF
+      cat funciones-simple.sh
 
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
