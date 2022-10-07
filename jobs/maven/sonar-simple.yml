@@ -40,11 +40,12 @@ sonar-job:
       - ./.sonar/cache
       - ./target
 
+  before_script:
+    - . funciones-simple.sh
+
   script:
     - |
-      echo "=============================================================================================="
-      echo "Ejecutando etapa SONAR en $CI_COMMIT_REF_NAME"
-      echo "=============================================================================================="
+      echo_job_banner SONAR
       echo "Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"
       mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -Dsonar.java.skipUnchanged=$SKIP_UNCHANGED
 

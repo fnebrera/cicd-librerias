@@ -139,6 +139,10 @@ include:
     ref: master
     file: 
       #
+      # create-bash-library: Crea la libreria bash que usamos en todo el pipeline
+      #
+      - 'jobs/maven/create-bash-library.yml'
+      #
       # prepare-job: preparar entorno
       #
       - 'jobs/maven/prepare-simple.yml'
