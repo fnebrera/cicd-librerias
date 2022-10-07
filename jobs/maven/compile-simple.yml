@@ -22,7 +22,7 @@ compile-job:
       - ./target
 
   before_script:
-    - . funciones-simple.sh
+    - . funciones-bash.sh
 
   script:
     - |

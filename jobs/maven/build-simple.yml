@@ -21,11 +21,12 @@ build-job:
       - ./.m2/repository
       - ./target
       
+  before_script:
+    - . funciones-bash.sh
+
   script:
     - |
-      echo "=============================================================================================="
-      echo "Ejecutando etapa BUILD en $CI_COMMIT_REF_NAME"
-      echo "=============================================================================================="
+      echo_job_banner BUILD
       # 
       # Hacemos build en cualquier caso.
       # Saltamos tests, pues deberian haberse ejecutado antes.
