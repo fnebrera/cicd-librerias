@@ -56,7 +56,7 @@ prepare-job:
       ###########
       # Creamos la libreria bash, que pasaremos al resto de jobs
       ###########
-      > funciones-simple.sh << 'EndOfFile'
+      cat > funciones-simple.sh << 'EndOfFile'
       #!/bin/bash
       #====================================================================
       # echo_job_banner()
