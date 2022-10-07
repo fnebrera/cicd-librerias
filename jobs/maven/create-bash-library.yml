@@ -65,7 +65,7 @@ create-bash-library:
                           echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
                           exit 2
                       fi
-                      REG_VERSION="${PRJ_VERS}-DEVELOP-RELEASE
+                      REG_VERSION="${PRJ_VERS}-DEVELOP-RELEASE"
                       DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/develop-release:${PRJ_VERS}"
                       TAG_NAME="develop-release-${PRJ_VERS}"
                   fi
