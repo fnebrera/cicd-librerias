@@ -10,7 +10,7 @@
 #
 #########################################################################################################
 
-create_bash-library:
+create-bash-library:
   image: alpine:3.16.2
 
   stage: .pre
@@ -32,14 +32,18 @@ create_bash-library:
       }
 
       #====================================================================
-      # get_register_version()
-      # Obtiene la version del proyecto a emplear en el package registry, en
-      # funcion de la rama en la que estemos y las variables de pipeline.
+      # get_registy_tags()
+      # Obtiene las claves a emplear en los difentes registries, en forma
+      # de variables de entorno.
       #
-      # @return   Prepara la variable de entorno REG_VERSION
+      # @return   REG_VERSION: Version del artefacto en el package registry
+      # @return   DOCKER_IMG_TAG: Tag completo de la imagen docker
+      # @return   TAG_NAME: Nombre del tag Git a generar
       #====================================================================
-      function get_register_version() {
+      function get_registy_tags() {
           REG_VERSION="$PRJ_VERS"
+          TAG_NAME="wrong-${PRJ_VERS}"
+          DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/wrong:${PRJ_VERS}"
           #
           # En que rama estamos?
           #
@@ -49,33 +53,45 @@ create_bash-library:
                       echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
                       exit 2
                   fi
+                  DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
+                  TAG_NAME="release-${PRJ_VERS}"
                   ;;
               develop)
                   if [[ $IS_SNAPSHOT == "true" ]]; then
-                      #
-                      # Agregamos numero de snapshot, si lo hay
-                      #
-                      [[ -z $SNAPSHOT_NUMBER ]] || REG_VERSION="${PRJ_VERS}.${SNAPSHOT_NUMBER}"
+                      DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
+                      TAG_NAME="snapshot-${PRJ_VERS}"
                   else
                       if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
                           echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
                           exit 2
                       fi
-                      #
-                      # Agregamos numero de snapshot, si lo hay, precedido de "DEVELOP-RELEASE"
-                      #
-                      [[ -z $SNAPSHOT_NUMBER ]] || REG_VERSION="${PRJ_VERS}-DEVELOP-RELEASE.${SNAPSHOT_NUMBER}"
+                      REG_VERSION="${PRJ_VERS}-DEVELOP-RELEASE
+                      DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/develop-release:${PRJ_VERS}"
+                      TAG_NAME="develop-release-${PRJ_VERS}"
+                  fi
+                  #
+                  # En cualquier caso agregar numero de snapshot, si existe
+                  #
+                  if ! [[ -z $SNAPSHOT_NUMBER ]]; then
+                    REG_VERSION="${REG_VERSION}.${SNAPSHOT_NUMBER}"
+                    DOCKER_IMG_TAG="${DOCKER_IMG_TAG}.${SNAPSHOT_NUMBER}"
+                    TAG_NAME="${TAG_NAME}.${SNAPSHOT_NUMBER}"
                   fi
                   ;;
               "${HOTFIX_BRANCH}")
+                  REG_VERSION="${PRJ_VERS}-HOTFIX
+                  IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
                   #
-                  # Agregamos numero de hotfix, si lo hay, precedido de "HOTFIX"
+                  # Agregamos numero de hotfix, si lo hay
                   #
-                  [[ -z $HOTFIX_NUMBER ]] || REG_VERSION="${PRJ_VERS}-HOTFIX.${HOTFIX_NUMBER}"
+                  if ! [[ -z $HOTFIX_NUMBER ]]; then
+                    REG_VERSION="${REG_VERSION}.${HOTFIX_NUMBER}"
+                    DOCKER_IMG_TAG="${DOCKER_IMG_TAG}.${HOTFIX_NUMBER}"
+                    TAG_NAME="${TAG_NAME}.${HOTFIX_NUMBER}"
+                  fi
                   ;;
               *)
-                  echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Register"
-                  exit 2          
+                  echo "WARN: Rama ${CI_COMMIT_REF_NAME} no pasa etapas de registro. Se ignora"
                   ;;
           esac
       }

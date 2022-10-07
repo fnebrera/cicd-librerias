@@ -24,61 +24,20 @@ tag-job:
     paths:
       - ./.m2/repository
 
+  before_script:
+    - . funciones-bash.sh
+
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa TAG en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    # En todas las etapas manuales hacemos lo mismo
-    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
-    #
-    #  Aplicar reglas complejas
-    #
     - |
-      TAG="wrong-${PRJ_VERS}"
-      case ${CI_COMMIT_REF_NAME} in
-          master)
-              if [[ $IS_SNAPSHOT == "true" ]]; then
-                  echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
-                  exit 2
-              fi
-              #
-              # A 'release' y solo con la version del proyecto.
-              #
-              TAG="release-${PRJ_VERS}"
-              ;;
-          develop)
-              if [[ $IS_SNAPSHOT == "true" ]]; then
-                  #
-                  # Va a 'snapshot'
-                  #
-                  TAG="snapshot-${PRJ_VERS}"
-              else
-                  if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
-                    echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
-                    exit 2
-                  fi
-                  #
-                  # Va a 'develop-release'
-                  #
-                  TAG="develop-release-${PRJ_VERS}"
-              fi
-              #
-              # Sea snapshot o release, en develop siempre agregamos el numero de snapshot, si existe
-              #
-              [[ -z $SNAPSHOT_NUMBER ]] || TAG="${TAG}.${SNAPSHOT_NUMBER}"
-              ;;
-          *)
-              echo "ERROR: Rama ${CI_COMMIT_REF_NAME} no puede pasar etapa Tag"
-              exit 2          
-              ;;
-      esac
-    - 'echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"'
-    - git config user.name "$CICD_USER"
-    - git config user.email "$CICD_EMAIL"
-    - git remote remove origin
-    - git remote add origin ${ORIGIN_URL}
-    - git tag -a $TAG -m "Build $TAG"
-    - git push origin $TAG
+      echo_job_banner TAG
+      # En todas las etapas manuales hacemos lo mismo
+      [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
+      echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"
+      git config user.name "$CICD_USER"
+      git config user.email "$CICD_EMAIL"
+      git remote remove origin
+      git remote add origin ${ORIGIN_URL}
+      git tag -a $TAG -m "Build $TAG"
+      git push origin $TAG
 
 ################################## E O F ##########################################    

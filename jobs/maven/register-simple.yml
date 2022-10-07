@@ -30,13 +30,17 @@ pkg-register-job:
       - ./.m2/repository
       - ./target
 
+  before_script:
+    - . funciones-bash.sh
+
   script:
     - |
-      echo "=============================================================================================="
-      echo "Ejecutando etapa REGISTER en $CI_COMMIT_REF_NAME"
-      echo "=============================================================================================="
+      echo_job_banner REGISTER
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
+      # Necesitamos el fat-jar
+      JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
+      [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
       #
       # Si queremos guardar solo el .jar y el pom (lo habitual), usaremos la forma simple de deploy:
       #
@@ -44,14 +48,7 @@ pkg-register-job:
       #
       # Si ademas queremos guardar los fuentes, lo hacemos algo mas complicado, empleando
       # deploy-file.
-      # Además, como hemos configurado el registry para que no admita duplicados,
-      # en el caso de SNAPSHOT y HOTFIX agregamos el numero a la version del artefacto.
       #
-      JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
-      [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
-      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
-      # Obtener version completa (REG_VERSION)
-      get_register_version
       #
       # Preparamos los fuentes, en formato tgz
       #
@@ -60,6 +57,7 @@ pkg-register-job:
       #
       # Deploy
       #
+      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
       mvn validate deploy:deploy-file -s ci_settings.xml \
       -Durl="${REG_URL}" \
       -DrepositoryId="gitlab-maven" \

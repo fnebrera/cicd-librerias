@@ -49,12 +49,22 @@ prepare-job:
       [[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"
       echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"
       #
+      # Obtener las claves de los registries
+      #
+      get_registry_tags
+      echo "Version para registry: $REG_VERSION"
+      echo "Imagen docker: $DOCKER_IMG_TAG"
+      echo "Nombre de Tag: $TAG_NAME"
+      #
       # Guardar las variables de entorno globales en un fichero .env
       #
       echo "PRJ_VERS=$PRJ_VERS" > prepare.env
       echo "PRJ_NAME=$PRJ_NAME" >> prepare.env
       echo "IS_DOCKER_PRJ=$IS_DOCKER_PRJ" >> prepare.env
       echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> prepare.env
+      echo "REG_VERSION=$REG_VERSION" >> prepare.env
+      echo "DOCKER_IMG_TAG=$DOCKER_IMG_TAG" >> prepare.env
+      echo "TAG_NAME=$TAG_NAME" >> prepare.env
 
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
