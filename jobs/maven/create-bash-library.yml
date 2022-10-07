@@ -78,7 +78,7 @@ create-bash-library:
                     TAG_NAME="${TAG_NAME}.${SNAPSHOT_NUMBER}"
                   fi
                   ;;
-              "${HOTFIX_BRANCH}")
+              ${HOTFIX_BRANCH})
                   REG_VERSION="${PRJ_VERS}-HOTFIX
                   IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
                   #
