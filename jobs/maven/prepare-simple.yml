@@ -56,7 +56,7 @@ prepare-job:
       ###########
       # Creamos la libreria bash, que pasaremos al resto de jobs
       ###########
-      > funciones-simple.sh << EndOfFile
+      > funciones-simple.sh << 'EndOfFile'
       #!/bin/bash
       #====================================================================
       # echo_job_banner()
@@ -65,7 +65,6 @@ prepare-job:
       # @param   Nombre del job
       #====================================================================
       function echo_job_banner() {
-          echo "Me llega: $*"
           echo "=============================================================================================="
           echo "Ejecutando job ${1} en ${CI_COMMIT_REF_NAME}"
           echo "=============================================================================================="
@@ -120,9 +119,6 @@ prepare-job:
           esac
       }
       EndOfFile
-
-    - echo "Este es el archivo:"
-    - cat funciones-simple.sh
 
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
