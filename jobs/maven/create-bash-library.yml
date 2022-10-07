@@ -32,7 +32,7 @@ create-bash-library:
       }
 
       #====================================================================
-      # get_registy_tags()
+      # get_registry_tags()
       # Obtiene las claves a emplear en los difentes registries, en forma
       # de variables de entorno.
       #
@@ -40,7 +40,7 @@ create-bash-library:
       # @return   DOCKER_IMG_TAG: Tag completo de la imagen docker
       # @return   TAG_NAME: Nombre del tag Git a generar
       #====================================================================
-      function get_registy_tags() {
+      function get_registry_tags() {
           REG_VERSION="$PRJ_VERS"
           TAG_NAME="wrong-${PRJ_VERS}"
           DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/wrong:${PRJ_VERS}"
