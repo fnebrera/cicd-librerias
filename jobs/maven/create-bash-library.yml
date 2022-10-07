@@ -73,21 +73,21 @@ create-bash-library:
                   # En cualquier caso agregar numero de snapshot, si existe
                   #
                   if ! [[ -z $SNAPSHOT_NUMBER ]]; then
-                    REG_VERSION="${REG_VERSION}.${SNAPSHOT_NUMBER}"
-                    DOCKER_IMG_TAG="${DOCKER_IMG_TAG}.${SNAPSHOT_NUMBER}"
-                    TAG_NAME="${TAG_NAME}.${SNAPSHOT_NUMBER}"
+                      REG_VERSION="${REG_VERSION}.${SNAPSHOT_NUMBER}"
+                      DOCKER_IMG_TAG="${DOCKER_IMG_TAG}.${SNAPSHOT_NUMBER}"
+                      TAG_NAME="${TAG_NAME}.${SNAPSHOT_NUMBER}"
                   fi
                   ;;
               ${HOTFIX_BRANCH})
-                  REG_VERSION="${PRJ_VERS}-HOTFIX
+                  REG_VERSION="${PRJ_VERS}-HOTFIX"
                   IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
                   #
                   # Agregamos numero de hotfix, si lo hay
                   #
                   if ! [[ -z $HOTFIX_NUMBER ]]; then
-                    REG_VERSION="${REG_VERSION}.${HOTFIX_NUMBER}"
-                    DOCKER_IMG_TAG="${DOCKER_IMG_TAG}.${HOTFIX_NUMBER}"
-                    TAG_NAME="${TAG_NAME}.${HOTFIX_NUMBER}"
+                      REG_VERSION="${REG_VERSION}.${HOTFIX_NUMBER}"
+                      DOCKER_IMG_TAG="${DOCKER_IMG_TAG}.${HOTFIX_NUMBER}"
+                      TAG_NAME="${TAG_NAME}.${HOTFIX_NUMBER}"
                   fi
                   ;;
               *)
