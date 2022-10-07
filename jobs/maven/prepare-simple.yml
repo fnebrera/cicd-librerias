@@ -120,6 +120,9 @@ prepare-job:
       }
       EndOfFile
 
+      echo "Contenido de la libreria:"
+      cat funciones-simple.sh
+
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan
   # automaticamente disponibles para el resto del pipeline. Pasamos tambien la

@@ -22,8 +22,7 @@ compile-job:
       - ./target
 
   before_script:
-    - chmod +x funciones-simple.sh
-    - '. ./funciones-simple.sh'
+    - . funciones-simple.sh
 
   script:
     - |
