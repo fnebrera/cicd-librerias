@@ -36,7 +36,7 @@ variables:
   # Raiz de los archivos de condifguracion de Terraform
   TF_ROOT: "${CI_PROJECT_DIR}/terraform"
   # URL del backend de state de Terraform
-  TF_BACKED_ADDRESS: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}"
+  TF_BACKEND_ADDRESS: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}"
   ##
   # Variables del pipeline que solo debe modificar el manager del grupo.
   # Si se desea, y para mayor seguridad, pueden definirse como variables CI/CD de grupo.

@@ -23,26 +23,17 @@ tf-prepare-job:
       - ${TF_ROOT}/.terraform.lock.hcl
       - ${TF_ROOT}/.terraform
 
+  before_script:
+    - . funciones-bash.sh
+
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa TF_PREPARE en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    - cd $TF_ROOT
     - |
+      echo_job_banner TF-PREPARE
+      cd $TF_ROOT
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
-
-      terraform init -input=false \
-      -backend-config="username=$CICD_USER" \
-      -backend-config="password=$CICD_TOKEN" \
-      -backend-config="address=$TF_BACKED_ADDRESS" \
-      -backend-config="lock_address=$TF_BACKED_ADDRESS/lock" \
-      -backend-config="unlock_address=$TF_BACKED_ADDRESS/lock" \
-      -backend-config="lock_method=POST" \
-      -backend-config="unlock_method=DELETE" \
-      -backend-config="retry_wait_min=5"
+      init_terraform $CICD_USER $CICD_TOKEN $TF_BACKEND_ADDRESS 
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Verificando configuración de terraform"
       echo "----------------------------------------------------------------------------------------"

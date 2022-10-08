@@ -25,28 +25,20 @@ tf-apply-job:
       - ${TF_ROOT}/.terraform.lock.hcl
       - ${TF_ROOT}/.terraform
 
+  before_script:
+    - . funciones-bash.sh
+
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa TF_APPLY en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    # En todas las etapas manuales hacemos lo mismo
-    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
-    - cd $TF_ROOT
     - |
+      echo_job_banner TF_APPLY
+      # En todas las etapas manuales hacemos lo mismo
+      [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
+      cd $TF_ROOT
       echo "----------------------------------------------------------------------------------------"
       echo "INFO Inicializando Terraform usando el backed Gitlab.."
       echo "----------------------------------------------------------------------------------------"
-      terraform init -input=false \
-      -backend-config="username=$CICD_USER" \
-      -backend-config="password=$CICD_TOKEN" \
-      -backend-config="address=$TF_BACKED_ADDRESS" \
-      -backend-config="lock_address=$TF_BACKED_ADDRESS/lock" \
-      -backend-config="unlock_address=$TF_BACKED_ADDRESS/lock" \
-      -backend-config="lock_method=POST" \
-      -backend-config="unlock_method=DELETE" \
-      -backend-config="retry_wait_min=5"
-      
+      init_terraform $CICD_USER $CICD_TOKEN $TF_BACKEND_ADDRESS 
+      # Preparar IP de la maquina que vamos a crear
       TF_VM_IP=""
       # Accion por defecto "apply"
       echo "----------------------------------------------------------------------------------------"
