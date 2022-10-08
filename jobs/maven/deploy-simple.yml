@@ -34,7 +34,7 @@ deploy-job:
     - |
       # DEBUG
       echo "IS_DOCKER_PRJ      : ${IS_DOCKER_PRJ}"
-      echo "IMG_TAG            : ${IMG_TAG}"
+      echo "DOCKER_IMG_TAG     : ${DOCKER_IMG_TAG}"
       echo "TF_VM_IP           : $TF_VM_IP"
       echo "TF_VAR_VM_NAME     : $TF_VAR_VM_NAME"
       echo "DEPLOY_SSH_PATH    : ${DEPLOY_SSH_PATH}"
@@ -48,9 +48,9 @@ deploy-job:
       #
       [[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }
       #
-      # IMG_TAG es una variable de entorno generada en la etapa 'docker'. Si no existe, hay algo mal.
+      # DOCKER_IMG_TAG es una variable de entorno generada en la etapa 'docker'. Si no existe, hay algo mal.
       #
-      [[ -z $IMG_TAG ]] && { echo "ERROR: No existe la variable IMG_TAG. Parece que no se ha ejecutado la etapa 'docker'"; exit 1; }
+      [[ -z $DOCKER_IMG_TAG ]] && { echo "ERROR: No existe la variable DOCKER_IMG_TAG. Parece que no se ha ejecutado la etapa 'docker'"; exit 1; }
       #
       # Cadena de conexion a la VM que acabamos de provisionar
       #
@@ -84,7 +84,7 @@ deploy-job:
       #
       COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh \
       -s ${DEPLOY_SSH_SVC_NAME} \
-      -i ${IMG_TAG} \
+      -i ${DOCKER_IMG_TAG} \
       -d ${DEPLOY_SSH_PATH} \
       -n ${TF_VAR_VM_NAME} \
       -u ${CICD_USER} \
