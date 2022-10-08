@@ -32,12 +32,12 @@ tag-job:
       echo_job_banner TAG
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
-      echo "Creando tag $TAG en ORIGIN_URL: ${ORIGIN_URL}"
+      echo "Creando tag $TAG_NAME en ORIGIN_URL: ${ORIGIN_URL}"
       git config user.name "$CICD_USER"
       git config user.email "$CICD_EMAIL"
       git remote remove origin
       git remote add origin ${ORIGIN_URL}
-      git tag -a $TAG -m "Build $TAG"
-      git push origin $TAG
+      git tag -a $TAG_NAME -m "Build $TAG_NAME"
+      git push origin $TAG_NAME
 
 ################################## E O F ##########################################    
