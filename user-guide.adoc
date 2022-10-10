@@ -1,9 +1,12 @@
-= image:img/vassblue.png[Logo] Proyecto [.underline]#cicd-librerias#
-Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.1, 25/09/2022
+= Proyecto _cicd-librerias_ image:img/vassblue.png[Vass logo,100,100,float="right"]
 :toc:
+:toc-title: Tabla de Contenido
 :toclevels: 3
 :icons: font
+:author: Coordinador: Faustino Nebrera
+:email: faustino.nebrera@vass.es
+:revnumber: 1.0.2
+:revdate: 10/10/2022
 
 == Resumen
 
@@ -13,7 +16,7 @@ habituales. No se ha pretendido hacer comparativas de productos y, menos aún, e
 cómo hacer las cosas, puesto que cada Compañía y/o Departamento de TI tiene su propia normativa. Por esta razón, las librerías son
 muy flexibles, y pueden adaptarse con muy poco trabajo a diferentes normativas y procedimientos. 
 
-Esta versión 1.0.1 es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
+Esta versión 1.0.2 es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
 bastante genérico y se basa en Terraform. Para deploy, se ha optado por emplear bash y ssh, pensando en entornos no demasiado complejos.
 
 En versiones posteriores está previsto replicar una parte de las librerías para incluir proyectos basados en phyton, node.js, .Net.core, etc. También está previsto incorporar la posibilidad de emplear algún producto sofisticado de deploy, tipo Ansible u Octopus. Por último, se trabajará en el provisionado y despliegue de proyectos basados en microservicios (kubernetes, swarm, etc.).
@@ -36,6 +39,11 @@ En versiones posteriores está previsto replicar una parte de las librerías par
 |FNG
 |25/09/2022
 |Se agrega provisioning con Terraform y se generaliza el deploy usando bash y ssh
+
+|1.0.2
+|FNG
+|10/10/2022
+|Se incorpora un mecanismo para manejar librerías de funciones, y se implementa un ejemplo con funciones bash que se emplean en diferentes jobs del framework
 
 |===
 
@@ -146,16 +154,17 @@ pueden hacer merge y push.
 - Debe existir una rama "develop". En esta rama debe estar el código de la última versión
 liberada para preproducción, UAT, Staging, o en curso de liberarse. La rama está protegida de modo que sólo los "Mantainers"
 pueden hacer merge y push.
-- El desarrollo se realiza sobre ramas auxiliares, asociadas a una "feature", a un desarrollador, etc. Los desarrolladores
+- El desarrollo se realiza sobre ramas auxiliares, asociadas a todo el trabajo de desarrollo previo al deploy en pre: a una "feature", a un desarrollador, etc. Los desarrolladores
 trabajan en local sobre su rama y, de forma periódica, hacen "push" a efectos de backup, lo que, opcionalmente,
-puede disparar un pipeline de CI/CD. Una vez finalizado el trabajo,
-deben hacer pull de "develop", y merge local de la rama de trabajo sobre "develop" para revisar posibles inconsistencias.
-- Puede existir una rama hotfix, pero no más de una simultáneamente. Como veremos más tarde, esta rama (de existir) tiene
-un tratamiento especial.
-- Una vez preparado en local un SNAPSHOT en "develop" incluyendo todas las ramas auxiliares finalizadas, un "Mantainer" hará
-push de develop, lo que disparará un pipeline CI/CD.
+puede disparar un pipeline de CI/CD.
+- A medida que finaliza el trabajo de desarrollo en las diferentes ramas,
+se unifican mediante merge sobre una rama temporal (p.e. "desa-5.0.9-sprint-34") en la que se revisan posibles inconsistencias, se realizan eventuales pruebas de integración y EndToEnd, etc.
+- Una vez completada la rama temporal de desarrollo, un "Mantainer" hará merge local sobre "develop", resolverá eventuales inconsistencias y hará
+push de "develop", lo que disparará un pipeline CI/CD asociado a pre-producción.
 - Cuando un SNAPSHOT sea autorizado para producción, un "Mantainer" hará merge local de 'develop' sobre 'master',
-modificará la versión en el pom (eliminando la cadena "SNAPSHOT"), y hará push de master, lo que disparará un pipeline CI/CD. 
+modificará la versión en el pom (eliminando la cadena "SNAPSHOT"), y hará push de master, lo que disparará un pipeline CI/CD asociado a producción. 
+- Pueden existir ramas hotfix, pero no más de una simultáneamente. Como veremos más tarde, esta rama (de existir) tiene
+un tratamiento especial.
 
 === Gitlab como entorno CI/CD
 
@@ -188,7 +197,7 @@ específico.
 
 * Si se requieren acciones complejas, el entorno de "shell" está directamente integrado con los jobs. Es muy fácil, además,
 crear librerías de funciones escritas en .sh, .bash, etc. y llamarlas directamente desde un job. En un entorno complejo,
-los ingenieros DevOps pueden concentrarse en la creación de la base de los pipelines, dejando determinados detalles de implementación de cada job a los desarrolladores.
+los ingenieros DevOps pueden concentrarse en la creación de la base de los pipelines, dejando determinados detalles de implementación de cada job a desarrolladores especializados.
 
 Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
 
@@ -219,7 +228,7 @@ ejemplo. Nótese que Nexus, por ejemplo, incorpora esta funcionalidad en un mód
 
 Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar _Terraform(TM)_ en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform apply'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa.
 
-Un aspecto muy interesante es que Gitlab puede actuar como backend del status Terraform del proyecto, evitando así que el eventual acceso simultáteno pueda provocar comportamientos indeseados. 
+Un aspecto muy interesante es que Gitlab puede actuar como backend del status Terraform del proyecto, evitando así que el eventual acceso simultáneo pueda provocar comportamientos indeseados. 
 
 ==== Despliegue
 
@@ -239,6 +248,7 @@ formato del archivo es yaml, con unas keywords bastante sencillas de aprender.
 Además, los includes pueden referenciar otro proyecto, por lo que es sencillo montar un proyecto específico para almacenar estos includes,
 como es el caso de este ejemplo.
 - El pipeline se compone de etapas (stages), y de definiciones de trabajos (jobs) asociados a las diferentes etapas. Puede haber más de un job asociado a un stage, bien sea para que se ejecuten en paralelo o úno sólo de ellos en función de los valores de ciertas variables.
+- Hay dos etapas predefinidas opcionales, llamadas ".pre" y ".post". Los jobs que se definan para estas etapas se ejecutarán siempre antes (después) que el resto de etapas.
 - En cada job se definen reglas (rules) para incluir o no este job en el pipeline, y en qué condiciones de ejecución. Por ejemplo, un job "manual" quedará bloqueado en el pipeline hasta que sea lanzado por un Mantainer.
 - Cuando se dispara un evento CI/CD, Gitlab analiza todas las reglas y monta de manera dinámica un pipeline que contiene sólamente los jobs en los que se cumplen las reglas. Esto nos permite tener "n" pipelines distintos, cada uno asociado a un conjunto de reglas. Como puede verse, se trata de una modalidad de trabajo muy diferente a la de Jenkins o Artifactory.
 - También mediante reglas, podemos definir si permitimos o no que el job falle y, en consecuencia, que el pipeline continue. Por ejemplo, en un job que ejecute Sonar, permitimos que falle en la rama "develop", al no tratarse de un release a producción.
@@ -272,7 +282,7 @@ Se ha creado un proyecto Git denominado "cicd-librerias" dentro del grupo de pro
 - En _cicd-librerias_ se han creado 3 carpetas:
 
 * ejemplos_cfg: Incluye ejemplos de configuraciones en los proyectos base, tales como ".gitlab-ci.yml", "pom.xml", etc.
-* pipelines: Contiene los includes principales para los diferentes entornos. En esta versión sólo está definido el relativo a maven/java.
+* pipelines: Contiene los includes principales para los diferentes entornos. En la actual versión sólo está definido el relativo a maven/java.
 * jobs: Contiene una carpeta para cada entorno (en este ejemplo, solamente maven), y en cada carpeta, los includes de cada job del pipeline.
 
 - En _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml", como ejemplo de integración de las librerías _cicd-librerias_.
@@ -426,6 +436,15 @@ include:
 
 Consulte el código _yaml_ de cada job para ver el detalle de su funcionalidad. A continuación indicamos algunos comentarios aclaratorios.
 
+==== Create-bash-library
+
+Job definido en link:jobs/maven/create-bash-library.yml[]. Se ejecuta en la etapa ".pre", es decir, con anterioridad a cualquier otro job del pipeline. En este caso concreto, se limita a crear y popular un archivo temporal llamado "funciones-bash.sh" conteniendo una serie de funciones escritas en bash y de uso general para cualquier job del pipeline. El archivo generado se pasa como artefacto al resto del pipeline. Cuando un job quiere llamar a una función de la librería, necesita "cargarla" previamente, lo que se hace habitualmente en el before_script:
+
+------------------------------------------------------------
+  before_script:
+    - . funciones-bash.sh
+------------------------------------------------------------
+
 ==== Prepare
 
 Para esta etapa se ha definido el job en el archivo link:jobs/maven/prepare-simple.yml[]. Este job se ejecuta incondicionalmente en todas las
@@ -433,16 +452,15 @@ ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES 
 
 - Define los directorios que forman parte del cache.
 - Calcula una serie de variables de entorno, útiles para todo el pipeline.
-- Si existe el directorio "target", ejecuta "mvn clean".
 - Copia las claves y valores de las variables de entorno a un archivo temporal "prepare.env".
 - Pasa el contenido de "prepare.env" al resto del pipeline mediante un artefacto de tipo "reports" y clave "dotenv". Las variables contenidas en este archivo son accesibles en todo el pipeline.
 
 ==== Compile
 
-El job en se define en link:jobs/maven/compile-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false (o bien el flag IGNORE_AUX_BRANCHES está a false, lo que aplica a todo el pipeline). También se ejecuta en la rama hotfix (si existe). En este ejemplo, el job es bastante simple:
+El job en se define en link:jobs/maven/compile-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false (o bien el flag IGNORE_AUX_BRANCHES está a true, lo que aplica a todo el pipeline). También se ejecuta en la rama hotfix (si existe). En este ejemplo, el job es bastante simple:
 
 - Define los directorios de la cache.
-- Ejecuta "mvn compile". Si se produce un error de compilación, el pipeline se detiene.
+- Ejecuta "mvn clean compile". Si se produce un error de compilación, el pipeline se detiene.
 
 ==== Sonar
 

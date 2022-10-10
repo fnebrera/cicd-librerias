@@ -23,15 +23,13 @@ deploy-job:
   before_script:
     # Definir prmisos estrictos en la clave privada
     - chmod 400 ${DEPLOY_SSH_KEY}
+    - . funciones-bash.sh
 
   script:
-    - >
-      echo -e "==============================================================================================
-      \nEjecutando etapa DEPLOY en $CI_COMMIT_REF_NAME
-      \n=============================================================================================="
-    # En todas las etapas manuales hacemos lo mismo
-    - '[[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }'
     - |
+      echo_job_banner DEPLOY
+      # En todas las etapas manuales hacemos lo mismo
+      [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
       # DEBUG
       echo "IS_DOCKER_PRJ      : ${IS_DOCKER_PRJ}"
       echo "DOCKER_IMG_TAG     : ${DOCKER_IMG_TAG}"
@@ -48,9 +46,9 @@ deploy-job:
       #
       [[ -z $TF_VM_IP ]] && { echo "ERROR: No existe la variable TF_VM_IP. No se puede continuar con el deploy."; exit 1; }
       #
-      # DOCKER_IMG_TAG es una variable de entorno generada en la etapa 'docker'. Si no existe, hay algo mal.
+      # DOCKER_IMG_TAG es una variable de entorno generada en la etapa 'prepare'. Si no existe, hay algo mal.
       #
-      [[ -z $DOCKER_IMG_TAG ]] && { echo "ERROR: No existe la variable DOCKER_IMG_TAG. Parece que no se ha ejecutado la etapa 'docker'"; exit 1; }
+      [[ -z $DOCKER_IMG_TAG ]] && { echo "ERROR: No existe la variable DOCKER_IMG_TAG. Parece que no se ha ejecutado la etapa 'prepare'"; exit 1; }
       #
       # Cadena de conexion a la VM que acabamos de provisionar
       #

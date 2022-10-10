@@ -1,4 +1,4 @@
-# ![Logo](img/vassblue.png) Proyecto **cicd-librerias**
+# ![Logo](img/vassblue.png)&nbsp;&nbsp;&nbsp; Proyecto **cicd-librerias**
 
 Este proyecto representa un ejemplo completamente operacional de una cadena CI/CD construida con la idea de simplificar el stack
 DevOps, la instalación de productos requeridos y, sobre todo, la preparación de pipelines y jobs para los circuitos más

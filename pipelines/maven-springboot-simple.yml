@@ -8,6 +8,7 @@
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
 # 1.0.1 FNG 18/09/2022 Se agrega provisioning con Terraform y se mejora etapa de deploy.
+# 1.0.2 FNG 10/10/2022 Se crea una libreria de funciones bash para simplificar el código yaml.
 #
 #########################################################################################################
 variables:
