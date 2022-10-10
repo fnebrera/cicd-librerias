@@ -1,7 +1,7 @@
-= image:img/vassblue.png[Vass logo] &nbsp;&nbsp&nbsp; Proyecto _cicd-librerias_
+= image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
 1.0.2, 10/10/2022
-:toc:
+:toc: left
 :toc-title: Tabla de Contenido
 :toclevels: 3
 :icons: font
