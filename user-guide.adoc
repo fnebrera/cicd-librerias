@@ -359,6 +359,8 @@ aunque las etapas sonar y test admiten errores.
 Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
 HOTFIX_NUMBER:: Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
 En la version del proyecto, se respeta la que se indica en el pom.xml.
+DEPLOY_HOST_NAME:: Nombre que queremos dar al host. Puede ser distinto en develop y master.
+DEPLOY_IP_ADDRESS:: Direccion IP de la maquina de deploy, si se conoce. Si se ejecutan las etapas terraform, este valor se rellena en automático.
 
 === Pipeline del proyecto e include principal
 
