@@ -246,6 +246,9 @@ formato del archivo es yaml, con unas keywords bastante sencillas de aprender.
 Además, los includes pueden referenciar otro proyecto, por lo que es sencillo montar un proyecto específico para almacenar estos includes,
 como es el caso de este ejemplo.
 - El pipeline se compone de etapas (stages), y de definiciones de trabajos (jobs) asociados a las diferentes etapas. Puede haber más de un job asociado a un stage, bien sea para que se ejecuten en paralelo o úno sólo de ellos en función de los valores de ciertas variables.
+
+image::img/stages.png[Etapas en Gitlab]
+
 - Hay dos etapas predefinidas opcionales, llamadas ".pre" y ".post". Los jobs que se definan para estas etapas se ejecutarán siempre antes (después) que el resto de etapas.
 - En cada job se definen reglas (rules) para incluir o no este job en el pipeline, y en qué condiciones de ejecución. Por ejemplo, un job "manual" quedará bloqueado en el pipeline hasta que sea lanzado por un Mantainer.
 - Cuando se dispara un evento CI/CD, Gitlab analiza todas las reglas y monta de manera dinámica un pipeline que contiene sólamente los jobs en los que se cumplen las reglas. Esto nos permite tener "n" pipelines distintos, cada uno asociado a un conjunto de reglas. Como puede verse, se trata de una modalidad de trabajo muy diferente a la de Jenkins o Artifactory.
@@ -253,6 +256,9 @@ como es el caso de este ejemplo.
 - Podemos incluir en el job un "before_script" y un "after_script", además del "script" principal. Por ejemplo, podemos definir un after_script que se debe ejecutar sólo si el job falla, para hacer rollout o preparar una fase posterior.
 - En gitlab debemos tener uno o más "runners" que se encargan de gestionar la ejecución de los jobs, lanzando un "executor" específico para ese job. En este ejemplo, hemos configurado un runner tipo Docker, que se ejecuta como un container separado de Gitlab. Este runner, para cada job que se le asigna,
 crea a su vez un container Docker con la imagen que se indique en el propio job, y es en este container donde se ejecutan los scripts, que se escriben en el lenguaje de shell asociado a la imagen docker, es decir, "sh", "bash", "PowerShell", etc.
+
+image::img/runners.png[Runners y Executors]
+
 - Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job.
 - Gitlab dispone de varios mecanismos para "pasar" información de un job a otro. Posiblemente el más usado es el "cache", en el que podemos incluir uno o más directorios de trabajo que cada job "lee" al inciarse y "escribe" al finalizar. Un ejemplo típico de uso es el repositorio de dependencias de maven. Si está en cache, se descargarán sólamente una vez y estarán a disposicion de los diferentes jobs.
 - Un elemento clave en la definición del pipeline son las "variables". En Gitlab, existen varios niveles de variables:
@@ -321,19 +327,19 @@ REGISTER_DEVELOP:: Registrar, generar imagen docker y tag de la rama 'develop'. 
 si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA o staging.
 Si se establece como "false", el pipeline termina con la generación del fat-jar y su
 almacenamiento temporal como artefacto.
+TERRAFORM_DEVELOP:: Provisionar infraestructura (Terraform) en rama develop.
+DEPLOY_DEVELOP:: Instalar/actualizar software en rama develop.
+TF_BACKEND_ADDRESS:: URL del backend de Terraform (sólo aplica si se ha activado el provisioning con Terraform). Normalmente será "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}".
 
 ==== Del proyecto
 
 Se trata de variables con valores específicos para cada proyecto, pero que sólo deben ser editables por usuarios de nivel "Mantainer". Se definen en los settings CI/CD del proyecto.
 
-===== Específicas para provisionado con Terraform sobre Hyper-V 
+===== Específicas para provisionado con Terraform 
 
-TF_VAR_HYPERV_HOST:: Nombre o IP del host Hyper-V donde vamos a crear/destruir la VM
-TF_VAR_HYPERV_USER:: Usuario de login del host Hyper-V (debe tener derechos de Administrador)
-TF_VAR_HYPERV_PASSWD:: Password de dicho usuario
-TF_VAR_VM_NAME:: Nombre que queremos dar a la VM
-TF_VAR_HYPERV_SEED_DISK:: Disco semilla del que partimos para crear el de la VM (path completo)
-TF_VAR_HYPERV_VHD_PATH:: Path completo del disco que vamos a crear para la VM
+TF_ROOT:: Directorio raiz de la configuracion de Terraform. Normalmente se definirá en base a variables intrínsecas de Gitlab. P.e "$CI_PROJECT_DIR/terraform/$CI_COMMIT_REF_NAME". 
+TF_VAR_HYPERVISOR_USER:: Usuario de login del host donde reside el hipervisor. En el caso de AWS, Access key ID.
+TF_VAR_HYPERVISOR_PASSWD:: Password de dicho usuario. En el caso de AWS, Secret acess key.
 
 ===== Específicas para despliegue como stack Docker
 
