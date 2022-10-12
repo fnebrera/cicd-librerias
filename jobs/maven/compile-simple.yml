@@ -11,10 +11,13 @@ compile-job:
   stage: compile
 
   rules:
+    # Control local del pipeline
+    - if: $RUN_CI_STAGES == "false"
+      when: never
     # Siempre compilamos ramas principales, asi como rama Hotfix, si la hay
     - if: $CI_COMMIT_REF_NAME == 'develop' || $CI_COMMIT_REF_NAME == 'master' || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
     # Tambien compilamos cualquier otro branch dependiendo del correspondiente flag.
-    - if: $COMPILE_AUX_BRANCHES == 'true'
+    - if: $IGNORE_AUX_BRANCHES == "false" && $COMPILE_AUX_BRANCHES == 'true'
 
   cache:
     paths:

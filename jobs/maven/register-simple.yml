@@ -19,6 +19,9 @@ pkg-register-job:
     SKIP: "false"
 
   rules:
+    # Control local del pipeline
+    - if: $RUN_REGISTER_STAGES == "false"
+      when: never
     # Hacemos register solo en develop, master y hotfix (si lo hay)
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       when: manual

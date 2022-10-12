@@ -15,6 +15,9 @@ tag-job:
     SKIP: "false"
 
   rules:
+    # Control local del pipeline
+    - if: $RUN_REGISTER_STAGES == "false"
+      when: never
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
     - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 

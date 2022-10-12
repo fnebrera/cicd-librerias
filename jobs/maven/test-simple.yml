@@ -11,6 +11,9 @@ test-job:
   stage: test
 
   rules:
+    # Control fino del pipeline
+    - if: $RUN_CI_STAGES == "false"
+      when: never
     # En rama master no permitimos errores
     - if: $CI_COMMIT_REF_NAME == "master"
       allow_failure: false
@@ -23,7 +26,7 @@ test-job:
     - if: $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
       allow_failure: true
     # Pasamos tests cualquier otro branch dependiendo del correspondiente flag, y permitimos errores
-    - if: $TEST_AUX_BRANCHES == "true"
+    - if: $IGNORE_AUX_BRANCHES == "false" && $TEST_AUX_BRANCHES == "true"
       allow_failure: true
     
   cache:

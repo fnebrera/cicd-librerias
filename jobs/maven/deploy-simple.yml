@@ -16,6 +16,9 @@ deploy-job:
     SKIP: "false"
 
   rules:
+    # Control local del pipeline
+    - if: $RUN_DEPLOY_STAGES == "false"
+      when: never
     # Hacemos deploy solo en master, y en manual
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
@@ -39,7 +42,7 @@ deploy-job:
       #
       [[ -z $DOCKER_IMG_TAG ]] && { echo "ERROR: No existe la variable DOCKER_IMG_TAG. Parece que no se ha ejecutado la etapa 'prepare'"; exit 1; }
       #
-      # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son valiables del proyecto.
+      # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son variables del proyecto.
       # La IP remota es, por defecto, la indicada en variables de entorno, salvo que se hayan
       # ejecutado las etapas de Terraform, en cuyo caso nos viene de allí. 
       #
@@ -101,11 +104,13 @@ deploy-job:
       ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$? 
       echo "INFO El codigo de retorno del script ha sido: $ret"
       echo "----------------------------------------------------------------------------------------"
-      echo "INFO Descargando y mostrando log del script"
+      echo "INFO Descargando log del script.."
       echo "----------------------------------------------------------------------------------------"
       sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
       get ${DEPLOY_SSH_PATH}/deploy/deploy.log
       EoF
+      echo "----------------------------------------------------------------------------------------"
+      echo "INFO Log del script:"
       cat deploy.log
       echo "=============================================================================================="
       echo "INFO Etapa deploy finalizada con codigo de retorno $ret"

@@ -17,6 +17,9 @@ tf-apply-job:
     ACTION: "apply"
 
   rules:
+    # Control local del pipeline
+    - if: $RUN_PROVISION_STAGES == "false"
+      when: never
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
 
