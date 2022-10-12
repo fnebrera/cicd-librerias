@@ -82,9 +82,9 @@ variables:
   #
   REGISTER_DEVELOP: "true"
   #
-  # Provisionar infraestructura (Terraform) en rama develop.
+  # Provisionar infraestructura en rama develop.
   #
-  TERRAFORM_DEVELOP: "false"
+  PROVISION_DEVELOP: "false"
   #
   # Desplegar (instalar/actualizar) en rama develop.
   #

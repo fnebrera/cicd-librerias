@@ -327,7 +327,7 @@ REGISTER_DEVELOP:: Registrar, generar imagen docker y tag de la rama 'develop'. 
 si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA o staging.
 Si se establece como "false", el pipeline termina con la generación del fat-jar y su
 almacenamiento temporal como artefacto.
-TERRAFORM_DEVELOP:: Provisionar infraestructura (Terraform) en rama develop.
+PROVISION_DEVELOP:: Provisionar infraestructura (Terraform) en rama develop.
 DEPLOY_DEVELOP:: Instalar/actualizar software en rama develop.
 TF_BACKEND_ADDRESS:: URL del backend de Terraform (sólo aplica si se ha activado el provisioning con Terraform). Normalmente será "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}".
 
