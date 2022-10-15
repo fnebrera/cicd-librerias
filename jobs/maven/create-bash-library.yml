@@ -137,7 +137,7 @@ create-bash-library:
         [[ $# < 2 ]] && return 1
         local fichero="${CI_PROJECT_DIR}/.cicd.vars"
         local total=""
-        lcal linea=""
+        local linea=""
         local cuenta=0
         local nuevo=1
         [[ -f ${fichero} ]] || touch ${fichero}
