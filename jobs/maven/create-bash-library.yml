@@ -181,10 +181,9 @@ create-bash-library:
       #====================================================================
       function env_cicd_vars() {
         local fichero="${CI_PROJECT_DIR}/.cicd.vars"
-        [[ -f ${fichero} ]] || return 1
+        [[ -f ${fichero} ]] || touch ${fichero}
         source ${fichero}
       }
-
       ***EndOfFile***
 
   artifacts:
