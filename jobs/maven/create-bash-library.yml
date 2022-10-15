@@ -126,7 +126,7 @@ create-bash-library:
 
       #====================================================================
       # set_cicd_var()
-      # Establece el valor de una variable en el fichero cached ".cicd.vars". El
+      # Establece el valor de una variable en el fichero cached "cicd.vars". El
       # fichero contiene una linea por cada variable, con el formato típico nombre=valor.
       # Si la variable ya existe, reemplaza el valor, en caso contrario la agrega.
       #
@@ -157,7 +157,7 @@ create-bash-library:
 
       #====================================================================
       # get_cicd_var()
-      # Obtiene el valor de una variable en el fichero cached ".cicd.vars". El
+      # Obtiene el valor de una variable en el fichero cached "cicd.vars". El
       # fichero contiene una linea por cada variable, con el formato típico nombre=valor.
       # Si la variable no existe, devuelve "".
       #
@@ -177,7 +177,7 @@ create-bash-library:
 
       #====================================================================
       # env_cicd_vars()
-      # Lee el fichero cached ".cicd.vars" y lo convierte a variables de entorno.
+      # Lee el fichero cached "cicd.vars" y lo convierte a variables de entorno.
       #====================================================================
       function env_cicd_vars() {
         local fichero="${CI_PROJECT_DIR}/cicd.vars"

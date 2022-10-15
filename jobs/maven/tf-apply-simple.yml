@@ -69,7 +69,7 @@ tf-apply-job:
       #
       set_cicd_var "TF_VM_IP" "${TF_VM_IP}"
       echo "DEBUG cicd.vars queda:"
-      cat cicd.vars
+      cat $CI_PROJECT_DIR/cicd.vars
       echo "=============================================================================================="
       echo "INFO Etapa TF_APPLY finalizada con exito"
       echo "=============================================================================================="
