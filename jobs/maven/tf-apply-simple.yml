@@ -1,10 +1,12 @@
 #########################################################################################################
-# Aplica el provisionado terraform, usando el plan generado previmente por tf-prepare
-# IMPORTANTE: Por el momento sólo se ejecuta en master.
+# Aplica el provisionado terraform, usando el plan generado previmente por tf-prepare.
+# En master, este job es manual, porque tenemos que tener mucho cuidado con el provisioning
+# en producción. Sin embargo, en develop lo hemos dejado en automático, a modo de ejemplo.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.1 FNG 19/09/2022 Version inicial
+# 1.0.2 FNG 15/10/2022 Se esdandariza tanto el provisioning como el deploy
 #
 #########################################################################################################
 tf-apply-job:
@@ -22,11 +24,13 @@ tf-apply-job:
       when: never
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
+    - if: $CI_COMMIT_REF_NAME == "develop" && $DEPLOY_DEVELOP == "true"
 
   cache:
     paths:
       - ${TF_ROOT}/.terraform.lock.hcl
       - ${TF_ROOT}/.terraform
+      - ${CI_PROJECT_DIR}/.cicd.vars
 
   before_script:
     - . funciones-bash.sh
@@ -60,14 +64,13 @@ tf-apply-job:
           terraform $ACTION
           ;;
       esac
-      echo "TF_VM_IP=${TF_VM_IP}" >> ${CI_PROJECT_DIR}/prepare.env
+      #
+      # Nos guardamos la IP en variables caheadas de cicd
+      #
+      set_cicd_var TF_VM_IP ${TF_VM_IP}
       echo "=============================================================================================="
       echo "INFO Etapa TF_APPLY finalizada con exito"
       echo "=============================================================================================="
     - cd $CI_PROJECT_DIR
-
-  artifacts:
-    reports:
-      dotenv: prepare.env
 
 ################################## E O F ##########################################

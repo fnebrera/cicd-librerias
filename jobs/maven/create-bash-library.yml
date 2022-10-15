@@ -17,7 +17,7 @@ create-bash-library:
 
   script:
     - |
-      cat > funciones-bash.sh << 'EndOfFile'
+      cat > funciones-bash.sh << '***EndOfFile***'
       #!/bin/bash
       #====================================================================
       # echo_job_banner()
@@ -102,9 +102,9 @@ create-bash-library:
       # Debe llamarse al comienzo de cada job en el que se empleen
       # comandos de Terraform.
       #
-      # @param      Usuario de Gitlab con permisos de mantainer en el proyecto.
-      # @param      Personal token del usuario anterior.
-      # @param      URL del backend (por defecto "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}")
+      # @param1      Usuario de Gitlab con permisos de mantainer en el proyecto.
+      # @param2      Personal token del usuario anterior.
+      # @param3      URL del backend (por defecto "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}")
       #====================================================================
       function init_terraform() {
           [[ $# < 2 ]] && { echo "Uso: init_terraform usuario passwd [address]"; exit 1; }
@@ -123,7 +123,69 @@ create-bash-library:
             -backend-config="unlock_method=DELETE" \
             -backend-config="retry_wait_min=5"
       }
-      EndOfFile
+
+      #====================================================================
+      # set_cicd_var()
+      # Establece el valor de una variable en el fichero cached ".cicd.vars". El
+      # fichero contiene una linea por cada variable, con el formato típico nombre=valor.
+      # Si la variable ya existe, reemplaza el valor, en caso contrario la agrega.
+      #
+      # @param1      Nombre de la variable
+      # @param2      Valor de la variable
+      #====================================================================
+      function set_cicd_var() {
+        [[ $# < 2 ]] && return 1
+        local fichero="${CI_PROJECT_DIR}/.cicd.vars"
+        local total=""
+        lcal linea=""
+        local cuenta=0
+        local nuevo=1
+        [[ -f ${fichero} ]] || touch ${fichero}
+        while read linea; do
+            [[ $linea == "${1}="* ]] && { linea="${1}=${2}"; nuevo=0; }
+            [[ $cuenta > 0 ]] && linea="\n${linea}"
+            total="${total}${linea}"
+            cuenta=${cuenta}+1
+        done < ${fichero}
+        if [[ $nuevo == 1 ]]; then
+            linea="${1}=${2}"
+            [[ $cuenta > 0 ]] && linea="\n${linea}"
+            total="${total}${linea}"
+        fi
+        echo -e ${total} > ${fichero}        
+      }
+
+      #====================================================================
+      # get_cicd_var()
+      # Obtiene el valor de una variable en el fichero cached ".cicd.vars". El
+      # fichero contiene una linea por cada variable, con el formato típico nombre=valor.
+      # Si la variable no existe, devuelve "".
+      #
+      # @param1      Nombre de la variable
+      #====================================================================
+      function get_cicd_var() {
+        [[ $# < 1 ]] && { echo ""; return 1; }
+        local fichero="${CI_PROJECT_DIR}/.cicd.vars"
+        [[ -f ${fichero} ]] || { echo ""; return 2; }
+        local valor=""
+        local linea=""
+        while read linea; do
+            [[ $linea == "${1}="* ]] && { valor=${linea##*=}; break; }
+        done < ${fichero}
+        echo $valor        
+      }
+
+      #====================================================================
+      # env_cicd_vars()
+      # Lee el fichero cached ".cicd.vars" y lo convierte a variables de entorno.
+      #====================================================================
+      function env_cicd_vars() {
+        local fichero="${CI_PROJECT_DIR}/.cicd.vars"
+        [[ -f ${fichero} ]] || return 1
+        source ${fichero}
+      }
+
+      ***EndOfFile***
 
   artifacts:
     paths: 

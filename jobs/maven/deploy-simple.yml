@@ -7,6 +7,7 @@
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
 # 1.0.1 FNG 06/09/2022 Se incorporan resultados de Terraform
+# 1.0.2 FNG 15/10/2022 Se estandarizan las etapas CD
 #
 #########################################################################################################
 deploy-job:
@@ -14,14 +15,22 @@ deploy-job:
 
   variables:
     SKIP: "false"
+    IP: ""
 
   rules:
     # Control local del pipeline
     - if: $RUN_DEPLOY_STAGES == "false"
       when: never
-    # Hacemos deploy solo en master, y en manual
+    # Hacemos deploy en master, y en manual
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
+    # Tambien en develop, siempre que el correspondiente flag éste activado
+    - if: $CI_COMMIT_REF_NAME == "develop" && $DEPLOY_DEVELOP == "true"
+      when: manual
+
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/.cicd.vars
 
   before_script:
     # Definir prmisos estrictos en la clave privada
@@ -34,88 +43,11 @@ deploy-job:
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
       #
-      # Solo si es un proyecto Docker
+      # Ejecutamos la shell "exec_deploy.sh" que debe existir en el root de deploy
       #
-      [[ -f Dockerfile ]] || { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }
-      #
-      # DOCKER_IMG_TAG es una variable de entorno generada en la etapa 'prepare'. Si no existe, hay algo mal.
-      #
-      [[ -z $DOCKER_IMG_TAG ]] && { echo "ERROR: No existe la variable DOCKER_IMG_TAG. Parece que no se ha ejecutado la etapa 'prepare'"; exit 1; }
-      #
-      # DEPLOY_SSH_USER y DEPLOY_SSH_KEY son variables del proyecto.
-      # La IP remota es, por defecto, la indicada en variables de entorno, salvo que se hayan
-      # ejecutado las etapas de Terraform, en cuyo caso nos viene de allí. 
-      #
-      ADDR=$DEPLOY_IP_ADDRESS
-      [[ -z $TF_VM_IP ]] || ADDR=$TF_VM_IP
-      #
-      # DEBUG
-      #
-      echo "IS_DOCKER_PRJ      : ${IS_DOCKER_PRJ}"
-      echo "DOCKER_IMG_TAG     : ${DOCKER_IMG_TAG}"
-      echo "ADDR               : $ADDR"
-      echo "DEPLOY_HOST_NAME   : $DEPLOY_HOST_NAME"
-      echo "DEPLOY_SSH_PATH    : ${DEPLOY_SSH_PATH}"
-      echo "DEPLOY_SSH_SVC_NAME: ${DEPLOY_SSH_SVC_NAME}"
-      #
-      # Cadena de conexion a la VM
-      #
-      CONN_STRING="${DEPLOY_SSH_USER}@${ADDR}"
-      #
-      # Si es la primera vez que hacemos deploy de este proyecto en esta maquina, tenemos que crear el
-      # directorio del proyecto. Como en sftp el comando mkdir no tiene la opcion -p, hay que hacerlo
-      # mediante ssh. Ademas, y por si estamos haciendo un update, eliminamos el directorio deploy anterior.
-      #
-      COMANDO="mkdir -p ${DEPLOY_SSH_PATH}; rm -Rf ${DEPLOY_SSH_PATH}/deploy"
-      echo "----------------------------------------------------------------------------------------"
-      echo "INFO Ejecutando comando remoto ${COMANDO}.."
-      echo "----------------------------------------------------------------------------------------"
-      ret=0
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$?
-      if [[ $ret != 0 ]]; then
-        echo "ERROR No se ha podido ejecutar la fase de preparacion. Error $ret"
-        exit 1
-      fi
-      echo "----------------------------------------------------------------------------------------"
-      echo "INFO Ejecutando sftp para subir el directorio deploy a la maquina remota.."
-      echo "----------------------------------------------------------------------------------------"
-      sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
-      put deploy ${DEPLOY_SSH_PATH}
-      chmod 755 ${DEPLOY_SSH_PATH}/deploy/deploy.sh
-      EoF
-      [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
-      
-      #
-      # Ejecutamos el comando de deploy
-      #
-      COMANDO="${DEPLOY_SSH_PATH}/deploy/deploy.sh \
-      -s ${DEPLOY_SSH_SVC_NAME} \
-      -i ${DOCKER_IMG_TAG} \
-      -u ${CICD_USER} \
-      -p ${CICD_PASSWD} \
-      -r ${CICD_REGISTRY_HOST} \
-      -d ${DEPLOY_SSH_PATH} \
-      -n ${DEPLOY_HOST_NAME} \
-      > ${DEPLOY_SSH_PATH}/deploy/deploy.log 2>&1"
-      echo "----------------------------------------------------------------------------------------"
-      echo "INFO Ejecutando script remoto deploy.sh"
-      echo "----------------------------------------------------------------------------------------"
-      ret=0
-      ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || ret=$? 
-      echo "INFO El codigo de retorno del script ha sido: $ret"
-      echo "----------------------------------------------------------------------------------------"
-      echo "INFO Descargando log del script.."
-      echo "----------------------------------------------------------------------------------------"
-      sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << EoF
-      get ${DEPLOY_SSH_PATH}/deploy/deploy.log
-      EoF
-      echo "----------------------------------------------------------------------------------------"
-      echo "INFO Log del script:"
-      cat deploy.log
-      echo "=============================================================================================="
-      echo "INFO Etapa deploy finalizada con codigo de retorno $ret"
-      echo "=============================================================================================="
-      exit $ret
+      [[ -f "${DEPLOY_ROOT}/exec_deploy.sh" ]] || { echo "ERROR: No existe la shell 'exec_deploy.sh'"; exit 1; }
+      . ${DEPLOY_ROOT}/exec_deploy.sh
+      exec_deploy $IP
 
 ################################## E O F ##########################################    
 
