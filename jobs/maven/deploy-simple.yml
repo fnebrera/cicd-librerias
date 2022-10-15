@@ -47,7 +47,8 @@ deploy-job:
       #
       [[ -f "${DEPLOY_ROOT}/exec_deploy.sh" ]] || { echo "ERROR: No existe la shell 'exec_deploy.sh'"; exit 1; }
       . ${DEPLOY_ROOT}/exec_deploy.sh
-      exec_deploy $IP
+      exec_deploy "$IP"
+      exit $?
 
 ################################## E O F ##########################################    
 
