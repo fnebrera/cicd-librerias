@@ -30,7 +30,7 @@ deploy-job:
 
   cache:
     paths:
-      - ${CI_PROJECT_DIR}/.cicd.vars
+      - cicd.vars
 
   before_script:
     # Definir prmisos estrictos en la clave privada
@@ -46,9 +46,8 @@ deploy-job:
       # Ejecutamos la shell "exec_deploy.sh" que debe existir en el root de deploy
       #
       [[ -f "${DEPLOY_ROOT}/exec_deploy.sh" ]] || { echo "ERROR: No existe la shell 'exec_deploy.sh'"; exit 1; }
-      . ${DEPLOY_ROOT}/exec_deploy.sh
-      exec_deploy "$IP"
-      exit $?
+    - . ${DEPLOY_ROOT}/exec_deploy.sh
+    - exec_deploy "$IP"
 
 ################################## E O F ##########################################    
 

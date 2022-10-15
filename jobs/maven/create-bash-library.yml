@@ -135,7 +135,7 @@ create-bash-library:
       #====================================================================
       function set_cicd_var() {
         [[ $# < 2 ]] && return 1
-        local fichero="${CI_PROJECT_DIR}/.cicd.vars"
+        local fichero="${CI_PROJECT_DIR}/cicd.vars"
         local total=""
         local linea=""
         local cuenta=0
@@ -165,7 +165,7 @@ create-bash-library:
       #====================================================================
       function get_cicd_var() {
         [[ $# < 1 ]] && { echo ""; return 1; }
-        local fichero="${CI_PROJECT_DIR}/.cicd.vars"
+        local fichero="${CI_PROJECT_DIR}/cicd.vars"
         [[ -f ${fichero} ]] || { echo ""; return 2; }
         local valor=""
         local linea=""
@@ -180,7 +180,7 @@ create-bash-library:
       # Lee el fichero cached ".cicd.vars" y lo convierte a variables de entorno.
       #====================================================================
       function env_cicd_vars() {
-        local fichero="${CI_PROJECT_DIR}/.cicd.vars"
+        local fichero="${CI_PROJECT_DIR}/cicd.vars"
         [[ -f ${fichero} ]] || touch ${fichero}
         source ${fichero}
       }
