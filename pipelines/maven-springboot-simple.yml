@@ -84,7 +84,7 @@ variables:
   #
   # Provisionar infraestructura en rama develop.
   #
-  PROVISION_DEVELOP: "false"
+  PROVISION_DEVELOP: "true"
   #
   # Desplegar (instalar/actualizar) en rama develop.
   #
