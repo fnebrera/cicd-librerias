@@ -190,7 +190,7 @@ create-bash-library:
       # Escribe al log lo que sele pase precedido de un timestamp
       #====================================================================
       function t_echo() {
-        echo $(echo -n `date +'%x %X.%3N'`) $*
+        echo $(echo -n `date +'%F %X,%3N'`) $*
       }
       ***EndOfFile***
 
