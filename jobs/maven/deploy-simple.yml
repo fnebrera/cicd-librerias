@@ -1,7 +1,9 @@
 #########################################################################################################
-# Conecta con el host de destino del deploy y regenera el docker-compose
-# usando la imagen generada en la etapa docker.
-# Sólo se ejecuta en master.
+# Ejecuta el deploy de la aplicacion, microservicio o lo que sea. Para ello llama a una funcion
+# que se debe denominar "exec_deploy()" y que debe estar definida en un archivo llamado "exec_deploy.sh"
+# localizado en el $DEPLOY_ROOT de la rama a tratar. Si se desea pasar informacion desde la etapa de
+# provisionado, y que esta sea pesistente, se aconseja emplear el archivo "cicd.vars" y las funciones
+# predefinidas de lectura/escritura de dicho archivo. 
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -15,7 +17,6 @@ deploy-job:
 
   variables:
     SKIP: "false"
-    IP: ""
 
   rules:
     # Control local del pipeline
@@ -43,11 +44,14 @@ deploy-job:
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
       #
-      # Ejecutamos la shell "exec_deploy.sh" que debe existir en el root de deploy
+      # Agregamos los funciones efinidas en "exec_deploy.sh" que debe existir en el root de deploy
       #
       [[ -f "${DEPLOY_ROOT}/exec_deploy.sh" ]] || { echo "ERROR: No existe la shell 'exec_deploy.sh'"; exit 1; }
-    - . ${DEPLOY_ROOT}/exec_deploy.sh
-    - exec_deploy "$IP"
+      . ${DEPLOY_ROOT}/exec_deploy.sh
+    #
+    # La funcion principal de despliegue debe llamarse "exec_deploy()"
+    #
+    - exec_deploy
 
 ################################## E O F ##########################################    
 

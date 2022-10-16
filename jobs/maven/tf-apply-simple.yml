@@ -68,8 +68,6 @@ tf-apply-job:
       # Nos guardamos la IP en variables caheadas de cicd
       #
       set_cicd_var "TF_VM_IP" "${TF_VM_IP}"
-      echo "DEBUG cicd.vars queda:"
-      cat $CI_PROJECT_DIR/cicd.vars
       echo "=============================================================================================="
       echo "INFO Etapa TF_APPLY finalizada con exito"
       echo "=============================================================================================="
