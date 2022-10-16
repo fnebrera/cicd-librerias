@@ -30,7 +30,7 @@ tf-apply-job:
     paths:
       - ${TF_ROOT}/.terraform.lock.hcl
       - ${TF_ROOT}/.terraform
-      - cicd.vars
+      - ./cicd.vars
 
   before_script:
     - . funciones-bash.sh

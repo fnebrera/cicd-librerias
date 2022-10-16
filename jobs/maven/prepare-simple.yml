@@ -17,6 +17,7 @@ prepare-job:
       - ./.m2/repository
       - ./.sonar/cache
       - ./target
+      - ./cicd.vars
 
   before_script:
     - . funciones-bash.sh

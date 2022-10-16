@@ -30,7 +30,7 @@ deploy-job:
 
   cache:
     paths:
-      - cicd.vars
+      - ./cicd.vars
 
   before_script:
     # Definir prmisos estrictos en la clave privada
