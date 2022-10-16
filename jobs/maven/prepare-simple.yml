@@ -30,7 +30,7 @@ prepare-job:
       #
       PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
       [[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }
-      echo "Version del proyecto: ${PRJ_VERS}"
+      t_echo "Version del proyecto: ${PRJ_VERS}"
       #
       # Nombre del proyecto
       #
@@ -66,6 +66,8 @@ prepare-job:
       echo "REG_VERSION=$REG_VERSION" >> prepare.env
       echo "DOCKER_IMG_TAG=$DOCKER_IMG_TAG" >> prepare.env
       echo "TAG_NAME=$TAG_NAME" >> prepare.env
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
   #    
   # Creamos un artefacto que contiene la/s variables/s de entorno, que asi estan

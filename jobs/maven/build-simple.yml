@@ -53,7 +53,8 @@ build-job:
           exit 4
         fi
       fi
-      echo "INFO Build finalizado con exito"
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
   #
   # En caso de error, generamos un artefacto que expira en 8 horas, por si el

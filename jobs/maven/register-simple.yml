@@ -70,6 +70,8 @@ pkg-register-job:
       -Dfiles=${SRC_FILE} \
       -Dclassifiers=src \
       -Dtypes=tgz
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
   ################################## E O F ##########################################
 

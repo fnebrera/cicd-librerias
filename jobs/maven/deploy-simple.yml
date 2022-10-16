@@ -44,7 +44,7 @@ deploy-job:
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
       #
-      # Agregamos los funciones efinidas en "exec_deploy.sh" que debe existir en el root de deploy
+      # Agregamos los funciones definidas en "exec_deploy.sh" que debe existir en el root de deploy
       #
       [[ -f "${DEPLOY_ROOT}/exec_deploy.sh" ]] || { echo "ERROR: No existe la shell 'exec_deploy.sh'"; exit 1; }
       . ${DEPLOY_ROOT}/exec_deploy.sh
@@ -52,6 +52,7 @@ deploy-job:
     # La funcion principal de despliegue debe llamarse "exec_deploy()"
     #
     - exec_deploy
+    - t_echo "INFO Job finalizado con exito"
 
 ################################## E O F ##########################################    
 

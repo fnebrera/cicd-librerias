@@ -31,5 +31,7 @@ compile-job:
     - |
       echo_job_banner COMPILE
       mvn clean compile
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
 ################################## E O F ##########################################

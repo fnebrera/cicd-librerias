@@ -41,5 +41,7 @@ test-job:
     - |
       echo_job_banner TEST
       mvn test
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
 ################################## E O F ##########################################    

@@ -50,5 +50,7 @@ docker-register-job:
       echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST
       docker build -t $DOCKER_IMG_TAG .
       docker push $DOCKER_IMG_TAG 
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
 ################################## E O F ##########################################

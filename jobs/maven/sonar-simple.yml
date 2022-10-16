@@ -49,8 +49,10 @@ sonar-job:
   script:
     - |
       echo_job_banner SONAR
-      echo "Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"
+      t_echo "Sonar SKIP_UNCHANGED: $SKIP_UNCHANGED"
       mvn validate sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -Dsonar.java.skipUnchanged=$SKIP_UNCHANGED
+      # Final
+      t_echo "INFO Job finalizado con exito"
 
 ################################## E O F ##########################################
 
