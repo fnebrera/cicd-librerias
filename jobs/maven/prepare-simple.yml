@@ -36,26 +36,26 @@ prepare-job:
       #
       PRJ_NAME=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.name -q -DforceStdout)
       [[ -z ${PRJ_NAME} ]] && { echo "ERROR: No se ha encontrado el nombre del proyecto en el pom.xml"; exit 2; }
-      echo "Nombre del proyecto: ${PRJ_NAME}"
+      t_echo "Nombre del proyecto: ${PRJ_NAME}"
       #
       # Es un proyecto Docker?
       #
       IS_DOCKER_PRJ="false"
       [[ -f "Dockerfile" ]] && IS_DOCKER_PRJ="true"
-      echo "¿Es un proyecto Docker?: ${IS_DOCKER_PRJ}"
+      t_echo "¿Es un proyecto Docker?: ${IS_DOCKER_PRJ}"
       #
       # Es una version SNAPSHOT?
       #
       IS_SNAPSHOT="false"
       [[ $PRJ_VERS == *"SNAPSHOT" ]] && IS_SNAPSHOT="true"
-      echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"
+      t_echo "¿Es un SNAPSHOT?: ${IS_SNAPSHOT}"
       #
       # Obtener las claves de los registries
       #
       get_registry_tags
-      echo "Version para registry: $REG_VERSION"
-      echo "Imagen docker: $DOCKER_IMG_TAG"
-      echo "Nombre de Tag: $TAG_NAME"
+      t_echo "Version para registry: $REG_VERSION"
+      t_echo "Imagen docker: $DOCKER_IMG_TAG"
+      t_echo "Nombre de Tag: $TAG_NAME"
       #
       # Guardar las variables de entorno globales en un fichero .env
       #
