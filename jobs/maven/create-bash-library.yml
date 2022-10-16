@@ -184,6 +184,14 @@ create-bash-library:
         [[ -f ${fichero} ]] || touch ${fichero}
         source ${fichero}
       }
+
+      #====================================================================
+      # t_echo()
+      # Escribe al log lo que sele pase precedido de un timestamp
+      #====================================================================
+      function t_echo() {
+        printf "%s %s\n" $(date +'%x %X.%3N') $*
+      }
       ***EndOfFile***
 
   artifacts:
