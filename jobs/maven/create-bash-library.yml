@@ -49,7 +49,7 @@ create-bash-library:
           #
           case ${CI_COMMIT_REF_NAME} in
               master)
-                  if [[ $IS_SNAPSHOT == "true" ]]; then
+                  if [[ $IS_SNAPSHOT -eq "true" ]]; then
                       echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
                       exit 2
                   fi
@@ -57,11 +57,11 @@ create-bash-library:
                   TAG_NAME="release-${PRJ_VERS}"
                   ;;
               develop)
-                  if [[ $IS_SNAPSHOT == "true" ]]; then
+                  if [[ $IS_SNAPSHOT -eq "true" ]]; then
                       DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
                       TAG_NAME="snapshot-${PRJ_VERS}"
                   else
-                      if [[ $ALLOW_RELEASE_IN_DEVELOP != "true" ]]; then
+                      if [[ $ALLOW_RELEASE_IN_DEVELOP -ne "true" ]]; then
                           echo "ERROR: PUSH de <develop> en version RELEASE no permitido"
                           exit 2
                       fi
@@ -107,7 +107,6 @@ create-bash-library:
       # @param3      URL del backend (por defecto "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}")
       #====================================================================
       function init_terraform() {
-          echo "DEBUG runnig init_terraform()"
           [[ $# -lt 2 ]] && { echo "Uso: init_terraform usuario passwd [address]"; exit 1; }
           local addr=$3
           [[ -z $addr ]] && addr="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}"
@@ -149,7 +148,7 @@ create-bash-library:
       # @param2      Valor de la variable
       #====================================================================
       function set_cicd_var() {
-        [[ $# < 2 ]] && { echo "set_cicd_var(): Se requieren 2 argumentos"; return 1; }
+        [[ $# -lt 2 ]] && { echo "set_cicd_var(): Se requieren 2 argumentos"; return 1; }
         local fichero="${CI_PROJECT_DIR}/cicd.vars"
         local total=""
         local linea=""
@@ -157,14 +156,14 @@ create-bash-library:
         local nuevo=1
         [[ -f ${fichero} ]] || touch ${fichero}
         while read linea; do
-            [[ $linea == "${1}="* ]] && { linea="${1}=${2}"; nuevo=0; }
-            [[ $cuenta > 0 ]] && linea="\n${linea}"
+            [[ $linea -eq "${1}="* ]] && { linea="${1}=${2}"; nuevo=0; }
+            [[ $cuenta -gt 0 ]] && linea="\n${linea}"
             total="${total}${linea}"
             cuenta=${cuenta}+1
         done < ${fichero}
-        if [[ $nuevo == 1 ]]; then
+        if [[ $nuevo -eq 1 ]]; then
             linea="${1}=${2}"
-            [[ $cuenta > 0 ]] && linea="\n${linea}"
+            [[ $cuenta -gt 0 ]] && linea="\n${linea}"
             total="${total}${linea}"
         fi
         echo -e ${total} > ${fichero}        
@@ -179,13 +178,13 @@ create-bash-library:
       # @param1      Nombre de la variable
       #====================================================================
       function get_cicd_var() {
-        [[ $# < 1 ]] && { echo ""; return 1; }
+        [[ $# -lt 1 ]] && { echo ""; return 1; }
         local fichero="${CI_PROJECT_DIR}/cicd.vars"
         [[ -f ${fichero} ]] || { echo ""; return 2; }
         local valor=""
         local linea=""
         while read linea; do
-            [[ $linea == "${1}="* ]] && { valor=${linea##*=}; break; }
+            [[ $linea -eq "${1}="* ]] && { valor=${linea##*=}; break; }
         done < ${fichero}
         echo $valor        
       }
