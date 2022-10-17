@@ -70,11 +70,11 @@ tf-apply-job:
       # libreria bash.
       #
       set_cicd_terraform_output
+      cd $CI_PROJECT_DIR
       t_echo "Outputs de Terraform:"
       cat cicd.vars      
       t_echo "=============================================================================================="
       t_echo "INFO Etapa TF_APPLY finalizada con exito"
       t_echo "=============================================================================================="
-    - cd $CI_PROJECT_DIR
 
 ################################## E O F ##########################################
