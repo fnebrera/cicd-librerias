@@ -134,7 +134,7 @@ create-bash-library:
         local sep=""
         local val=""
         terraform output | while read key sep val; do
-            [[ -z $val ]] || val=$(val:1:-1)
+            [[ -z $val ]] || val=${val:1:-1}
             set_cicd_var $key $val
         done
       }
