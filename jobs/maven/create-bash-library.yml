@@ -148,7 +148,7 @@ create-bash-library:
       # @param2      Valor de la variable
       #====================================================================
       function set_cicd_var() {
-        [[ $# < 2 ]] && return 1
+        [[ $# < 2 ]] && { echo "set_cicd_var(): Se requieren 2 argumentos"; return 1; }
         local fichero="${CI_PROJECT_DIR}/cicd.vars"
         local total=""
         local linea=""
