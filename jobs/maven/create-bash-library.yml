@@ -107,7 +107,8 @@ create-bash-library:
       # @param3      URL del backend (por defecto "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}")
       #====================================================================
       function init_terraform() {
-          [[ $# < 2 ]] && { echo "Uso: init_terraform usuario passwd [address]"; exit 1; }
+          echo "DEBUG runnig init_terraform()"
+          [[ $# -lt 2 ]] && { echo "Uso: init_terraform usuario passwd [address]"; exit 1; }
           local addr=$3
           [[ -z $addr ]] && addr="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}"
           #
