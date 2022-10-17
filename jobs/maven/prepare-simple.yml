@@ -25,6 +25,8 @@ prepare-job:
   script:
     - |
       echo_job_banner PREPARE
+      # QUITAR!!!!!!!!!!
+      [[ -f "cicd.vars" ]] && rm cicd.vars
       #
       # Version del proyecto
       #
