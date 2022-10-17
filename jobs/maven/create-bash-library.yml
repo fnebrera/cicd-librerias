@@ -159,7 +159,7 @@ create-bash-library:
             [[ $linea -eq "${1}="* ]] && { linea="${1}=${2}"; nuevo=0; }
             [[ $cuenta -gt 0 ]] && linea="\n${linea}"
             total="${total}${linea}"
-            cuenta=${cuenta}+1
+            ((cuenta++)
         done < ${fichero}
         if [[ $nuevo -eq 1 ]]; then
             linea="${1}=${2}"
