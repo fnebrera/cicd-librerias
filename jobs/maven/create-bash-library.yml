@@ -152,18 +152,18 @@ create-bash-library:
         local fichero="${CI_PROJECT_DIR}/cicd.vars"
         local total=""
         local linea=""
-        local cuenta=0
+        local prim=1
         local nuevo=1
         [[ -f ${fichero} ]] || touch ${fichero}
         while read linea; do
             [[ $linea -eq "${1}="* ]] && { linea="${1}=${2}"; nuevo=0; }
-            [[ $cuenta -gt 0 ]] && linea="\n${linea}"
+            [[ $prim -ne 1 ]] && linea="\n${linea}"
             total="${total}${linea}"
-            let cuenta+=1
+            prim=0
         done < ${fichero}
         if [[ $nuevo -eq 1 ]]; then
             linea="${1}=${2}"
-            [[ $cuenta -gt 0 ]] && linea="\n${linea}"
+            [[ $prim -ne 1 ]] && linea="\n${linea}"
             total="${total}${linea}"
         fi
         echo -e ${total} > ${fichero}        

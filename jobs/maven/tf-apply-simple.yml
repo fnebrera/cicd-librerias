@@ -25,6 +25,7 @@ tf-apply-job:
     - if: $CI_COMMIT_REF_NAME == "master"
       when: manual
     - if: $CI_COMMIT_REF_NAME == "develop" && $DEPLOY_DEVELOP == "true"
+      when: manual
 
   cache:
     paths:
@@ -47,12 +48,10 @@ tf-apply-job:
       t_echo "INFO Inicializando Terraform usando el backed Gitlab.."
       t_echo "----------------------------------------------------------------------------------------"
       init_terraform $CICD_USER $CICD_TOKEN $TF_BACKEND_ADDRESS 
-      # Preparar IP de la maquina que vamos a crear
-      TF_VM_IP=""
-      # Accion por defecto "apply"
       t_echo "----------------------------------------------------------------------------------------"
       t_echo "INFO ejecutando terraform ${ACTION}"
       t_echo "----------------------------------------------------------------------------------------"
+      # Accion por defecto "apply"
       case ${ACTION} in
         apply)
           terraform apply -input=false "plan.cache"
