@@ -32,6 +32,8 @@ tf-prepare-job:
 
   script:
     - |
+      # Esta imagen requiere coreutils para mostrar milisegundos en el timestamp
+      apk add coreutils
       echo_job_banner TF-PREPARE
       cd $TF_ROOT
       t_echo "----------------------------------------------------------------------------------------"

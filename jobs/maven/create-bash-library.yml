@@ -125,6 +125,20 @@ create-bash-library:
       }
 
       #====================================================================
+      # set_cicd_terraform_output()
+      # Obtiene los posibles outputs de terraform y los guarda en el
+      # archivo cached "cicd.vars".
+      #====================================================================
+      function set_cicd_terraform_output() {
+        local key=""
+        local sep=""
+        local val=""
+        terraform output | while read key sep val; do
+            set_cicd_var $key $val
+        done
+      }
+
+      #====================================================================
       # set_cicd_var()
       # Establece el valor de una variable en el fichero cached "cicd.vars". El
       # fichero contiene una linea por cada variable, con el formato típico nombre=valor.

@@ -40,6 +40,8 @@ docker-register-job:
 
   script:
     - |
+      # Esta imagen requiere coreutils para mostrar milisegundos en el timestamp
+      apk add coreutils
       echo_job_banner DOCKER
       # Solo si es un proyecto Docker
       [[ $IS_DOCKER_PRJ != "true" ]] && { echo "WARN: No es un proyecto Docker. Esta etapa no se ejecuta."; exit 0; }

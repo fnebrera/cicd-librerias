@@ -37,6 +37,8 @@ tf-apply-job:
 
   script:
     - |
+      # Esta imagen requiere coreutils para mostrar milisegundos en el timestamp
+      apk add coreutils
       echo_job_banner TF_APPLY
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
@@ -54,8 +56,6 @@ tf-apply-job:
       case ${ACTION} in
         apply)
           terraform apply -input=false "plan.cache"
-          TF_VM_IP=$(terraform output -raw hyperv_instance_ip)
-          t_echo "INFO IP de la maquina virtual: ${TF_VM_IP}"
           ;;
         destroy)
           terraform destroy -auto-approve
@@ -65,9 +65,13 @@ tf-apply-job:
           ;;
       esac
       #
-      # Nos guardamos la IP en variables caheadas de cicd
+      # Nos guardamos los outputs de terraform en el archivo cacheado "cicd.vars", para
+      # que esten disponibles para los jobs de deploy. Usamos una funcion de nuestra
+      # libreria bash.
       #
-      set_cicd_var "TF_VM_IP" "${TF_VM_IP}"
+      set_cicd_terraform_output
+      t_echo "Outputs de Terraform:"
+      cat cicd.vars      
       t_echo "=============================================================================================="
       t_echo "INFO Etapa TF_APPLY finalizada con exito"
       t_echo "=============================================================================================="
