@@ -13,7 +13,7 @@
 tf-prepare-job:
   stage: tf-prepare
 
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2:v0.43.1
+  image: ck-terraform-executor:1.0.0
 
   rules:
     # Control local del pipeline
@@ -32,8 +32,6 @@ tf-prepare-job:
 
   script:
     - |
-      # Esta imagen requiere coreutils para mostrar milisegundos en el timestamp
-      apk add coreutils
       echo_job_banner TF-PREPARE
       cd $TF_ROOT
       t_echo "----------------------------------------------------------------------------------------"

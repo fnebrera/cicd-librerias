@@ -12,7 +12,7 @@
 tf-apply-job:
   stage: tf-apply
 
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.2:v0.43.1
+  image: ck-terraform-executor:1.0.0
 
   variables:
     SKIP: "false"
@@ -38,8 +38,6 @@ tf-apply-job:
 
   script:
     - |
-      # Esta imagen requiere coreutils para mostrar milisegundos en el timestamp
-      apk add coreutils
       echo_job_banner TF_APPLY
       # En todas las etapas manuales hacemos lo mismo
       [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }

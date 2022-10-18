@@ -31,7 +31,7 @@ prepare-job:
     - |
       echo_job_banner PREPARE
       # CUIDADO: Descomentar esto solo si hay que limpiar el cache interno del pipeline
-      # [[ -f "cicd.vars" ]] && rm cicd.vars
+      [[ -f "cicd.vars" ]] && rm cicd.vars
       #
       # Version del proyecto
       #
