@@ -23,9 +23,9 @@ tag-job:
     - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
       when: manual
 
-  cache:
-    paths:
-      - ./.m2/repository
+#  cache:
+#    paths:
+#      - ./.m2/repository
 
   before_script:
     - . funciones-bash.sh

@@ -19,11 +19,6 @@ prepare-job:
     #
     paths:
       - ./.m2/repository
-  #    - ./.sonar/cache
-  #    - ./target
-  #    - ./cicd.vars
-  #    - ${TF_ROOT}/.terraform.lock.hcl
-  #    - ${TF_ROOT}/.terraform#
 
   before_script:
     - . funciones-bash.sh
@@ -31,6 +26,9 @@ prepare-job:
   script:
     - |
       echo_job_banner PREPARE
+      #
+      # Nos han dicho que limpiemos el cache?
+      #
       if [[ $PREPARE_CLEAN_CACHE == "true" ]]; then
         t_echo "Limpiando cache.."
         [[ -d "./.m2/repository" ]] && rm -Rf ./.m2/repository/*
