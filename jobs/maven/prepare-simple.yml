@@ -6,23 +6,24 @@
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
-# 1.0.2 FNG 05/10/2022 Transformar en un unico script y emplear libreria bash
+# 1.0.2 FNG 05/10/2022 Se agrega libreria bash, y se generaliza el deploy
 #
 #########################################################################################################
 prepare-job:
   stage: prepare
 
-  cache:
+  #cache:
     #
     # Esta es la primera etapa en ejecutarse. Para aseguranos de que toda la cache es persistente,
     # definimos aquí todo lo que se va a necesitar en fases subsiguientes.
+    #
     paths:
-      - ./.m2/repository
-      - ./.sonar/cache
-      - ./target
-      - ./cicd.vars
-      - ${TF_ROOT}/.terraform.lock.hcl
-      - ${TF_ROOT}/.terraform
+  #    - ./.m2/repository
+  #    - ./.sonar/cache
+  #    - ./target
+  #    - ./cicd.vars
+  #    - ${TF_ROOT}/.terraform.lock.hcl
+  #    - ${TF_ROOT}/.terraform#
 
   before_script:
     - . funciones-bash.sh
@@ -30,8 +31,15 @@ prepare-job:
   script:
     - |
       echo_job_banner PREPARE
-      # CUIDADO: Descomentar esto solo si hay que limpiar el cache interno del pipeline
-      # [[ -f "cicd.vars" ]] && rm cicd.vars
+      if [[ $PREPARE_CLEAN_CACHE == "true"]]; then
+        t_echo "Limpiando cache.."
+        [[ -d "./.m2/repository" ]] && rm -Rf ./.m2/repository/*
+        [[ -d "./.sonar/cache" ]] && rm -Rf ./.sonar/cache/*
+        [[ -d "./target" ]] && rm -Rf ./target
+        [[ -d "${TF_ROOT}/.terraform" ]] && rm -Rf ${TF_ROOT}/.terraform
+        [[ -f "${TF_ROOT}/.terraform.lock.hcl" ]] && rm -f ${TF_ROOT}/.terraform.lock.hcl
+        [[ -f "cicd.vars" ]] && rm -f cicd.vars
+      fi
       #
       # Version del proyecto
       #
