@@ -148,7 +148,7 @@ create-bash-library:
       # @param2      Valor de la variable
       #====================================================================
       function set_cicd_var() {
-        [[ $# -lt 2 ]] && { echo "set_cicd_var(): Se requieren 2 argumentos"; return 1; }
+        [[ $# -lt 2 ]] && { echo "uso: set_cicd_var KEY VALUE"; return 1; }
         local fichero="${CI_PROJECT_DIR}/cicd.vars"
         local total=""
         local linea=""
@@ -156,7 +156,7 @@ create-bash-library:
         local nuevo=1
         [[ -f ${fichero} ]] || touch ${fichero}
         while read linea; do
-            [[ $linea == "${1}="* ]] && { echo "${1} ya esiste, se reemplaza"; linea="${1}=$(2)"; nuevo=0; }
+            [[ $linea == "${1}="* ]] && { linea="${1}=${2}"; nuevo=0; }
             [[ $prim -ne 1 ]] && linea="\n${linea}"
             total="${total}${linea}"
             prim=0
