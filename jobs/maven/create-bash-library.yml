@@ -134,7 +134,6 @@ create-bash-library:
         local sep=""
         local val=""
         terraform output | while read key sep val; do
-            [[ -z $val ]] || val=${val:1:-1}
             set_cicd_var $key $val
         done
       }
@@ -157,7 +156,7 @@ create-bash-library:
         local nuevo=1
         [[ -f ${fichero} ]] || touch ${fichero}
         while read linea; do
-            [[ $linea -eq "${1}="* ]] && { linea="${1}=$(2)"; nuevo=0; }
+            [[ $linea == "${1}="* ]] && { echo "${1} ya esiste, se reemplaza"; linea="${1}=$(2)"; nuevo=0; }
             [[ $prim -ne 1 ]] && linea="\n${linea}"
             total="${total}${linea}"
             prim=0
