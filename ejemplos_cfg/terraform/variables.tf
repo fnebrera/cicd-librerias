@@ -1,18 +1,21 @@
 #
-# Variables de entorno de nuestros pipelines.
+# Variables de entorno procedentes de nuestros pipelines.
 # En el entorno, el nombre debe empezar con "TF_VAR_" seguido del nombre de la variable.
 #
-variable "HYPERV_USER" {
+variable "HYPERVISOR_USER" {
     description     = "Usuario para conectar al servidor  hyper-v"
     type            = string
 }
 
-variable "HYPERV_PASSWD" {
+variable "HYPERVISOR_PASSWD" {
     description     = "Password del usuario para conectar al servidor  hyper-v"
     type            = string
     sensitive       = true
 }
 
+#
+# Variables que hemos definido en el archivo "terraform.tfvars"
+#
 variable "HYPERV_HOST" {
     description     = "Ip del servidor hyper-v"
     type            = string

@@ -1,34 +1,43 @@
 Preparacion del disco semilla
 -----------------------------
 
+En Hyper-V la forma más fácil de crear una VM es partiendo de un disco semilla que contenga,
+ya preinstalado, el SO y el entorno que vamos a necesitar en el despliegue. En este ejemplo
+lo hemos creado así:
+
 1. Partimos de un vhdx creado desde un Iso de alpine estandar.
 2. En este alpine hay que instalar, arrancar y configurar los servicios de integracion de hyper-v:
-   - apk update
-   - apk add hvtools
-   - rc-service hv_fcopy_daemon start
-   - rc-update add hv_fcopy_daemon
-   - rc-service hv_kvp_daemon start
-   - rc-update add hv_kvp_daemon
-   - rc-service hv_vss_daemon start
-   - rc-update add hv_vss_daemon
+		apk update
+ 		apk add hvtools
+ 		rc-service hv_fcopy_daemon start
+ 		rc-update add hv_fcopy_daemon
+ 		rc-service hv_kvp_daemon start
+		rc-update add hv_kvp_daemon
+		rc-service hv_vss_daemon start
+		rc-update add hv_vss_daemon
 3. Instalamos tambien docker y docker-compose
-   - (trucoso!!) mount -t cgroup cgroup /sys/fs/cgroup
-   - apk add docker docker-compose
-   - rc-update add docker
-   - service docker start
-4. Instalamos bash y sudo
-   - apk add bash
-   - apk add sudo
-   - addgroup sudo
-   - con 'visudo' comentamos la linea del grupo sudo y ponemos NOPASSWD: ALL
-5. Creamos usuario 'vassadmin', y agregamos a grupos sudo y docker
-   - adduser -s /bin/bash vassadmin (ponemos una password que solo conoce el Administrador de Sistemas)
-   - adduser vassadmin docker
-   - adduser vassadmin sudo
-6. Cambiamos los permisos de hostname para que podamos modificarlo con sudo
-   - chmod g+w /etc/hostname
-6. Desde nuestro linux de trabajo, copiamos la clave publica al usuario vassadmin y probamos conexion
-   - ssh-copy-id -i <miclave.pub> vassadmin@<ip actual de la maquina semilla>
-   - ssh -i <miclave> vassadmin@<ip actual de la maquina semilla>
-7. Guardamos el vhdx como semilla para los deploys subsiguientes.
+		(trucoso!!) mount -t cgroup cgroup /sys/fs/cgroup
+		apk add docker docker-compose
+		rc-update add docker
+		service docker start
+4. Instalamos ssh
+		apk add openssh
+		rc-update add sshd
+		service sshd start
+5. Instalamos bash y sudo
+		apk add bash
+		apk add sudo
+		addgroup sudo
+		- con 'visudo' comentamos la linea del grupo sudo y ponemos NOPASSWD: ALL
+6. Creamos usuario 'vassadmin', y agregamos a grupos sudo y docker
+		adduser -s /bin/bash vassadmin (ponemos una password que solo conoce el sysadmin, provisional Lolo2756)
+		adduser vassadmin docker
+		adduser vassadmin sudo
+7. Cambiamos los permisos de hostname para que podamos modificarlo con sudo
+		chmod g+w /etc/hostname
+8. Desde nuestro linux de trabajo, copiamos la clave publica al usuario vassadmin y probamos conexion
+		ssh-copy-id -i <miclave.pub> vassadmin@<ip actual de la maquina semilla>
+		ssh -i <miclave> vassadmin@<ip actual de la maquina semilla>
+9. Guardamos el vhdx como semilla para los deploys subsiguientes.
 
+====================== E O F ================================

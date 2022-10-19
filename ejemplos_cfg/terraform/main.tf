@@ -49,7 +49,7 @@ resource "hyperv_machine_instance" "test-hyperv" {
   #
   # Hay un bug en el provider de Hyper-V. Si no le definimos todo esto (con los valores por defecto)
   # cree que tiene que actualizar la VM, aunque realmente no tendría que hacer nada.
-  # Todavia no he encontrado el modo de resolver el mismo problemilla con el VHD, aunque esto me prepcupa menos.
+  # Todavia no he encontrado el modo de resolver el mismo problemilla con el VHD, aunque esto me preocupa menos.
   # 
   vm_processor {
     compatibility_for_migration_enabled               = false

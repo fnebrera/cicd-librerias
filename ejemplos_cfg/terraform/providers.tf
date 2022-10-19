@@ -14,8 +14,8 @@ terraform {
 
 # Servidor hyper-v sobre el que vamos a crear la maquina virtual 
 provider "hyperv" {
-  user        = var.HYPERV_USER
-  password    = var.HYPERV_PASSWD
+  user        = var.HYPERVISOR_USER
+  password    = var.HYPERVISOR_PASSWD
   host        = var.HYPERV_HOST
   port        = 5985
   https       = false

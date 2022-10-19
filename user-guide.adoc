@@ -1,9 +1,10 @@
 = image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.2, 10/10/2022
+1.0.2, 19/10/2022
 :toc:
 :toc-title: Tabla de Contenido
-:toclevels: 3
+:toclevels: 4
+:sectnumlevels: 4
 :icons: font
 
 == Resumen
@@ -40,8 +41,8 @@ En versiones posteriores está previsto replicar una parte de las librerías par
 
 |1.0.2
 |FNG
-|10/10/2022
-|Se incorpora un mecanismo para manejar librerías de funciones, y se implementa un ejemplo con funciones bash que se emplean en diferentes jobs del framework
+|19/10/2022
+|Se incorpora un mecanismo para manejar librerías de funciones, y se generalizan las etapas de provisioning y deploy
 
 |===
 
@@ -104,14 +105,6 @@ Maquinas provisionadas::
 * Docker 20.10.17 y docker-compose.
 * Herramientas de base: OpenSSH-server, bash, sudo, etc.
 
-Workstation::
-* Core i7-1165G7
-* 16 GB memoria
-* 512 GB SSD
-* Windows 11 Pro
-* Visual Studio Code 1.69.2
-* Eclipse 2022-06 (4.24.0)
-
 === Productos para CI/CD
 
 Todos los productos se han instalado en el server CI/CD como imágenes docker, y se lanzan mediante sendos docker-compose, para facilitar
@@ -123,20 +116,19 @@ productos instalados son:
 
 - Gitlab OMNIBUS 15.2.1-ce.0
 - Gitlab-runner: latest
-- Sonarqube 9.5.0-community
-- PostgreSQL 12.2 (requerido por Sonar)
+- Sonarqube 9.6.1-community
+- PostgreSQL 14.4 (usado por Sonar y Selfweb)
 - Nginx 1.21.6 (proxy inverso)
-- Portainer ce:2.14.1 (monitorización Docker)
+- Portainer ce:2.15.1 (monitorización Docker)
 
 == Visión general de la solución
 
 === Proyecto de trabajo
 
-Las librerías de pipelines y jobs se encuentran en el proyecto "cicd-librerias", y se describirán con mayor detalle más adelante. Este proyecto se maneja en la workstation empleando Visual Studio Code.
+Las librerías de pipelines y jobs se encuentran en el proyecto "cicd-librerias", y se describirán con mayor detalle más adelante. Tanto las librerias como la documentación están disponibles en un repositorio público (githb).
 
 Como proyecto de trabajo, se ha escogido la aplicación Selfweb de Comunytek, y concretamente el server REST (selfwebspingboot). Se trata de una aplicación java que emplea el framework SpringBoot. Como gestor de proyectos se emplea maven. En la carpeta "ejemplos_cfg"
-puede verse el pom.xml de dicho proyecto, así como otros ejemplos de archivos de configuración. Este proyecto
-se maneja en la workstation empleando Eclipse.
+puede verse el pom.xml de dicho proyecto, así como otros ejemplos de archivos de configuración.
 
 === Flujo de desarrollo
 
@@ -224,7 +216,7 @@ ejemplo. Nótese que Nexus, por ejemplo, incorpora esta funcionalidad en un mód
 
 ==== Provisionado
 
-Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar _Terraform(TM)_ en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform apply'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa.
+Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar _Terraform(TM)_ en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform xxxx'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa. Por lo tanto, se ha creado una imagen docker ad-hoc basada en un linux mínimo (Alpine), y se emplean los comandos propios de Terraform.
 
 Un aspecto muy interesante es que Gitlab puede actuar como backend del status Terraform del proyecto, evitando así que el eventual acceso simultáneo pueda provocar comportamientos indeseados. 
 
@@ -259,7 +251,7 @@ crea a su vez un container Docker con la imagen que se indique en el propio job,
 
 image::img/runners.png[Runners y Executors]
 
-- Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job.
+- Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job. Adicionalmente se ha preparado otra imagen de executor denominada "ck-terraform-executor", también basada en Alpine y con Terraform preinstalado.
 - Gitlab dispone de varios mecanismos para "pasar" información de un job a otro. Posiblemente el más usado es el "cache", en el que podemos incluir uno o más directorios de trabajo que cada job "lee" al inciarse y "escribe" al finalizar. Un ejemplo típico de uso es el repositorio de dependencias de maven. Si está en cache, se descargarán sólamente una vez y estarán a disposicion de los diferentes jobs.
 - Un elemento clave en la definición del pipeline son las "variables". En Gitlab, existen varios niveles de variables:
 * Variables predefinidas de Gitlab: Todas ellas comienzan con "CI_" y pueden contener tanto información estática como dinámica. Por ejemplo, CI_PROJECT_ID
@@ -275,7 +267,7 @@ contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contien
 
 == Descripción de las librerías
 
-En esta primera versión del proyecto, empleamos únicamente tres productos: Gitlab, SonarQube y Terraform. Esto contrasta con los 4, 5 o 6 productos que se emplean habitulamnete en cadenas CI/CD. Estos dos productos, además, resultan muy familiares tanto a ingenieros DevOps como a desarrolladores.
+En esta primera versión del proyecto, empleamos únicamente tres productos: Gitlab, SonarQube y Terraform. Esto contrasta con los 4, 5 o 6 productos que se emplean habitulamnete en cadenas CI/CD. Estos tres productos, además, resultan muy familiares tanto a ingenieros DevOps como a desarrolladores.
 
 En el proyecto se demuestra, además, que Gitlab CI/CD puede sustituir perfectamente a Jenkins o TeamCity, y con un lenguaje de definición de pipelines muy simple y de rápida curva de aprendizaje.
 
@@ -312,7 +304,7 @@ SONAR_HOST_TOKEN:: Token generado en Sonar para acceso externo mediante la API.
 
 ==== De pipeline (ocultas)
 
-En el include principal del pipeline se definen un conjunto de variables que quedan ocultas para los Developers, y que se han utilizado como base para implementar los diferentes flujos. Un Manager de Grupo puede modificar el comportamiento del pipeline sin más que actualizar estas variables. También es posible (si se desea) definir alguna de estas variables en el archivo ".gitlab-ci.yml" del proyecto, el cual, a priori, es editable por los Developers.
+En el include principal del pipeline se definen un conjunto de variables que quedan ocultas para los Developers, y que se han utilizado como base para implementar los diferentes flujos. Un Manager de Grupo puede modificar el comportamiento del pipeline sin más que actualizar estas variables.
 
 IGNORE_AUX_BRANCHES:: No ejecutar el pipeline en ramas auxiliares (aquellas distintas de 'master' y 'develop').
 Si se define a "true", el resto de flags relacionados con ramas auxiliares no tienen efecto.
@@ -359,8 +351,10 @@ aunque las etapas sonar y test admiten errores.
 Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
 HOTFIX_NUMBER:: Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
 En la version del proyecto, se respeta la que se indica en el pom.xml.
-DEPLOY_HOST_NAME:: Nombre que queremos dar al host. Puede ser distinto en develop y master.
-DEPLOY_IP_ADDRESS:: Direccion IP de la maquina de deploy, si se conoce. Si se ejecutan las etapas terraform, este valor se rellena en automático.
+RUN_CI_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas a integración continua (CI).
+RUN_REGISTER_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas al registro de artefactos, imágenes docker y tags.
+RUN_PROVISION_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas al provisioning de infraestructura.
+RUN_DEPLOY_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas al despliegue (instalación/actualización) del software.
 
 === Pipeline del proyecto e include principal
 
@@ -371,6 +365,8 @@ variables:
   SNAPSHOT_NUMBER: "005"
   HOTFIX_BRANCH: ""
   HOTFIX_NUMBER: "002"
+  ....
+
 include:
    project: 'comunytek/cicd-librerias'
    ref: master
@@ -383,51 +379,26 @@ El include principal sólo es editable por Managers de Grupo. En este ejemplo, m
 
 ------------------------------------------------------------
 variables:
-  ##
-  # Variables Básicas del pipeline
-  ##
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"    # Home de sonar, para caching
-  GIT_DEPTH: "0"  # No usar shallow clone (es un proyecto pequeño)
-  MAVEN_OPTS: "-Dmaven.repo.local=./.m2/repository"    # Localizacion del repositorio maven
-  ORIGIN_URL: "https://oauth2:${CICD_TOKEN}@${CICD_HOST}/${CI_PROJECT_PATH}.git"  # Url externa de gitlab
-  ##
-  # Variables de pipeline ocultas.
-  # Si se desea, y para mayor seguridad, pueden definirse como variables CI/CD de grupo.
-  #
-  IGNORE_AUX_BRANCHES: "false"
-  COMPILE_AUX_BRANCHES: "true"
-  ... resto de variables
+  ...
 
 workflow:
   rules:
     - if: $CI_COMMIT_TAG        # No ejecutar en tags                   
       when: never
-    # No ejecutar este pipeline en ramas auxiliares, si así esta configurado
-    - if: $IGNORE_AUX_BRANCHES == "true" && $CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_REF_NAME != "master" && $CI_COMMIT_REF_NAME != $HOTFIX_BRANCH
-      when: never
-    - if: $CI_PIPELINE_SOURCE == 'push'    # Ejecutar sólo en push 
+  ...
 
-image: ck-maven-executor:1.0.0     # Imagen por defecto
+image: ck-maven-executor:1.0.1     # Imagen por defecto
 
 cache:
-  # Definimos la clave del cache como el nombre del branch en el que hacemos push, de este modo
-  # separamos la informacion cacheada para cada rama, para no interferir en otros pipelines.
   key: "$CI_COMMIT_REF_NAME"
 
 # Etapas posibles del pipeline
 stages:
   - prepare
   - compile
-  - sonar
-  - test
-  - build
-  - register
-  - docker
-  - tag
-  - tf-prepare
-  - tf-apply
-  - deploy
-
+  
+  ...
 # Includes, uno por job
 include: 
   - project: 'comunytek/cicd-librerias'
@@ -438,11 +409,37 @@ include:
       ... resto de includes
 ------------------------------------------------------------
 
+=== Fases del pipeline
+
+A efectos de control global del flujo, se han agrupado las diferentes etapas en la siguientes fases:
+
+* Preparación
+- create-bash-library
+- prepare
+* Integración continua (CI)
+- compile
+- sonar
+- test
+- build
+* Registro (artefacto, imagen docker, tag)
+- register
+- docker
+- tag
+* Aprovisionamiento de infraestructura
+- tf-prepare
+- tf-apply
+* Despliegue del producto
+- deploy
+
 === Jobs específicos para maven
 
-Consulte el código _yaml_ de cada job para ver el detalle de su funcionalidad. A continuación indicamos algunos comentarios aclaratorios.
+A continuación se explica brevemente la funcionalidad de los diferentes jobs. Puede accederse al código fuente siguiendo el correspondiente link. Los jobs se muestran agregados por fases e indicando, si es necesario, la etapa (stage) a la que corresponden. 
 
-==== Create-bash-library
+==== Fase de preparación
+
+Se ejecuta de manera incondicional, y se emplea para preparar la caché, así como algunas variables de entorno que serán de utilidad en etapas posteriores.
+
+===== _Create-bash-library (.pre)_
 
 Job definido en link:jobs/maven/create-bash-library.yml[]. Se ejecuta en la etapa ".pre", es decir, con anterioridad a cualquier otro job del pipeline. En este caso concreto, se limita a crear y popular un archivo temporal llamado "funciones-bash.sh" conteniendo una serie de funciones escritas en bash y de uso general para cualquier job del pipeline. El archivo generado se pasa como artefacto al resto del pipeline. Cuando un job quiere llamar a una función de la librería, necesita "cargarla" previamente, lo que se hace habitualmente en el before_script:
 
@@ -451,7 +448,9 @@ Job definido en link:jobs/maven/create-bash-library.yml[]. Se ejecuta en la etap
     - . funciones-bash.sh
 ------------------------------------------------------------
 
-==== Prepare
+Este mecanismo permite mantener la/s librería/s bajo control de código fuente, y es el recomendado por Gitlab.
+
+===== _Prepare (prepare)_
 
 Para esta etapa se ha definido el job en el archivo link:jobs/maven/prepare-simple.yml[]. Este job se ejecuta incondicionalmente en todas las
 ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES está a true (todo el pipeline simplemente se ignora). El job prepara el entorno para la ejecución de jobs posteriores.
@@ -461,14 +460,16 @@ ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES 
 - Copia las claves y valores de las variables de entorno a un archivo temporal "prepare.env".
 - Pasa el contenido de "prepare.env" al resto del pipeline mediante un artefacto de tipo "reports" y clave "dotenv". Las variables contenidas en este archivo son accesibles en todo el pipeline.
 
-==== Compile
+==== Fase de integración contínua (CI)
+
+===== _Compile_
 
 El job en se define en link:jobs/maven/compile-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false (o bien el flag IGNORE_AUX_BRANCHES está a true, lo que aplica a todo el pipeline). También se ejecuta en la rama hotfix (si existe). En este ejemplo, el job es bastante simple:
 
 - Define los directorios de la cache.
 - Ejecuta "mvn clean compile". Si se produce un error de compilación, el pipeline se detiene.
 
-==== Sonar
+===== _Sonar_
 
 Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag SONAR_AUX_BRANCHES está a false. También se ejecuta en la rama hotfix (si existe). Se ejecuta Sonarqube sobre el código fuente para localizar bugs, code-smells y vulnerabilidades SAST.
 
@@ -476,14 +477,14 @@ Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple
 - En ramas auxiliares se pasa Sonar sólo en archivos modificados, mientras que en el resto de ramas se pasa a todo el código. 
 - Se ejecuta "mvn validate sonar:sonar".
 
-==== Test
+===== _Test_
 
 Job definido en link:jobs/maven/test-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag TEST_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. El objetivo del job es pasar los test unitarios definidos para el proyecto.
 
 - Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_TEST_DEVELOP se defina como true.
 - Se ejecuta "mvn test".
 
-==== Build
+===== _Build_
 
 Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple.yml[]. Este job se ejecuta incondicionalmente en master, develop y hotfix al hacer push. No se ejecuta en ramas auxiliares. Se trata de construir el artefacto objeto del proyecto. En el caso de maven/SpringBoot se trataría del llamado "fat-jar".
 
@@ -493,7 +494,9 @@ Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple
 - Si estamos en develop y el flag REGISTER_DEVELOP es false, salimos con error 4 (la rama develop no se registra), con lo que detenemos el pipeline.
 - Si salimos con error, generamos un artefacto compuesto por el fat-jar, el pom y el .gitlab-ci.yml. Este artefacto está disponible para su descarga durante un periodo de 8 horas. La idea es que, si se genera alguno de los errores anteriores, el pipeline se detenga, pero dispongamos del artefacto para pruebas adicionales, condiciones no contempladas, etc.
 
-==== Register
+==== Fase de registro
+
+===== _Register_
 
 Job definido en link:jobs/maven/register-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. No se ejecuta en ramas auxiliares. Este job asume que se ha ejecutado la etapa "build" y diponemos, por tanto, del "fat-jar" en la cache. Para que el job ejecute con éxito, se precisan unos requisitos previos:
 
@@ -541,7 +544,7 @@ Finalmente, creamos un tar con los fuentes y registramos un artefacto compuesto 
       -Dtypes=tgz
 ----------------------------------------------------
 
-==== Docker
+===== _Docker_
 
 Para esta etapa se ha definido el job en el archivo link:jobs/maven/docker-simple.yml[]. Este job se ejecuta incondicionalmente en master y hotfix al hacer push. No se ejecuta en ramas auxiliares. Adicionalmente puede ejecutarse en develop si REGISTER_DEVELOP es true. Sólo se ejecuta si existe, en la raiz del proyecto, un archivo "Dockerfile".
 
@@ -566,7 +569,7 @@ El job guarda el IMG_TAG generado en el archivo "prepare.env", y lo pasa como ar
     - docker push $IMG_TAG 
 -------------------------------------------------
 
-==== Tag
+===== _Tag_
 
 Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual".
 
@@ -588,31 +591,56 @@ Con este Id se genera un tag. Nótese que los TagID no pueden repetirse.
     - git push origin $TAG
 -------------------------------------------------
 
-==== Tf-prepare
+==== Fase de aprovisionamiento de infraestructura
 
-Se ha definido en link:jobs/maven/tf-prepare-simple.yml[]. Se ejecuta sólamente en master.
+En la versión actual de la librería se emplea Hashicorp _Terraform(TM)_ como gestor en la infraestructura. La librería es agnóstica en cuanto a la plataforma
+de provisioning u otros detalles, que deberán definirse en archivos y módulos de Terraform. Para que el job funcione correctamente, en el proyecto debe
+definirse una variable llamada TF_ROOT apuntando al directorio raiz de la configuración a emplear. Por ejemplo, si vamos a manejar infraestructura en Amazon AWS, y
+queremos diferenciar las configuraciones de pre-producción y producción podríamos usar:
 
-En este job se prepara el provisioning basado en _Terraform(TM)_ de acuerdo a la configuración definida en el subdirectorio "terraform" del proyecto. Para este caso concreto, y a efectos de probar un provisionado "on-premises" (la web está llena de ejemplos de provisionado en Cloud), se ha optado por usar un provider para Hyper-V que, aunque se encuentra en versión beta, funciona razonablemente. La configuración define una máquina virtual basada en Alpine, que se construye a partir de un disco virtual "semilla" generado a partir de una imagen ISO de Alpine Linux 3.16.2, sen el que se han preinstalado algunos servicios (docker, ssh, sudo, etc.).
+TF_ROOT=$CI_PROJECT_DIR/terraform/aws/$CI_COMMIT_REF_NAME
 
-A título de ejemplo, también se ha incorporado la capacidad de Gitlab como "backend" del "state" de terraform, lo que permite controlar el eventual acceso simultáneo desde diferentes equipos o sistemas, evitando posibles errores que podrían resultar gravísimos en entornos de producción.
+En el directorio ejemplos-cfg puede verse un ejemplo de configuración, en este caso, para Hyper-V.
 
-El job de preparación inicializa el backend, valida la configuración de terraform y crea el "plan" de provisionado en base a los posibles cambios sobre la situación "real" de máquinas, discos, interfaces, etc. El plan generado se pasa a las etapas posteriores en forma de artefacto interno del pipeline.
+===== _Tf-prepare_
 
-==== Tf-apply
+Se ha definido en link:jobs/maven/tf-prepare-simple.yml[]. Se ejecuta en master y, opcionalmente en develop, siempre que el flag PROVISION_DEVELOP esté a "true".
 
-Job definido en link:jobs/maven/tf-apply-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual" para permitir la revisión detallada el plan preparado en la etapa anterior, antes de proceder al provisioning (apply). Como todos los jobs manuales de esta librería, podemos "saltarnos" la ejecución sin más que indicar SKIP=true antes de lanzarlo.
+Se emplea como backend de estado el propio gitlab, para lo que se requiere establecer los datos de acceso al mismo mediante las variables TF_BACKEND_ADDRESS (debe definirse a nivel de grupo), TF_HYPERVISOR_USER y TF_HYPERVISOR_PASSWD (estas últimas a nivel de proyecto).
+
+El job valida la configuración de terraform y crea el "plan" de provisionado en base a los posibles cambios sobre la situación real de máquinas, discos, interfaces, etc. El plan generado se pasa a las etapas posteriores en forma de artefacto interno del pipeline.
+
+===== _Tf-apply_
+
+Job definido en link:jobs/maven/tf-apply-simple.yml[]. Se ejecuta en master y, opcionalmente en develop, siempre que el flag PROVISION_DEVELOP esté a "true". Definido como "manual" para permitir la revisión detallada el plan preparado en la etapa anterior, antes de proceder al provisioning (apply). Como todos los jobs manuales de esta librería, podemos "saltarnos" la ejecución sin más que indicar SKIP=true antes de lanzarlo.
 
 Adicionalmente, se ha previsto la posibilidad de realizar una acción cualquiera de terraform, para lo que debemos definir la variable ACTION con el valor deseado. Por defecto es "apply", pero podemos entrar "destroy" u otro comando terraform válido.
 
-==== Deploy
+Con el fin de facilitar la posterior fase de despliegue, los _outputs_ de Terraform se escriben en un archivo llamado "cicd.vars", que se ha definido como parte de la caché, y tiene el formato "key=value", por lo que puede leerse fácilmente en forma de variables de entorno en etapas posteriores, sin más que emplear
+"source cicd.vars" en el script. Al formar parte de la caché, se persiste entre una invocación y otra del pipeline. Por ejemplo, si uno de los outputs es la IP
+de la máquina provisionada, se guardará en caché, con lo que podemos ejecutar el pipeline una vez con los flags
+RUN_PROVISION_STAGES="true" y RUN_DEPLOY_STAGES="false" y, si todo ha ido bien, lanzar más tarde el pipeline con RUN_PROVISION_STAGES="false" y RUN_DEPLOY_STAGES="true",
+y la/s etapa/s de deploy podrán obtener los outputs de Terraform desde el archivo cacheado _cicd.vars_. 
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[]. Se ejecuta sólamente en master. Definido como "manual" para que pueda lanzarse sólamente una vez verificado que el provisionado ha sido correcto.
+==== Fase de despliegue (instalación/actualización) del producto
 
-En esta primera versión este job se ha planteado de una forma relativamente simple, utilizando sftp, ssh y bash para instalar y/o actualizar un servidor REST basado en SpringBoot (nuestro proyecto ejemplo SelfWeb), así como el servidor Web y el cliente javascript. Esta aproximación nos permite evitar la necesidad de un "agente" remoto, puesto que basta con que la máquina semilla tenga preinstalados el servidor ssh y docker.
+===== _Deploy_
 
-Partimos de un paquete de instalación almacenado en el propio Gitlab y que consiste en lo siguiente (ver directorio "deploy" en los ejemplos):
+Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[]. Se ejecuta en master y, opcionalmente en develop, siempre que el flag DEPLOY_DEVELOP esté a "true". Definido como "manual" para que pueda lanzarse sólamente una vez verificado que el provisionado ha sido correcto.
 
-- Un archivo "docker-compose.yml" que define el stack docker sobre el que se ejecutará el sistema. En este archivo hay un "placehorder" donde debemos indicar la imagen docker a instalar, que se habrá generado y registrado en la etapa "docker". Este placeholder se rellena mediante un "docker-compose.override.yml" que se genera de manera automática en tiempo de despliegue, y que tendrá un contenido similar al siguiente:
+A fin de que la librería sea genérica, el job se ha planteado de manera muy simple:
+
+- A nivel de proyecto, debe definirse una variable DEPLOY_ROOT apuntando a un directorio que contenga todo lo necesario para hacer el deploy. Por ejemplo:
+DEPLOY_ROOT=$CI_PROJECT_DIR/deploy/$CI_COMMIT_REF_NAME.
+- Tambien a nivel de proyecto deben definirse las variables DEPLOY_SSH_USER, DEPLOY_SSH_KEY, DEPLOY_SSH_PATH y DEPLOY_SSH_SVC_NAME, cuyo significado se ha explicado
+en párrafos anteriores.
+- En este directorio debe existir un archivo "exec_deploy.sh" conteniendo las funciones bash que se precisen y, obligatoriamente, una
+denominada "exec_deploy", que será la que se ocupe de realizar el deploy propiamente dicho, ya sea simplemente con SSH o empleando algún agente externo,
+tipo _ansible(TM)_ o similar.
+
+En el ejemplo que venimos tratando, la función copia al remoto todo el directorio de deploy, que consiste en lo siguiente (ver directorio "deploy" en los ejemplos):
+
+- Un archivo "docker-compose.yml" que define el stack docker en el que se ejecutará el producto. En este archivo hay un "placehorder" donde debemos indicar la imagen docker a instalar, que se habrá generado y registrado en la etapa "docker". Este placeholder se rellena mediante un archivo "docker-compose.override.yml" que se genera de manera automática en tiempo de despliegue, y que tendrá un contenido similar al siguiente:
 
 -------------------------------------------------
 services:
@@ -621,15 +649,7 @@ services:
 -------------------------------------------------
 
 - Un árbol de directorios en los que definimos los "volumes" y "networks" que empleará el stack. Cuando alguno de los volúmenes se debe crear, pero no copiar su contenido al destino, debe incluir un archivo llamado "ignore". Si no es así, todo el contenido se copia (y sobrescribe) al destino (/var/lib/docker/volumes/xxx/_data).
-- Un script bash llamado "deploy.sh" que se ocupará de realizar la instalación propiamente dicha (ver ejemplos).
-
-De forma muy resumida, el job hace lo siguiente (ver el código fuente para más detalles):
-
-- Modifica los permisos del archivo temporal ${DEPLOY_SSH_KEY} (que contiene la clave privada para la conexión ssh), para que sean exactamente "400" tal como requiere OpenSSH.
-- Empleando ssh, crea (si no existe) en la máquina de despliegue el directorio destino de la instalación, que se habrá definido mediante la variable ${DEPLOY_SSH_PATH}. Elimina (de existir) el directorio de trabajo "deploy".
-- Empleando sftp, copia el directorio "deploy" del proyecto a la máquina remota.
-- Ejecuta, de manera remota, el script "deploy.sh" y guarda el log de la ejecución.
-- Descarga dicho log mediante sftp y lo muestra en la salida del job.
+- Un script bash llamado "deploy.sh" que se ejecutará de manera remota y se ocupará de realizar la instalación propiamente dicha (ver ejemplos).
 
 == Casos de uso
 
