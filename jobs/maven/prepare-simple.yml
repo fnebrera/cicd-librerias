@@ -12,13 +12,13 @@
 prepare-job:
   stage: prepare
 
-  cache:
+  #cache:
     #
     # Esta es la primera etapa en ejecutarse. Para aseguranos de que toda la cache es persistente,
     # definimos aquí todo lo que se va a necesitar en fases subsiguientes.
     #
-    paths:
-      - ./.m2/repository
+  #  paths:
+  #    - ./.m2/repository
 
   before_script:
     - . funciones-bash.sh
