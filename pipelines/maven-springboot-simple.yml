@@ -117,17 +117,18 @@ default:
   # estos entornos. Ver documentación para detalles.
   image: ck-maven-executor:1.0.1
 
-  cache:
-    # Definimos la clave del cache como el nombre del branch en el que hacemos push, de este modo
-    # separamos la informacion cacheada para cada rama, para no interferir en otros pipelines.
-    key: "$CI_COMMIT_REF_NAME"
-    paths:
-      - ./.m2/repository
-      - ./.sonar/cache
-      - ./target
-      - ./cicd.vars
-      - ${TF_ROOT}/.terraform.lock.hcl
-      - ${TF_ROOT}/.terraform
+cache:
+  # Definimos la clave del cache como el nombre del branch en el que hacemos push, de este modo
+  # separamos la informacion cacheada para cada rama, para no interferir en otros pipelines.
+  key: "$CI_COMMIT_REF_NAME"
+  paths:
+    - ./.m2/repository
+    - ./.m2/repository
+    - ./.sonar/cache
+    - ./target
+    - ./cicd.vars
+    - ${TF_ROOT}/.terraform.lock.hcl
+    - ${TF_ROOT}/.terraform
 
 # Etapas posibles del pipeline
 stages:
