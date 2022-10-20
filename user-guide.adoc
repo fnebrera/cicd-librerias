@@ -655,18 +655,28 @@ services:
 
 Para los casos de uso que siguen, se parte de la siguiente configuración de variables:
 
-* IGNORE_AUX_BRANCHES: false
-* COMPILE_AUX_BRANCHES: true
-* SONAR_AUX_BRANCHES: true
-* TEST_AUX_BRANCHES: false
-* ALLOW_FAILURE_IN_SONAR_DEVELOP: false
-* ALLOW_FAILURE_IN_TEST_DEVELOP: false
-* ALLOW_RELEASE_IN_DEVELOP: false
-* REGISTER_DEVELOP: true
+*De pipeline (grupo)*
+
+* IGNORE_AUX_BRANCHES: "false"
+* COMPILE_AUX_BRANCHES: "true"
+* SONAR_AUX_BRANCHES: "true"
+* TEST_AUX_BRANCHES: "false"
+* ALLOW_FAILURE_IN_SONAR_DEVELOP: "false"
+* ALLOW_FAILURE_IN_TEST_DEVELOP: "false"
+* ALLOW_RELEASE_IN_DEVELOP: "false"
+* REGISTER_DEVELOP: "true"
+* PROVISION_DEVELOP: "false"
+* DEPLOY_DEVELOP: "false"
+
+*De pipeline (proyecto)*
+
 * SNAPSHOT_NUMBER: "003"
 * HOTFIX_BRANCH: "Hotfix-Issue-23056"
 * HOTFIX_NUMBER: "002"
-* DOCKER_SERVICE_NAME: "selfweb"
+* RUN_CI_STAGES: "true"
+* RUN_REGISTER_STAGES: "true"
+* RUN_PROVISION_STAGES: "true"
+* RUN_DEPLOY_STAGES: "true"
 
 === Ramas auxiliares
 
@@ -675,6 +685,7 @@ Habitualmente un único desarrollador trabajará en la rama "X", en su PC person
 - Periódicamente, hará commit  de los cambios realizados a su repositorio local.
 - Sea por razones de backup, por haber finalizado un sprint, etc., hará push de la rama auxiliar, lo que disparará el pipeline.
 - Dado que IGNORE_AUX_BRANCHES es false, el pipeline se ejecuta, con los stages:
+* create_bash_library: Comportamiento normal
 * prepare: Comportamiento normal.
 * compile: Se ejecuta, al ser COMPILE_AUX_BRANCHES = true.
 * sonar: Se ejecuta, al ser SONAR_AUX_BRANCHES = true. Se pasa sonar sólo a los archivos modificados y se permite errores.
@@ -684,32 +695,34 @@ Como puede verse, se trata símplemente de verificar que el código fuente actua
 
 === Rama develop
 
-El tratamiento de esta rama es bastante más complejo, puesto que en su desarrollo pueden intervenir varias personas. Además, si el flag REGISTER_DEVELOP es true, vamos a hacer un despliegue "oficial" a UAT o staging, por lo que hemos de ser cuidadosos.
+El tratamiento de esta rama es bastante más complejo, puesto que en su desarrollo pueden intervenir varias personas. Además, si el flag REGISTER_DEVELOP es true, probablemente vamos a hacer un despliegue "oficial" a UAT o staging, por lo que hemos de ser cuidadosos.
 
 - A medida que los desarrolladores van finalizando su trabajo en su rama "X, Y,..", hacen lo siguiente:
-* Hacen fetch / diff / pull de la rama develop, para obtener el último código disponible.
-* Hacen merge (en local) de su rama "X" sobre develop. Si hay conflictos, deben resolverse en la rama "X" y repetir el proceso.
+* Hacen fetch / diff / pull de la rama develop (o eventualmente de una rama temporal específica para el sprint), para obtener el último código disponible.
+* Hacen merge (en local) de su rama "X" sobre develop/sprint. Si hay conflictos, deben resolverse en la rama "X" y repetir el proceso.
 * Notifican al Project Leader que su trabajo está concluido, al menos provisionalmente.
+* El proceso se repite hasta tener finalizada la versión o sprint, pasados los tests de integración y cualquier otro requisito previo y, en definitiva, poder pasar a pre-producción.
 
-- El Project Leader, una vez finalizadas todas las ramas que conforman el SNAPSHOT, hace lo siguiente:
+- El Project Leader, una vez finalizadas todas las ramas que conforman la versión o sprint, hace lo siguiente:
 * Hace pull de develop a su repositorio local.
-* Para cada una de las ramas auxiliares que conforman el SNAPSHOT hace merge en local de la rama auxiliar sobre develop. Si todavía quedan conflictos, deben resolverse entre los desarrolladores, y repetir el circuito.
+* Para cada una de las ramas auxiliares que conforman el SNAPSHOT (o bien para la rama de sprint) hace merge en local de dicha/s rama/s sobre develop. Si todavía quedan conflictos, deben resolverse entre los desarrolladores, y repetir el circuito.
 * Una vez resueltos los conflictos, actualiza el pom de develop con la versión fijada para el SNAPSHOT. Si admitimos snapshots incrementales, se define el número de snapshot en la variable SNAPSHOT_NUMBER.
 * Hace push de la rama develop, lo que dispara el pipeline.
 
-- Con esta configuración, el pipeline funcionará del siguiente modo:
+- Con la configuración antes descrita, el pipeline funcionará del siguiente modo:
 
+* create_bash_library: Comportamiento normal
 * prepare: Comportamiento normal.
 * compile: Comportamiento normal.
 * sonar: Se pasa para todo el código, y NO se admiten errores (ALLOW_FAILURE_IN_SONAR_DEVELOP = false).
 * test: Se pasan tests unitarios, y NO se admiten errores (ALLOW_FAILURE_IN_TEST_DEVELOP = false).
-* build: Se crea el "fat-jar" y, posteriormente, se verifican condiciones para continuar el pipeline. Si no se cumplen, se genera un artefacto con el .jar y el pom, el cual queda disponible para download por un corto periodo de tiempo (en el ejemplo 2 horas). Una de las condiciones para continuar es que REGISTER_DEVELOP valga true. Si, a pesar de estar en la rama develop, la versión del proyecto NO es SNAPSHOT, y dado que ALLOW_RELEASE_IN_SNAPSHOT es false, el pipeline se interrumpirá.
-* register: Se ejecuta de forma manual. Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* build: Se crea el "fat-jar" y, posteriormente, se verifican condiciones para continuar el pipeline. Si no se cumplen, se genera un artefacto con el .jar y el pom, el cual queda disponible para download durante unas horas. Una de las condiciones para continuar es que REGISTER_DEVELOP valga true. Si, a pesar de estar en la rama develop, la versión del proyecto NO es SNAPSHOT, y dado que ALLOW_RELEASE_IN_SNAPSHOT es false, el pipeline se interrumpirá.
+* register: Se registra un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
 * docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
-* tag: Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se crea un nuevo Tag con Id único que incluye el SNAPSHOT_NUMBER.
-* tf-prepare: NO se ejecuta.
-* tf-apply: NO se ejecuta.
-* deploy: NO se ejecuta.
+* tag: Se crea un nuevo Tag con Id único que incluye el SNAPSHOT_NUMBER.
+* tf-prepare: NO se ejecuta (PROVISION_DEVELOP: "false").
+* tf-apply: NO se ejecuta (PROVISION_DEVELOP: "false").
+* deploy: NO se ejecuta (DEPLOY_DEVELOP: "false").
 
 === Rama master
 
@@ -724,37 +737,39 @@ En el modelo de flujo que hemos seleccionado, la rama master contiene únicament
 
 - Con esta configuración, el pipeline funcionará del siguiente modo:
 
+* create_bash_library: Comportamiento normal
 * prepare: Comportamiento normal.
 * compile: Comportamiento normal.
 * sonar: Se pasa para todo el código, y NO se admiten errores.
 * test: Se pasan tests unitarios, y NO se admiten errores.
-* build: Se crea el "fat-jar" y, se verifica que la versión del proyecto NO es SNAPSHOT. Si no se cumple, se genera un artefacto con el .jar y el pom, el cual queda disponible para download por un corto periodo de tiempo (en el ejemplo 2 horas) y se interrumpe el pipeline.
-* register: Se ejecuta de forma manual. Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* build: Se crea el "fat-jar" y, se verifica que la versión del proyecto NO es SNAPSHOT. Si no se cumple, se genera un artefacto con el .jar y el pom, el cual queda disponible para download durante unas horas y se interrumpe el pipeline.
+* register: Se registra un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
 * docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
-* tag: Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se crea un nuevo Tag con Id único (la versión del proyecto).
-* tf-prepare: Inicializa el backend de terraform y crea el plan de provisionado.
+* tag: Se crea un nuevo Tag con Id único (la versión del proyecto).
+* tf-prepare: Inicializa el backend de terraform y crea el plan de provisioning.
 * tf-apply: Se ejecuta de forma manual. Aplica el plan terraform anteriormente generado.
-* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual y sólo opcionalmente (ver definición del job). Se instala o actualiza el producto en entorno de producción.
+* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual. Se instala o actualiza el producto en entorno de producción.
 
 === Rama hotfix
 
-En este ejemplo se ha dejado bastante libertad al tratamiento de eventuales ramas hotfix, puesto que cada organización tiene su ropia normativa, que deberá implementarse en la definición final del pipeline.
+En esta versión se ha dejado bastante libertad al tratamiento de eventuales ramas hotfix, puesto que cada organización tiene su propia normativa, que deberá implementarse en la definición final del pipeline.
 
 - Si es preciso crear y liberar un hotfix, se procederá del siguiente modo:
-* El project leader creará, a partir del tag de la versión de release implicada, una nueva rama, designada de acuerdo con la normativa de la organización (p.e. un Issue #). Para que la nueva rama sea considerada hotfix, se modificará la variable HOTFIX_BRANCH para que contenga el nombre de dicha rama. El HOTFIX_NUMBER se definirá con un valor inicial, p.e. "001". Si posteriormente es preciso repetir el registro, este número se deberá ir incrementando.
-* El desarrollo del parche se realizará bien en la propia rama de hotfix (si e trata de un trabajo de menor cuantía), o bien en una o más ramas auxiliares con las que después de hará merge sobre la de hotfix.
+* El project leader creará, a partir del tag de la versión de release implicada, una nueva rama, designada de acuerdo con la normativa de la organización (p.e. "Issue-#"). Para que la nueva rama sea considerada hotfix, se modificará la variable HOTFIX_BRANCH para que contenga el nombre de dicha rama. El HOTFIX_NUMBER se definirá con un valor inicial, p.e. "001" que se deberá ir incrementando para cada hotfix requerido en la versión implicada.
+* El desarrollo del parche se realizará bien en la propia rama de hotfix (si se trata de un trabajo de menor cuantía), o bien en una o más ramas auxiliares con las que después de hará merge sobre la de hotfix.
 * Una vez finalizado el hotfix, se hará push de su rama, lo que disparará el pipeline.
 * Nótese que, dependiendo de la normativa de la organización, los cambios realizados o bien se repetirán sobre el trabajo en curso en SNAPSHOT, o bien se incluirá la rama hotfix en una de las que se hará merge sobre develop antes de liberar el SNAPSHOT.
 * Una vez finalizado el pipeline con éxito, lo normal es que se elimine la rama de hotfix.
 
-- Con esta configuración, el pipeline funcionará del siguiente modo:
+- Con la configuración antes indicada, el pipeline funcionará del siguiente modo:
 
+* create_bash_library: Comportamiento normal
 * prepare: Comportamiento normal.
 * compile: Comportamiento normal.
 * sonar: Se pasa para todo el código, y SI se admiten errores.
 * test: Se pasan tests unitarios, y SI se admiten errores.
 * build: Se crea el "fat-jar" y no se hacen más comprobaciones.
-* register: Se intenta registrar un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, por lo que a la versión del proyecto se agrega el HOTFIX_NUMBER, y el artefacto se convierte en el "single source of truth" de las diferentes versiones hotfix registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
+* register: Se registra un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, por lo que a la versión del proyecto se agrega el HOTFIX_NUMBER, y el artefacto se convierte en el "single source of truth" de las diferentes versiones hotfix registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
 * docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
 * tag: NO se ejecuta.
 * tf-prepare: NO se ejecuta.

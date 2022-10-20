@@ -4,7 +4,6 @@
 # Adicionamente debe existir un archivo 'ci_setting.xml' con las credenciales para el registry.
 # Se ejecuta solo para ramas master, develop y hotfix (si existe).
 # Se cachea el directorio /target, que habra sido populado previamente por la etapa build.
-# La ejecucion es manual. Si queremos saltar este stage, debemos definir SKIP=true.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
@@ -15,18 +14,13 @@
 pkg-register-job:
   stage: register
 
-  variables:
-    SKIP: "false"
-
   rules:
     # Control local del pipeline
     - if: $RUN_REGISTER_STAGES == "false"
       when: never
     # Hacemos register solo en develop, master y hotfix (si lo hay)
     - if: $CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == $HOTFIX_BRANCH
-      when: manual
     - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
-      when: manual
 
   cache:
     paths:
@@ -39,8 +33,6 @@ pkg-register-job:
   script:
     - |
       echo_job_banner REGISTER
-      # En todas las etapas manuales hacemos lo mismo
-      [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
       # Necesitamos el fat-jar
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }

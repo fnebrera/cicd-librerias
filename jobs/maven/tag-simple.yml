@@ -1,27 +1,21 @@
 #########################################################################################################
-# Crear un tag. Por el momento la ejecucion es manual.
-# Para que esta etapa se ejecute, se debe entrar manualmente la variable SEGUIR con valor 'true' en el
-# momento de lanzar el job.
+# Crear un tag. Se ejecuta solo en master y develop.
 #
 # Vers  Por Fecha      Notas
 # ----- --- ---------- ----------------------------------------------------------------------------------
 # 1.0.0 FNG 22/08/2022 Version inicial
+# 1.0.2 FNG 20/10/2022 Se elimina la opcion manual
 #
 ########################################################################################################## Crear imagen docker usando el Dockerfile del proyecto
 tag-job:
   stage: tag
-
-  variables:
-    SKIP: "false"
 
   rules:
     # Control local del pipeline
     - if: $RUN_REGISTER_STAGES == "false"
       when: never
     - if: $CI_COMMIT_REF_NAME == "master"
-      when: manual
     - if: $CI_COMMIT_REF_NAME == "develop" && $REGISTER_DEVELOP == "true" 
-      when: manual
 
 #  cache:
 #    paths:
@@ -33,8 +27,6 @@ tag-job:
   script:
     - |
       echo_job_banner TAG
-      # En todas las etapas manuales hacemos lo mismo
-      [[ ${SKIP} == "true" ]] && { echo "WARN: Ha entrado SKIP=true, asi que saltamos esta etapa."; exit 0; }
       t_echo "Creando tag $TAG_NAME en ORIGIN_URL: ${ORIGIN_URL}"
       git config user.name "$CICD_USER"
       git config user.email "$CICD_EMAIL"
