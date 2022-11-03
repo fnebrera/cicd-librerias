@@ -1,6 +1,6 @@
 = image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.2, 19/10/2022
+1.0.2, 03/11/2022
 :toc:
 :toc-title: Tabla de Contenido
 :toclevels: 4
@@ -15,10 +15,10 @@ habituales. No se ha pretendido hacer comparativas de productos y, menos aún, e
 cómo hacer las cosas, puesto que cada Compañía y/o Departamento de TI tiene su propia normativa. Por esta razón, las librerías son
 muy flexibles, y pueden adaptarse con muy poco trabajo a diferentes normativas y procedimientos. 
 
-Esta versión 1.0.2 es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
+La actual versión es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
 bastante genérico y se basa en Terraform. Para deploy, se ha optado por emplear bash y ssh, pensando en entornos no demasiado complejos.
 
-En versiones posteriores está previsto replicar una parte de las librerías para incluir proyectos basados en phyton, node.js, .Net.core, etc. También está previsto incorporar la posibilidad de emplear algún producto sofisticado de deploy, tipo Ansible u Octopus. Por último, se trabajará en el provisionado y despliegue de proyectos basados en microservicios (kubernetes, swarm, etc.).
+En versiones posteriores está previsto replicar una parte de las librerías para incluir proyectos basados en phyton, node.js, .Net.core, etc. También está previsto incorporar la posibilidad de emplear algún producto sofisticado de deploy, tipo Ansible, Octopus, etc. Por último, se trabajará en el provisionado y despliegue de proyectos basados en microservicios (kubernetes, swarm, etc.).
  
 == Versiones
 
@@ -41,7 +41,7 @@ En versiones posteriores está previsto replicar una parte de las librerías par
 
 |1.0.2
 |FNG
-|19/10/2022
+|03/11/2022
 |Se incorpora un mecanismo para manejar librerías de funciones, y se generalizan las etapas de provisioning y deploy
 
 |===
@@ -76,7 +76,7 @@ Para ello se han empleado algunas de las capacidades CI/CD que Gitlab ofrece en 
 [TIP]
 .*Importante*
 --
-Independientemente de cuál sea tu formación previa en CI/CD, la lectura de este documento puede serte útil para afianzar conceptos básicos y entender la filosofía de los pipelines  de CI/CD.
+Independientemente de cuál sea tu formación previa en CI/CD, la lectura de este documento puede serte útil para afianzar conceptos básicos y entender la filosofía de los pipelines de CI/CD.
 --
 
 == Entorno de desarrollo
@@ -448,7 +448,9 @@ Job definido en link:jobs/maven/create-bash-library.yml[]. Se ejecuta en la etap
     - . funciones-bash.sh
 ------------------------------------------------------------
 
-Este mecanismo permite mantener la/s librería/s bajo control de código fuente, y es el recomendado por Gitlab.
+Este mecanismo permite mantener la/s librería/s bajo control de código fuente, y es el recomendado por Gitlab (ver link:https://www.youtube.com/watch?v=sF3kPJTy2UU[]).
+
+Idéntico mecanismo puede ser válido para librerías escritas en PowerShell, Python, Ruby, etc.
 
 ===== _Prepare (prepare)_
 
@@ -600,7 +602,7 @@ queremos diferenciar las configuraciones de pre-producción y producción podrí
 
 TF_ROOT=$CI_PROJECT_DIR/terraform/aws/$CI_COMMIT_REF_NAME
 
-En el directorio ejemplos-cfg puede verse un ejemplo de configuración, en este caso, para Hyper-V.
+En el directorio _ejemplos-cfg_ pueden verse ejemplos de configuración para Hyper-V y AWS.
 
 ===== _Tf-prepare_
 

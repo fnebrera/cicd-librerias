@@ -1,0 +1,5 @@
+HYPERV_HOST = "192.168.1.29"
+VM_NAME = "test-cicd-uat"
+HYPERV_NSW_NAME = "FngSwitch"
+HYPERV_VHD_PATH = "C:\\HyperV\\Discos\\test-hyperv-uat.vhdx"
+HYPERV_SEED_DISK = "C:\\HyperV\\Discos-semilla\\alpine-test.vhdx"

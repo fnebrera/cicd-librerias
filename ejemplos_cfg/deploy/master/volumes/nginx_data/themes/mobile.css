@@ -1,0 +1,168 @@
+/*
+input[type=checkbox] {
+
+	min-height:40px;
+	min-width:40px;
+
+}
+*/
+
+input[type=checkbox] {
+
+
+-webkit-transform: scale(2);/* Saf3.1+, Chrome */
+-moz-transform: scale(2); /* FF3.5+ */
+-ms-transform: scale(2); /* IE9 */
+-o-transform: scale(2); /* Opera 10.5+ */
+transform: scale(2);
+
+
+}
+
+input[type=text] {
+
+	height: 10%;
+	width: 100%;
+	font-size: 1.5em;
+
+}
+
+input[type=number] {
+
+	height: 10%;
+	width: 100%;
+	font-size: 1.5em;
+
+}
+
+input[type=date] {
+
+	height: 10%;
+	width: 100%;
+	font-size: 1.5em;
+
+}
+
+select {
+
+	height: 10%;
+	width: 100%;
+	font-size: 1.5em;
+
+}
+
+input[type=button] {
+
+	height: 12%;
+	width: 100%;
+	font-size: 1.5em;
+
+}
+
+.window
+{
+   position                 : absolute                   ;
+   background-color         : rgb(240,240,240)           ;
+   text-align               : center                     ;
+   border                   : 5px solid rgb(177,201,228) ;
+   position: absolute;
+   top:0;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   margin: auto;
+}   
+
+.window h1
+{
+   font-family              : Arial                    ; 
+   font-size                : 16pt                     ;
+   background               : rgb(177,201,228)         ;
+   color                    : rgb(0,0,0)               ;
+   margin                   : 0                        ;
+   padding                  : 4px                      ;
+}
+
+
+.cover
+{
+   position        : absolute                ;
+   top             : 0                       ;
+   left            : 0                       ;
+   background-color: rgb(14,14,14)           ;
+   opacity         : 0.7                     ;
+   filter          : alpha(opacity=70)       ;
+   position: absolute;
+   top:0;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   margin: auto;
+}
+
+.label
+{
+   font-family     : Arial                   ; 
+   font-size       : 1.5em                   ; 
+   position        : absolute                ;
+}
+
+.textbox
+{
+   position        : absolute                ;
+   font-family     : Arial                   ; 
+   font-size       : 10pt                    ;
+}
+
+.spinner
+{
+   position        : absolute                ;
+   font-family     : Arial                   ; 
+   font-size       : 10pt                    ;
+}
+
+.image
+{
+   position: absolute                        ;
+}
+
+.grid
+{
+   background-color: rgb(230,230,230);
+}
+
+.grid th
+{
+   background-color: rgb(246,247,249);
+   color: black;
+}
+
+.grid tr.light
+{
+   background-color: rgb(255,255,255);
+}
+
+.grid tr.dark
+{
+   background-color: rgb(242,242,242);
+}
+
+.grid tr
+{
+	font-family     : Arial                   ; 
+	background-color: rgb(255,255,255);
+	font-size: 1.5em;
+}
+
+.grid tr.selected
+{
+   color: rgb(255,255,255);
+   background-color: rgb(51,153,255);
+}
+
+.grid tr.unselected
+{
+   color: rgb(0,0,0);
+   background-color: rgb(255,255,255);
+}
+

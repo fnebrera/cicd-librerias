@@ -1,0 +1,104 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Comunytek - Partes de Actividad</title>
+    <link rel="stylesheet" type="text/css" href="/themes/desktop.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon_ck.png">
+    <!-- Load js code -->
+    <script type="text/javascript" src="/lib/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript" src="/lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/lib/jspdf.min.js"></script>
+    <script type="text/javascript" src="/lib/howler.min.js"></script>
+    <script type="text/javascript" src="/app/loadFuncs.min.js"></script>
+    <script type="text/javascript" src="/app/selfLogin.min.js"></script>
+
+    <!-- Pass environment mode as a single lower case letter 
+     and an int for the application requested:
+
+     1 : SelfTask
+     99: Admon
+-->
+
+    <body onload="selfLogin('p', 1)">
+        <img src='/img/OrigamiTORO.png' style="position: absolute; top: 20%; left: 10%; width: 80%; height: 80%; opacity:0.4">
+        <!-- Barra azul para poner los titulos -->
+        <div style="position: absolute; top: 0%; width: 99%; height: 83px; background-color: rgb(52, 152, 219);"></div>
+        <table style="position:absolute; top:0; left:0; width:100%; height:83px" cellpadding="15" cellspacing="0">
+            <tr>
+                <td align=left valign=middle>
+                    <img src="/img/logo-comunytek-claim-negativo.png" width=184 height=53>
+                </td>
+                <td align="middle" valign=middle>
+                    <font size=5 color="white" face="Tahoma,Verdana,Arial">
+                        <div id='tituloCentral'>Gestión de Actividad</div>
+                    </font>
+                </td>
+                <td align=right valign=middle>
+                    <font size=3 color="white" face="Tahoma,Verdana,Arial">
+                        <div id='hNombre' align="right">Acceso al Sistema</div>
+                    </font>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Animacion de "trabajando" -->
+        <img id='animacion' src='/img/ajax-loader-1.gif' style="position: absolute; top: 50%; left: 50%; height: 32; width: 32; display: none; z-index: 999; ">
+
+        <!-- Barra gris para los dropdowns -->
+        <div style="position: absolute; top: 83px; width: 99%; height: 45px; background-color: gray;"></div>
+        <!-- El resto del container -->
+        <div id="hMenu" style="position: absolute; top: 83px; width: 99%; height: 85%; display: none;">
+            <div class="dropdown">
+                <button class="dropbtn">Partes</button>
+                <div class="dropdown-content">
+                    <a href="javascript:partesGeneral('P')">Gestionar partes propios</a>
+                    <a href="javascript:resumenMes('R', 'P')">Tu resumen mensual</a>
+                    <a href="javascript:resumenMes('E', 'P')">Tus estadisticas</a>
+                    <a href="javascript:ausResumen('P')">Tus ausencias</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropbtn">Registro Horario</button>
+                <div class="dropdown-content">
+                    <a href="javascript:registroHoras(true)">Registro</a>
+                    <a href="javascript:consultaRH()">Consulta</a>
+                    <a href="javascript:listMesRH(true)">Listado mensual</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropbtn">Vacaciones</button>
+                <div class="dropdown-content">
+                    <a href="javascript:vacasGeneral('P')">Solicitar vacaciones</a>
+                    <a class="noJefe" href="javascript:vacasResumen('E')">Visar vacaciones de tu equipo</a>
+                </div>
+            </div>
+            <div class="dropdown noJefe">
+                <button class="dropbtn">Supervisar</button>
+                <div class="dropdown-content">
+                    <a href="javascript:ayudaSiglas('',sUsuario, false)">Ver partes de tu equipo</a>
+                    <a href="javascript:pdtesEquip()">Partes pendientes de cumplimentar por tu equipo</a>
+                    <a href="javascript:pdtesVisar()">Partes pendientes de visar</a>
+                    <a href="javascript:visarPartes('','','','','')">Visar/desmarcar un parte</a>
+                    <a href="javascript:ausResumen('S')">Resumen ausencias</a>
+                </div>
+            </div>
+            <div class="dropdown" style="float:right;">
+                <button class="dropbtn" ">Tu cuenta</button>
+            <div class="dropdown-content " style="min-width: 100; ">
+                <a href="javascript:cambiarPasswd() ">Cambiar clave</a>
+                <a href="javascript:selfLogout() ">Logout</a>
+            </div>
+        </div>
+        <div style="position: absolute; top: 92%; width: 99%; height:5%; ">
+            <center>
+                <font size="2 " color="navy " face="Tahoma,Verdana,Arial ">
+                    <div id='hEntorno'>SelfTask</div>
+                    (C) 2021 Comunytek Consultores, S.L.
+                </font>
+            </center>
+        </div>
+
+    </div>
+</body>
+</html>
