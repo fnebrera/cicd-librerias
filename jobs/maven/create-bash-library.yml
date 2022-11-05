@@ -43,8 +43,8 @@ create-bash-library:
       function get_registry_tags() {
           REG_VERSION="$PRJ_VERS"
           TAG_NAME="wrong-${PRJ_VERS}"
-          #IMG_PREFIX=${CI_REGISTRY_IMAGE}
-          IMG_PREFIX=${CI_PROJECT_PATH}
+          # IMG_PREFIX=${CI_REGISTRY_IMAGE}
+          IMG_PREFIX=${CI_PROJECT_PATH,,}
           DOCKER_IMG_TAG="${IMG_PREFIX}/wrong:${PRJ_VERS}"
           #
           # En que rama estamos?
