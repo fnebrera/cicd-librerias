@@ -43,7 +43,9 @@ create-bash-library:
       function get_registry_tags() {
           REG_VERSION="$PRJ_VERS"
           TAG_NAME="wrong-${PRJ_VERS}"
-          DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/wrong:${PRJ_VERS}"
+          #IMG_PREFIX=${CI_REGISTRY_IMAGE}
+          IMG_PREFIX=${CI_PROJECT_PATH}
+          DOCKER_IMG_TAG="${IMG_PREFIX}/wrong:${PRJ_VERS}"
           #
           # En que rama estamos?
           #
@@ -53,12 +55,12 @@ create-bash-library:
                       echo "ERROR: PUSH de <master> en version SNAPSHOT no permitido"
                       exit 2
                   fi
-                  DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/release:${PRJ_VERS}"
+                  DOCKER_IMG_TAG="${IMG_PREFIX}/release:${PRJ_VERS}"
                   TAG_NAME="release-${PRJ_VERS}"
                   ;;
               develop)
                   if [[ $IS_SNAPSHOT -eq "true" ]]; then
-                      DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/snapshot:${PRJ_VERS}"
+                      DOCKER_IMG_TAG="${IMG_PREFIX}/snapshot:${PRJ_VERS}"
                       TAG_NAME="snapshot-${PRJ_VERS}"
                   else
                       if [[ $ALLOW_RELEASE_IN_DEVELOP -ne "true" ]]; then
@@ -66,7 +68,7 @@ create-bash-library:
                           exit 2
                       fi
                       REG_VERSION="${PRJ_VERS}-DEVELOP-RELEASE"
-                      DOCKER_IMG_TAG="${CI_REGISTRY_IMAGE}/develop-release:${PRJ_VERS}"
+                      DOCKER_IMG_TAG="${IMG_PREFIX}/develop-release:${PRJ_VERS}"
                       TAG_NAME="develop-release-${PRJ_VERS}"
                   fi
                   #
@@ -80,7 +82,7 @@ create-bash-library:
                   ;;
               ${HOTFIX_BRANCH})
                   REG_VERSION="${PRJ_VERS}-HOTFIX"
-                  IMG_TAG="${CI_REGISTRY_IMAGE}/hotfix:${PRJ_VERS}"
+                  IMG_TAG="${IMG_PREFIX}/hotfix:${PRJ_VERS}"
                   #
                   # Agregamos numero de hotfix, si lo hay
                   #
