@@ -52,6 +52,7 @@ docker-register-job:
       [[ -z $CICD_REGISTRY_USER ]] && CICD_REGISTRY_USER=$CICD_USER
       [[ -z $CICD_REGISTRY_PASSWD ]] && CICD_REGISTRY_PASSWD=$CICD_PASSWD
       docker -v
+      t_echo "INFO login to docker registry ${CICD_REGISTRY_HOST}"
       echo "$CICD_REGISTRY_PASSWD" | docker login -u $CICD_REGISTRY_USER --password-stdin $CICD_REGISTRY_HOST
       docker build -t $DOCKER_IMG_TAG .
       docker push $DOCKER_IMG_TAG 
