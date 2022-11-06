@@ -51,9 +51,13 @@ docker-register-job:
       # Usuario/passwd del registry, por defecto el del propio gitlab
       [[ -z $CICD_REGISTRY_USER ]] && CICD_REGISTRY_USER=$CICD_USER
       [[ -z $CICD_REGISTRY_PASSWD ]] && CICD_REGISTRY_PASSWD=$CICD_PASSWD
+      # Host del registro. IMPORTANTE: Para docker hub hay que dejarlo en blanco!!
+      REGISTRY_HOST=${CICD_REGISTRY_HOST}
+      [[ ${CICD_REGISTRY_HOST} == "dockerhub" ]] && REGISTRY_HOST=""
       docker -v
-      t_echo "INFO login to docker registry ${CICD_REGISTRY_HOST}"
-      echo "$CICD_REGISTRY_PASSWD" | docker login -u $CICD_REGISTRY_USER --password-stdin $CICD_REGISTRY_HOST
+      t_echo "INFO login to docker registry ${REGISTRY_HOST}"
+      # echo "$CICD_REGISTRY_PASSWD" | docker login -u $CICD_REGISTRY_USER --password-stdin $REGISTRY_HOST
+      docker login -u $CICD_REGISTRY_USER -p $CICD_REGISTRY_PASSWD $REGISTRY_HOST
       docker build -t $DOCKER_IMG_TAG .
       docker push $DOCKER_IMG_TAG 
       # Final
