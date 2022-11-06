@@ -48,6 +48,9 @@ docker-register-job:
       # Necesitamos el fat-jar
       JAR_FILE="./target/${PRJ_NAME}-${PRJ_VERS}.jar"
       [[ -f "${JAR_FILE}" ]] || { echo "El archivo ${JAR_FILE} no existe"; exit 1; }
+      # Usuario/passwd del registry, por defecto el del propio gitlab
+      [[ -z $CICD_REGISTRY_USER ]] && CICD_REGISTRY_USER=$CICD_USER
+      [[ -z $CICD_REGISTRY_PASSWD ]] && CICD_REGISTRY_PASSWD=$CICD_PASSWD
       docker -v
       echo "$CICD_REGISTRY_PASSWD" | docker login -u $CICD_REGISTRY_USER --password-stdin $CICD_REGISTRY_HOST
       docker build -t $DOCKER_IMG_TAG .
