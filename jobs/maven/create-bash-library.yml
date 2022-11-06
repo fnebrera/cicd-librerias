@@ -45,7 +45,7 @@ create-bash-library:
           TAG_NAME="wrong-${PRJ_VERS}"
           # El prefijo del registro docker nos lo dan explicito o bien usamos el local
           IMG_PREFIX=${DOCKER_REGISTRY_NAME}
-          [[ -z $IMG_PREFIX ]] && IMG_PREFIX=${CI_REGISTRY_NAME}
+          [[ -z $IMG_PREFIX ]] && IMG_PREFIX=${CI_REGISTRY_IMAGE}
           DOCKER_IMG_TAG="${IMG_PREFIX}/wrong:${PRJ_VERS}"
           #
           # En que rama estamos?
