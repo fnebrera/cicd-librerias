@@ -37,10 +37,6 @@ tf-prepare-job:
       t_echo "----------------------------------------------------------------------------------------"
       t_echo "INFO Inicializando Terraform usando el backed Gitlab.."
       t_echo "----------------------------------------------------------------------------------------"
-      [[ -f "${TF_ROOT}/.terraform.lock.hcl" ]] || t_echo "DEBUG El archivo ${TF_ROOT}/.terraform.lock.hcl no existe. Se creara en init()"
-      [[ -d "${TF_ROOT}/.terraform" ]] || t_echo "DEBUG El directorio ${TF_ROOT}/.terraform no existe. Se creara en init()"
-      rm -Rf .terraform
-      rm -f .terraform.lock.hcl
       init_terraform $CICD_USER $CICD_TOKEN $TF_BACKEND_ADDRESS 
       t_echo "----------------------------------------------------------------------------------------"
       t_echo "INFO Verificando configuración de terraform"
