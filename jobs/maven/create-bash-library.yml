@@ -19,6 +19,15 @@ create-bash-library:
     - |
       cat > funciones-bash.sh << '***EndOfFile***'
       #!/bin/bash
+
+      #====================================================================
+      # t_echo()
+      # Escribe al log lo que se le pase precedido de un timestamp
+      #====================================================================
+      function t_echo() {
+        echo $(echo -n `date +'%F %X,%3N'`) $*
+      }
+      
       #====================================================================
       # echo_job_banner()
       # Escribe en el log un banner de inicio del job.
@@ -200,14 +209,6 @@ create-bash-library:
         local fichero="${CI_PROJECT_DIR}/cicd.vars"
         [[ -f ${fichero} ]] || touch ${fichero}
         source ${fichero}
-      }
-
-      #====================================================================
-      # t_echo()
-      # Escribe al log lo que se le pase precedido de un timestamp
-      #====================================================================
-      function t_echo() {
-        echo $(echo -n `date +'%F %X,%3N'`) $*
       }
       ***EndOfFile***
 
