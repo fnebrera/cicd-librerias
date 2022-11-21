@@ -31,18 +31,18 @@ prepare-job:
       # Nos han dicho que limpiemos el cache?
       #
       if [[ $PREPARE_CLEAN_CACHE == "true" ]]; then
-        t_echo "Limpiando cache.."
-        [[ -d "./.m2/repository" ]] && rm -Rf ./.m2/repository/*
-        [[ -d "./.sonar/cache" ]] && rm -Rf ./.sonar/cache/*
-        [[ -d "./target" ]] && rm -Rf ./target
-        [[ -d "${TF_ROOT}/.terraform" ]] && rm -Rf ${TF_ROOT}/.terraform
-        [[ -f "${TF_ROOT}/.terraform.lock.hcl" ]] && rm -f ${TF_ROOT}/.terraform.lock.hcl
-        [[ -f "cicd.vars" ]] && rm -f cicd.vars
+        t_echo "INFO Limpiando cache.."
+        [[ -d "./.m2/repository" ]] && { t_echo "DEBUG Eliminando ./.m2/repository .."; rm -Rf ./.m2/repository; }
+        [[ -d "./.sonar/cache" ]] && { t_echo "DEBUG Eliminando ./.sonar/cache .."; rm -Rf ./.sonar/cache; }
+        [[ -d "./target" ]] && { t_echo "DEBUG Eliminando ./target .."; rm -Rf ./target; }
+        [[ -d "${TF_ROOT}/.terraform" ]] && { t_echo "DEBUG Eliminando ${TF_ROOT}/.terraform .."; rm -Rf ${TF_ROOT}/.terraform; }
+        [[ -f "${TF_ROOT}/.terraform.lock.hcl" ]] && { t_echo "DEBUG Eliminando ${TF_ROOT}/.terraform.lock.hcl .."; rm -f ${TF_ROOT}/.terraform.lock.hcl; }
+        [[ -f "cicd.vars" ]] && { t_echo "DEBUG Eliminando cicd.vars .."; rm -f cicd.vars; }
       fi
       #
       # Version del proyecto
       #
-      #PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+      # Ejemplo con plugin de maven: PRJ_VERS=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
       PRJ_VERS=$(xmlstarlet sel -t -v '/_:project/_:version' pom.xml)
       [[ -z ${PRJ_VERS} ]] && { echo "ERROR: No se ha encontrado la version del proyecto en el pom.xml"; exit 2; }
       t_echo "Version del proyecto: ${PRJ_VERS}"
