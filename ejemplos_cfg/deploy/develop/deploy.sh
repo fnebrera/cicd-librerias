@@ -55,16 +55,38 @@ function docker_down() {
 #########################################################################################################
 function docker_up() {
 	# Antes que nada, hacer login al registro docker
-    echo "INFO Haciendo login al registro docker.."
-	echo "$REGISTRY_PASSWD" | docker login -u $REGISTRY_USER --password-stdin $REGISTRY_URL
-    [[ $? != 0 ]] && { echo "ERROR No se ha podido hacer login al registro docker"; exit 4; }
-    # Crear/actualizar docker-compose.override.yml
-    echo "INFO Creando 'docker-compose.override.yml'.."
-    echo "services:" > ${PRJ_DIR}/docker-compose.override.yml
-    echo "    ${SVC_NAME}:" >> ${PRJ_DIR}/docker-compose.override.yml
-    echo "        image: ${IMG_TAG}" >> ${PRJ_DIR}/docker-compose.override.yml
-    echo "INFO Iniciando stack docker.."
-    docker-compose -f ${PRJ_DIR}/docker-compose.yml -f ${PRJ_DIR}/docker-compose.override.yml up -d
+	# excepto si es docker hub, que es un directorio publico
+	if [[ $REGISTRY_URL == "dockerhub" ]]; then
+    	echo "INFO El registry docker hub no requiere login"
+	else
+        echo "INFO Haciendo login al registro docker.."
+		docker login -u $REGISTRY_USER -p $REGISTRY_PASSWD $REGISTRY_URL
+    	[[ $? != 0 ]] && { echo "ERROR No se ha podido hacer login al registro docker"; exit 4; }
+	fi
+	# MODALIDAD 1:
+	#
+    # Crear/actualizar docker-compose.override.yml y lanzar stack con este archivo
+    #echo "INFO Creando 'docker-compose.override.yml'.."
+    #echo 'version: "3.7"' > ${PRJ_DIR}/docker-compose.override.yml
+    #echo "services:" >> ${PRJ_DIR}/docker-compose.override.yml
+    #echo "    ${SVC_NAME}:" >> ${PRJ_DIR}/docker-compose.override.yml
+    #echo "        image: ${IMG_TAG}" >> ${PRJ_DIR}/docker-compose.override.yml
+    #echo "INFO Iniciando stack docker.."
+    #docker-compose -f ${PRJ_DIR}/docker-compose.yml -f ${PRJ_DIR}/docker-compose.override.yml up -d
+    #
+    # MODALIDAD 2:
+    # Usamos sed para actualizar insitu el docker-compose.yml
+    # Como sed es un poco enrevesado, lo explico: supongamos que el servicio  es "selfweb" y la
+    # imagen que queremos montar es "unaimagen". El comando quedaria asi:    
+    #   sed -i '/selfweb:/,/image:/ s@image:.*@image: unaimagen@' ${PRJ_DIR}/docker-compose.yml
+    # sed hace lo siguiente:
+    # 	- busca la primera ocurrencia de "selfweb:" y a partir de ella la primrera ocurrencia de "image:"
+    #   - Sustituye en texto image:(y cualquier caracter hasta fin de linea) por el nuevo texto.
+    #   - Como el nombre de la imagen puede contener caracteres "/", en la sustitucion usamos "@" como separador.
+    #   - Como hemos usado la opcion -i hace el cambio insitu en el archivo.
+    #
+    sed -i '/'${SVC_NAME}':/,/image:/ s@image:.*@image: '${IMG_TAG}'@' ${PRJ_DIR}/docker-compose.yml
+    docker-compose -f ${PRJ_DIR}/docker-compose.yml up -d
     [[ $? != 0 ]] && { echo "ERROR No se ha podido iniciar el stack docker"; exit 4; }
 }
 

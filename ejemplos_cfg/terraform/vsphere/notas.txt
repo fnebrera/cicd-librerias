@@ -1,0 +1,36 @@
+Preparacion de la Plantilla
+----------------------------
+
+En vSphere, la forma más simple de provisionar una máquina virtual es partir de una
+plantilla (template). Para construir dicha plantilla, en este ejemplo hemos hecho lo siguiente:
+1. Obtenemos de la red la image ISO de un debian bullseye, en este ejemplo version 10.5.
+2. Desde la consola de vCenter, subimos esta imagen a un datastore de trabajo. Normalmente a una carpeta "ISOs" o similar.
+2. Creamos una VM tipo debian 10 64bits, y enlazamos el cdrom a la imagen ISO anterior.
+3. Arrancamos la máquina y seleccionamos "Install graphics". Definimos todo lo que necesitamos instalar, quitamos el cdrom y reboot.
+3. Instalamos docker y docker-compose
+		sudo yum update
+		sudo yum install docker
+		sudo pip3 install docker-compose
+4. Configuramos sudo
+		sudo visudo
+            Copiamos la linea del grupo wheel para el grupo sudo y ponemos NOPASSWD: ALL
+			%sudo	ALL=(ALL)	NOPASSWD: ALL
+5. Creamos usuario 'vassadmin', y agregamos a grupos sudo y docker
+            sudo groupadd sudo
+		sudo adduser -s /bin/bash vassadmin
+            sudo passwd vassadmin (ponemos una password que solo conoce el sysadmin, provisional Lolo2756)
+		sudo usermod -a -G docker vassadmin
+		sudo usermod -a -G sudo vassadmin
+6. Permitimos ssh con password a vassadmin:
+		Editamos /etc/ssh/sshd_config
+		Cambiamos la linea "PasswordAuthentication no" a yes.
+		Reiniciamos sshd:
+			sudo systemctl restart sshd
+7. Desde nuestro linux de trabajo, copiamos nuestra clave publica al usuario vassadmin y probamos conexion
+		ssh-copy-id -i <miclave.pub> vassadmin@<ip actual de la maquina semilla>
+		ssh -i <miclave> vassadmin@<ip actual de la maquina semilla>
+		Por seguridad, debemos deshacer el cambio en sshd para que ya no permita password.
+8. Creamos una AMI privada a partir de esta imagen para los lanzamientos subsiguientes.
+9. Podemos apagar la instancia semilla, o incluso eliminarla.
+
+====================== E O F ================================

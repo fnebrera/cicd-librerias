@@ -30,9 +30,11 @@ function exec_deploy() {
     #
     ADDR=${hyperv_instance_ip}
     [[ -z $ADDR ]] && { echo "ERROR: No se ha encontrado la IP remota"; exit 3; }
+  	# Usuario/passwd del registry, por defecto el del propio gitlab
+  	[[ -z $CICD_REGISTRY_USER ]] && CICD_REGISTRY_USER=$CICD_USER
+  	[[ -z $CICD_REGISTRY_PASSWD ]] && CICD_REGISTRY_PASSWD=$CICD_PASSWD
     #
     # Usamos como nombre del host el que nos han definido desde terraform
-    #
     #
     DEPLOY_HOST_NAME=${hyperv_host_name}
     #
@@ -78,8 +80,8 @@ function exec_deploy() {
     COMANDO="${DEPLOY_SSH_PATH}/work/deploy.sh \
     -s ${DEPLOY_SSH_SVC_NAME} \
     -i ${DOCKER_IMG_TAG} \
-    -u ${CICD_USER} \
-    -p ${CICD_PASSWD} \
+    -u ${CICD_REGISTRY_USER} \
+    -p ${CICD_REGISTRY_PASSWD} \
     -r ${CICD_REGISTRY_HOST} \
     -d ${DEPLOY_SSH_PATH} \
     -n ${DEPLOY_HOST_NAME} \

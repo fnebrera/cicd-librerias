@@ -38,6 +38,8 @@ services:
         volumes:
             - portainer_data:/data
             - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - selfweb_network
         
 volumes:
     selfweb_log:

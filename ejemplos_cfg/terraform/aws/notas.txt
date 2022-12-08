@@ -1,0 +1,35 @@
+Preparacion de la AMI semilla
+-----------------------------
+
+En AWS, debemos tener preparada una AMI semilla de la que partiremos para crear la/s máquinas
+a provisionar. Para este ejemplo, hemos hecho lo siguiente:
+
+1. Creamos una instacia EC2 en base a un Amazon linux version 2.
+2. Conectamos con ssh y el usuario por defecto ec2-user.
+3. Instalamos docker y docker-compose
+		sudo yum update
+		sudo yum install docker
+		sudo pip3 install docker-compose
+4. Configuramos sudo
+		sudo visudo
+            Copiamos la linea del grupo wheel para el grupo sudo y ponemos NOPASSWD: ALL
+			%sudo	ALL=(ALL)	NOPASSWD: ALL
+5. Creamos usuario 'vassadmin', y agregamos a grupos sudo y docker
+            sudo groupadd sudo
+		sudo adduser -s /bin/bash vassadmin
+            sudo passwd vassadmin (ponemos una password que solo conoce el sysadmin, provisional Lolo2756)
+		sudo usermod -a -G docker vassadmin
+		sudo usermod -a -G sudo vassadmin
+6. Permitimos ssh con password a vassadmin:
+		Editamos /etc/ssh/sshd_config
+		Cambiamos la linea "PasswordAuthentication no" a yes.
+		Reiniciamos sshd:
+			sudo systemctl restart sshd
+7. Desde nuestro linux de trabajo, copiamos nuestra clave publica al usuario vassadmin y probamos conexion
+		ssh-copy-id -i <miclave.pub> vassadmin@<ip actual de la maquina semilla>
+		ssh -i <miclave> vassadmin@<ip actual de la maquina semilla>
+		Por seguridad, debemos deshacer el cambio en sshd para que ya no permita password.
+8. Creamos una AMI privada a partir de esta imagen para los lanzamientos subsiguientes.
+9. Podemos apagar la instancia semilla, o incluso eliminarla.
+
+====================== E O F ================================
