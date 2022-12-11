@@ -2,14 +2,14 @@
 Faustino Nebrera <faustino.nebrera@vass.es>
 1.0.2, 03/11/2022
 :toc:
-:toc-title: Tabla de Contenido
+:toc-title: Index
 :toclevels: 4
 :sectnumlevels: 4
 :icons: font
 
 == Abstract
 
-This project represents a fully operational example of a CI/CD chain built with the idea of simplifying the DevOps stack, the installation of required products and, above all, the preparation of pipelines and jobs for the most important circuits. It is not intended to make product comparisons and, even less, to establish a strict guideline of how to do things, as each company and/or IT department has its own rules and regulations. For this reason, the libraries are
+This project represents a fully operational example of a CI/CD chain built with the idea of simplifying the DevOps stack, the installation of required products and, above all, the preparation of pipelines and jobs for the most usual circuits. It is not intended to make product comparisons and, even less, to establish a strict guideline of how to do things, as each company and/or IT department has its own rules and regulations. For this reason, the libraries are
 very flexible, and can be adapted with very little work to different regulations and procedures. 
 
 The current version is specific to maven/java projects deployed as Docker stacks. Provisioning is
@@ -22,25 +22,29 @@ In later versions, it is planned to replicate part of the libraries to include p
 [cols=".<1,.<1,.<1,.<6", options="header"]
 |===
 |Vers
-|Por
-|Fecha
-|Notas
+|By
+|Date
+|Notes
 
 |1.0.0
 |FNG
 |22/08/2022
-|Primera versión CI/CD para maven/java
+|First version for maven/java
 
 |1.0.1
 |FNG
 |25/09/2022
-|Se agrega provisioning con Terraform y se generaliza el deploy usando bash y ssh
+|Added provisioning with Terraform and a generalized deploy using bash, sftp & ssh
 
 |1.0.2
 |FNG
 |03/11/2022
-|Se incorpora un mecanismo para manejar librerías de funciones, y se generalizan las etapas de provisioning y deploy
+|New facility for handling function libraries. New standar method to pass dynamic info from provisioning to deploy
 
+|1.0.3
+|FNG
+|11/12/2022
+|Documentation is now in english. New fully tested examples of provision/deploy: Currently available for Hyper-V, AWS & Vmware vSphere(TM)
 |===
 
 :sectnums:
@@ -50,13 +54,13 @@ The most common CI/CD stacks are composed of several products, each specialised 
 It is very common to find stacks that include 6 or more different products: Gitlab, Jenkins, Sonar, Nexus, Vault, Octopus, etc.
 
 It is clear that installing (and especially configuring) many heterogeneous products is not a trivial job. Some vendors
-allow this task to be simplified by pre-integrated solutions (e.g. RedHat OpenShift, CI/CD services from Amazon Web Services or Azure, etc.), but of course these are not simple black-boxes, as each organisation has its own CI/CD requirements.
+allow this task to be simplified by pre-integrated solutions (e.g. RedHat OpenShift, CI/CD services from Amazon Web Services or Azure, etc.), but of course these are not simple black-boxes, as each organisation
 has its own CI/CD requirements. A small ISV is not the same as a large Financial Institution, which is why it is always necessary to
 tinkering with the default configurations, or even creating them from scratch.
 
 On the other hand, the _Jenkins(TM)_ type task coordinators are configured using a programming language that, although simple, requires DevOps engineers to have some
 programming skills and familiarity with the language in question. If, in addition (and this is the norm), the code must be
-kept read-only for the developers, and it must be modular (using libraries), the learning curve is usually expensive.
+kept read-only for the developers, and it must be modular (using libraries), so the learning curve is usually expensive.
 
 In this project we have tried to minimise:
 
@@ -73,19 +77,26 @@ Regardless of your previous CI/CD background, you may find it useful to read thi
 basic concepts and understand the philosophy of CI/CD pipelines.
 --
 
-== Develop environment
+== Developer's environment
 
 === Base Hardware & software
 
-Server Hyper-V::
+Server for Hyper-V::
 * AMD Ryzen 7 5700G (8 cores, 16 threads).
 * 64 GB Memory
 * 1 TB SSD
 * Windows Server 2022 Standard
 * Hyper-V
 
-Server CI/CD::
-* Virtual machine in Hyper-V.
+Server for Vmware::
+* Intel i7 7567U (4 cores, 4 threads).
+* 32 GB Memory
+* 256 GB SSD + 256 GB HD
+* ESXi 8.0
+* vCencer server 8.0
+
+Server for CI/CD::
+* Virtual machine on Hyper-V.
 * 24 GB Memory max.
 * 4 virtual processors.
 * Ubuntu 22.04.1
@@ -94,62 +105,51 @@ Server CI/CD::
 Provisioned VMs::
 * 2 GB Memory.
 * 2 virtual processors.
-* Alpine Linux 3.16.2 or Debial bullseye 11.5
+* Alpine Linux 3.16.2 (Hyper-V). Amazon linux 2 (AWS). Debian bullseye 11.5 (Vmware)
 * Docker 20.10.17 & docker-compose.
 * Basic tools: OpenSSH-server, bash, sudo, etc.
 
 === CI/CD products
 
-Todos los productos se han instalado en el server CI/CD como imágenes docker, y se lanzan mediante sendos docker-compose, para facilitar
-el arranque/parada de un producto concreto sin afectar al resto. Todos los docker-compose referencian un network
-común tipo bridge. Al compartir network, se facilita la comunicación entre containers, puesto que Docker actúa
-como DNS interno. Salvo en el caso de Nginx, no se exponen puertos TCP/IP al exterior. El acceso externo se
-canaliza a través de Nginx (port 443), que actúa como proxy inverso, discriminando el acceso en base al hostname de destino. Los
-productos instalados son:
+All products have been installed on the CI/CD server as docker images, and are launched via docker-compose, to make it easier to start/stop a particular product without affecting the rest. All docker-compose,s refer to a common bridge network.
+By sharing the network, communication between containers is facilitated, since Docker acts as an internal DNS.
+Except in the case of Nginx, no TCP/IP ports are exposed to the outside. External access is
+channeled through Nginx (port 443), which acts as a reverse proxy, discriminating access based on the destination hostname. The
+products installed are:
 
 - Gitlab OMNIBUS 15.2.1-ce.0
 - Gitlab-runner: latest
 - Sonarqube 9.6.1-community
-- PostgreSQL 14.4 (usado por Sonar y Selfweb)
-- Nginx 1.21.6 (proxy inverso)
-- Portainer ce:2.15.1 (monitorización Docker)
+- PostgreSQL 14.4 (used by Sonar & Selfweb)
+- Nginx 1.21.6 (reverse proxy)
+- Portainer ce:2.15.1 (Docker monitoring)
 
-== Visión general de la solución
+== Solution overview
 
-=== Proyecto de trabajo
+=== Working projects
 
-Las librerías de pipelines y jobs se encuentran en el proyecto "cicd-librerias", y se describirán con mayor detalle más adelante. Tanto las librerias como la documentación están disponibles en un repositorio público (githb).
+Pipeline and job libraries are located in the "cicd-libraries" project, and will be described in more detail later. Both the libraries and the documentation are available in a public repository (github).
 
-Como proyecto de trabajo, se ha escogido la aplicación Selfweb de Comunytek, y concretamente el server REST (selfwebspingboot). Se trata de una aplicación java que emplea el framework SpringBoot. Como gestor de proyectos se emplea maven. En la carpeta "ejemplos_cfg"
-puede verse el pom.xml de dicho proyecto, así como otros ejemplos de archivos de configuración.
+For a live working project, the Comunytek Selfweb application has been chosen, and specifically the REST server (selfwebspingboot). It is a java application that uses the SpringBoot framework. Maven is used as project manager. In the "cfg_examples"
+folder you can see the pom.xml of this project, as well as other examples of configuration files.
 
-=== Flujo de desarrollo
+=== Continuous integration model
 
-Como normativa se ha escogido el modelo "Git Flow" simplificado. Si bien los pipelines pueden fácilmente adaptarse
-a otros modelos, este es el preferido por muchas organizaciones, y el que se emplea en este momento en los
-proyectos del Clan Comunytek. El modelo es el siguiente:
+The simplified "Git Flow" model has been chosen as the standard. While pipelines can easily be adapted to other models, this is the one preferred by many organisations, and the one currently used in the Comunytek Clan projects. The model works as follows:
 
 image::img/gitflow.png[Git Flow]
 
-- Debe existir una rama "master" que además es la de defecto. En esta rama debe estar el código de la última versión
-liberada para producción, o en curso de liberarse. La rama está protegida de modo que sólo los "Mantainers"
-pueden hacer merge y push.
-- Debe existir una rama "develop". En esta rama debe estar el código de la última versión
-liberada para preproducción, UAT, Staging, o en curso de liberarse. La rama está protegida de modo que sólo los "Mantainers"
-pueden hacer merge y push.
-- El desarrollo se realiza sobre ramas auxiliares, asociadas a todo el trabajo de desarrollo previo al deploy en pre: a una "feature", a un desarrollador, etc. Los desarrolladores
-trabajan en local sobre su rama y, de forma periódica, hacen "push" a efectos de backup, lo que, opcionalmente,
-puede disparar un pipeline de CI/CD.
-- A medida que finaliza el trabajo de desarrollo en las diferentes ramas,
-se unifican mediante merge sobre una rama temporal (p.e. "desa-5.0.9-sprint-34") en la que se revisan posibles inconsistencias, se realizan eventuales pruebas de integración y EndToEnd, etc.
-- Una vez completada la rama temporal de desarrollo, un "Mantainer" hará merge local sobre "develop", resolverá eventuales inconsistencias y hará
-push de "develop", lo que disparará un pipeline CI/CD asociado a pre-producción.
-- Cuando un SNAPSHOT sea autorizado para producción, un "Mantainer" hará merge local de 'develop' sobre 'master',
-modificará la versión en el pom (eliminando la cadena "SNAPSHOT"), y hará push de master, lo que disparará un pipeline CI/CD asociado a producción. 
-- Pueden existir ramas hotfix, pero no más de una simultáneamente. Como veremos más tarde, esta rama (de existir) tiene
-un tratamiento especial.
+- There must be a "master" branch, which is also the default branch. This branch must contain the code of the latest version released for production, or in the process of being released. The branch is protected so that only mantainers can do merge and push.
+- There must be a "develop" branch. This branch must contain the code of the latest version released for pre-production, UAT, Staging, etc. or in the process of being released. The branch is protected so that only mantainers can do merge and push.
+- Development is carried out on auxiliary branches, associated with all the development work prior to pre-deployment: to a feature, a developer, etc. Developers work locally on their branch and periodically push it for backup purposes, which can optionally trigger a CI/CD pipeline.
+- As the development work on the different branches is completed,
+they are unified by merge on a temporary branch (e.g. "desa-5.0.9-sprint-34") where possible inconsistencies are checked, integration and EndToEnd tests are carried out, etc.
+- Once the temporary development branch is complete, a mantainer will merge locally over develop, resolve any last-minute inconsistencies and push develop, which will trigger a CI/CD pipeline associated with pre-production.
+- When a SNAPSHOT is authorised for production, a "Mantainer" will do a local merge of 'develop' over 'master',
+will modify the version in the pom (removing the string "SNAPSHOT"), and do master push, which will trigger a CI/CD pipeline associated to production. 
+- Hotfix branches may exist, but no more than one at a time. As we will see later, this branch (if it exists) has special treatment.
 
-=== Gitlab como entorno CI/CD
+=== Gitlab as a CI/CD environment
 
 En sus últimas versiones, Gitlab incorpora un conjunto de características que lo hacen un buen
 candidato para soportar el grueso de las cadenas CI/CD de manera integrada. A continuación vamos a comentar
