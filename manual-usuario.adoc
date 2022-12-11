@@ -1,4 +1,4 @@
-= image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Project _cicd-librerias_
+= image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Proyecto _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
 1.0.2, 03/11/2022
 :toc:
@@ -7,17 +7,20 @@ Faustino Nebrera <faustino.nebrera@vass.es>
 :sectnumlevels: 4
 :icons: font
 
-== Abstract
+== Resumen
 
-This project represents a fully operational example of a CI/CD chain built with the idea of simplifying the DevOps stack, the installation of required products and, above all, the preparation of pipelines and jobs for the most important circuits. It is not intended to make product comparisons and, even less, to establish a strict guideline of how to do things, as each company and/or IT department has its own rules and regulations. For this reason, the libraries are
-very flexible, and can be adapted with very little work to different regulations and procedures. 
+Este proyecto representa un ejemplo completamente operacional de una cadena CI/CD construida con la idea de simplificar el stack
+DevOps, la instalación de productos requeridos y, sobre todo, la preparación de pipelines y jobs para los circuitos más
+habituales. No se ha pretendido hacer comparativas de productos y, menos aún, establecer una guía estricta de
+cómo hacer las cosas, puesto que cada Compañía y/o Departamento de TI tiene su propia normativa. Por esta razón, las librerías son
+muy flexibles, y pueden adaptarse con muy poco trabajo a diferentes normativas y procedimientos. 
 
-The current version is specific to maven/java projects deployed as Docker stacks. Provisioning is
-quite generic and is based on Terraform. For deploy, we have chosen to use bash and ssh, thinking in not too complex environments.
+La actual versión es específica para proyectos maven/java desplegados como stacks Docker. El provisioning es
+bastante genérico y se basa en Terraform. Para deploy, se ha optado por emplear bash y ssh, pensando en entornos no demasiado complejos.
 
-In later versions, it is planned to replicate part of the libraries to include projects based on phyton, node.js, .Net.core, etc. It is also planned to incorporate the possibility of using some sophisticated deploy product, such as Ansible, Octopus, etc. Finally, work will be done on the provisioning and deployment of projects based on microservices (kubernetes, swarm, etc.).
+En versiones posteriores está previsto replicar una parte de las librerías para incluir proyectos basados en phyton, node.js, .Net.core, etc. También está previsto incorporar la posibilidad de emplear algún producto sofisticado de deploy, tipo Ansible, Octopus, etc. Por último, se trabajará en el provisionado y despliegue de proyectos basados en microservicios (kubernetes, swarm, etc.).
  
-== Versions
+== Versiones
 
 [cols=".<1,.<1,.<1,.<6", options="header"]
 |===
@@ -44,61 +47,65 @@ In later versions, it is planned to replicate part of the libraries to include p
 |===
 
 :sectnums:
-== Introduction
+== Introducción
 
-The most common CI/CD stacks are composed of several products, each specialised in a particular aspect of the final solution pipeline.
-It is very common to find stacks that include 6 or more different products: Gitlab, Jenkins, Sonar, Nexus, Vault, Octopus, etc.
+Los stacks CI/CD más habituales están compuestos de varios productos, especializados cada uno de ellos en un aspecto concreto
+de la cadena o pipeline de la solución final. Es muy frecuente encontrar stacks que incluyen 6 o más
+productos diferentes: Gitlab, Jenkins, Sonar, Nexus, Vault, Octopus, etc.
 
-It is clear that installing (and especially configuring) many heterogeneous products is not a trivial job. Some vendors
-allow this task to be simplified by pre-integrated solutions (e.g. RedHat OpenShift, CI/CD services from Amazon Web Services or Azure, etc.), but of course these are not simple black-boxes, as each organisation has its own CI/CD requirements.
-has its own CI/CD requirements. A small ISV is not the same as a large Financial Institution, which is why it is always necessary to
-tinkering with the default configurations, or even creating them from scratch.
+Es evidente que instalar (y sobre todo configurar) muchos productos heterogéneos no es un trabajo trivial. Algunos vendors
+permiten simplificar esta tarea mediante soluciones previamente integradas (véase el caso de RedHat OpenShift, los servicios
+CI/CD de Amazon Web Services o Azure, etc.) aunque, lógicamente, no se trata de simples black-boxes, puesto que cada organización
+tiene sus propios requisitos de CI/CD. No es lo mismo un pequeño ISV que una gran Entidad Financiera, por lo que siempre es necesario
+hacer "retoques" sobre las configuraciones por defecto, o incluso crearlas desde cero.
 
-On the other hand, the _Jenkins(TM)_ type task coordinators are configured using a programming language that, although simple, requires DevOps engineers to have some
-programming skills and familiarity with the language in question. If, in addition (and this is the norm), the code must be
-kept read-only for the developers, and it must be modular (using libraries), the learning curve is usually expensive.
+Por otra parte, los coordinadores de tareas tipo _Jenkins(TM)_ se configuran mediante un lenguaje de
+programación que, aunque sencillo, requiere que los ingenieros de DevOps tengan ciertos conocimientos de
+programación y estén familiarizados con el lenguaje en cuestión. Si, además (y es lo habitual) el código debe
+mantenerse como read-only para los desarrolladores, y debe ser modular (empleando
+librerías), la curva de aprendizaje suele ser costosa.
 
-In this project we have tried to minimise:
+En este proyecto se ha intentado minimizar:
 
-- The number of products involved.
-- The complexity of defining task flows (pipelines).
+- El número de productos implicados.
+- La complejidad de la definición de
+flujos de tareas (pipelines).
 
-For this purpose, some of the CI/CD capabilities offered by Gitlab in its latest versions have been used, and some example
-pipelines have been defined and tested in a real environment, with quite satisfactory results.
+Para ello se han empleado algunas de las capacidades CI/CD que Gitlab ofrece en sus últimas versiones, y se han definido unos pipelines de ejemplo que se han probado en un entorno real, con resultados bastante satisfactorios.
 
 [TIP]
-.*Important*
+.*Importante*
 --
-Regardless of your previous CI/CD background, you may find it useful to read this document in order to reinforce
-basic concepts and understand the philosophy of CI/CD pipelines.
+Independientemente de cuál sea tu formación previa en CI/CD, la lectura de este documento puede serte útil para afianzar conceptos básicos y entender la filosofía de los pipelines de CI/CD.
 --
 
-== Develop environment
+== Entorno de desarrollo
 
-=== Base Hardware & software
+=== Hardware y software de base
 
 Server Hyper-V::
-* AMD Ryzen 7 5700G (8 cores, 16 threads).
-* 64 GB Memory
+* Intel Core i7-7567U.
+* 32 GB Memoria
 * 1 TB SSD
 * Windows Server 2022 Standard
 * Hyper-V
 
 Server CI/CD::
-* Virtual machine in Hyper-V.
-* 24 GB Memory max.
-* 4 virtual processors.
-* Ubuntu 22.04.1
-* Docker 20.10.17 & docker-compose
+* Máquina virtual en Hyper-V.
+* 24 GB Memoria max.
+* 4 procesadores virtuales.
+* Ubuntu 20.04.1
+* Docker 20.10.17 y docker-compose
 
-Provisioned VMs::
-* 2 GB Memory.
-* 2 virtual processors.
-* Alpine Linux 3.16.2 or Debial bullseye 11.5
-* Docker 20.10.17 & docker-compose.
-* Basic tools: OpenSSH-server, bash, sudo, etc.
+Maquinas provisionadas::
+* Maquina virtual en Hyper-V.
+* 2 GB Memoria max.
+* 1 procesadores virtuales.
+* Alpine Linux 3.16.2
+* Docker 20.10.17 y docker-compose.
+* Herramientas de base: OpenSSH-server, bash, sudo, etc.
 
-=== CI/CD products
+=== Productos para CI/CD
 
 Todos los productos se han instalado en el server CI/CD como imágenes docker, y se lanzan mediante sendos docker-compose, para facilitar
 el arranque/parada de un producto concreto sin afectar al resto. Todos los docker-compose referencian un network

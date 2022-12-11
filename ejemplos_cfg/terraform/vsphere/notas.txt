@@ -3,34 +3,62 @@ Preparacion de la Plantilla
 
 En vSphere, la forma más simple de provisionar una máquina virtual es partir de una
 plantilla (template). Para construir dicha plantilla, en este ejemplo hemos hecho lo siguiente:
-1. Obtenemos de la red la image ISO de un debian bullseye, en este ejemplo version 10.5.
+1. Obtenemos de la red la image ISO de un debian bullseye, en este ejemplo "debian-11.5.0-amd64-netinst.iso".
 2. Desde la consola de vCenter, subimos esta imagen a un datastore de trabajo. Normalmente a una carpeta "ISOs" o similar.
-2. Creamos una VM tipo debian 10 64bits, y enlazamos el cdrom a la imagen ISO anterior.
-3. Arrancamos la máquina y seleccionamos "Install graphics". Definimos todo lo que necesitamos instalar, quitamos el cdrom y reboot.
+2. Creamos una VM tipo debian 11 64bits, y enlazamos el cdrom a la imagen ISO anterior, con algo similar a lo siguiente:
+		Nombre: debian-seed-vm
+		Familia: linux
+		Version: Debian GNU/linux 11 (64 bits)
+   		CPU: 1
+		Memoria: 2 GB
+		Disco: 8 GB
+3. Arrancamos la máquina y seleccionamos "Graphical install":
+		Definimos password de root
+		Usuario adicional: Administrador VASS
+		Username: vassadmin
+		Password: Poner una protegida, que solo conozca sysadmin. Provisionalmente Lolo2756
+		Formateo disco: todo el disco con LVM
+		Una sola particion (recomendable en maquinas virtuales)
+		Tamaño usado: max
+		Seleccion de programas:
+			- SSH server
+			- Utilidades estándar
+		Apagamos la máquina, quitamsos el ISO del cdrom, arrancamos y hacemos login como root.
 3. Instalamos docker y docker-compose
-		sudo yum update
-		sudo yum install docker
-		sudo pip3 install docker-compose
+		apt-get update && apt-get upgrade
+		apt-get install docker docker-compose
 4. Configuramos sudo
-		sudo visudo
-            Copiamos la linea del grupo wheel para el grupo sudo y ponemos NOPASSWD: ALL
+        		apt-get install sudo
+		visudo
+            		Cambiamos la linea del grupo sudo y ponemos NOPASSWD: ALL
 			%sudo	ALL=(ALL)	NOPASSWD: ALL
-5. Creamos usuario 'vassadmin', y agregamos a grupos sudo y docker
-            sudo groupadd sudo
-		sudo adduser -s /bin/bash vassadmin
-            sudo passwd vassadmin (ponemos una password que solo conoce el sysadmin, provisional Lolo2756)
-		sudo usermod -a -G docker vassadmin
-		sudo usermod -a -G sudo vassadmin
-6. Permitimos ssh con password a vassadmin:
-		Editamos /etc/ssh/sshd_config
-		Cambiamos la linea "PasswordAuthentication no" a yes.
-		Reiniciamos sshd:
-			sudo systemctl restart sshd
-7. Desde nuestro linux de trabajo, copiamos nuestra clave publica al usuario vassadmin y probamos conexion
+5. Agregamos usuario 'vassadmin' a los grupos sudo y docker
+		adduser vassadmin  docker
+		adduser vassadmin  sudo
+7. Desde otro linux de trabajo, copiamos nuestra clave publica al usuario vassadmin y probamos conexion
 		ssh-copy-id -i <miclave.pub> vassadmin@<ip actual de la maquina semilla>
 		ssh -i <miclave> vassadmin@<ip actual de la maquina semilla>
-		Por seguridad, debemos deshacer el cambio en sshd para que ya no permita password.
-8. Creamos una AMI privada a partir de esta imagen para los lanzamientos subsiguientes.
-9. Podemos apagar la instancia semilla, o incluso eliminarla.
-
+8. Apagamos la maquina y clonamos a una plantilla con nombre "debian-plantilla":
+		Seleccionamos la VM, con botón derecho:
+			Clonar -> Clonar a plantilla
+9. Si estamos faltos de espacio, podemos eliminar la maquina semilla. Si no es así, conviene mantenerla, por si se requiere instalar o configurar algo adicional en el futuro.
+10. Una vez aprovisionada una máquina nueva, y si hemos definido el tamaño de disco mayor que los 8 GB de la plantilla, podemos extender
+      la partición principal para ocupar todo el espacio aprovisionado. Podemos emplear el script "extender-lvm.sh" del directorio de ejemplos, o bien hacerlo a mano:
+	Entramos como root, y hacemos lo siguiente:
+		lvs (listar volumenes logicos LVM)
+			Anotamos el nombre del VG que corresponde al root del sistema. Estara formado por el hostame que pusimos en la instalacion de la
+    			maquina semilla debian mas "-vg". Por ejemplo "debian-seed-vg".  
+		fdisk -l (deberíamos ver una partición extendida /dev/sda2 y sobre ella una lógica /dev/sda5 de tipo LVM), del tamaño de la semilla (8GB)
+		fdisk /dev/sda (entramos en la utilidad de gestión de particiones)
+			d -> 2 (borra la particion 2 y automaticamente la 5 creada sobre esta)
+			n -> e -> <return> -> <return> (crea particion extendida sda2 con todo el disco fisico disponible)
+			n -> <return> -> <return> (crea particion logica sda5 sobre la sda2 ocupando todo el espacio)
+			¿Desea eliminar la firma? -> N
+			t -> 5 -> 8e (cambia el tipo de particio a la sda5 a LVM)
+			w (escribe los cambios)
+		pvresize /dev/sda5
+		lvextend -l +100%FREE /dev/debian-seed-vg/root (el VG que antes hemos anotado)
+		resize2fs /dev/debian-seed-vg/root
+		df -h (comprobar que ya tenemos los 16 GB (o lo que hayamos configurado al crear la VM).
+		
 ====================== E O F ================================
