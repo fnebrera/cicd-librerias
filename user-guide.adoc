@@ -12,10 +12,10 @@ Faustino Nebrera <faustino.nebrera@vass.es>
 This project represents a fully operational example of a CI/CD chain built with the idea of simplifying the DevOps stack, the installation of required products and, above all, the preparation of pipelines and jobs for the most usual circuits. It is not intended to make product comparisons and, even less, to establish a strict guideline of how to do things, as each company and/or IT department has its own rules and regulations. For this reason, the libraries are
 very flexible, and can be adapted with very little work to different regulations and procedures. 
 
-The current version is specific to maven/java projects deployed as Docker stacks. Provisioning is
+Current version is specific to maven/java projects deployed as Docker stacks. Provisioning is
 quite generic and is based on Terraform. For deploy, we have chosen to use bash and ssh, thinking in not too complex environments.
 
-In later versions, it is planned to replicate part of the libraries to include projects based on phyton, node.js, .Net.core, etc. It is also planned to incorporate the possibility of using some sophisticated deploy product, such as Ansible, Octopus, etc. Finally, work will be done on the provisioning and deployment of projects based on microservices (kubernetes, swarm, etc.).
+In later versions, we plan to replicate part of the libraries to include projects based on phyton, node.js, .Net.core, etc. It is also planned to incorporate the possibility of using some sophisticated deploy product, such as Ansible, Octopus, etc. Finally, work will be done on the provisioning and deployment of projects based on microservices (kubernetes, swarm, etc.).
  
 == Versions
 
@@ -151,98 +151,79 @@ will modify the version in the pom (removing the string "SNAPSHOT"), and do mast
 
 === Gitlab as a CI/CD environment
 
-En sus últimas versiones, Gitlab incorpora un conjunto de características que lo hacen un buen
-candidato para soportar el grueso de las cadenas CI/CD de manera integrada. A continuación vamos a comentar
-algunos de los aspectos principales.
+The latest versions of Gitlab incorporate a set of features that make it a good candidate to support the bulk of CI/CD chains in an integrated way. In the following sections we will discuss this subject in detail.
 
-==== Repositorio de código fuente
+==== Source code repository
 
-Git/Gitlab representan el estándar de-facto para la gestión de código fuente. No vamos a entrar
-a explicar Git, por ser sobradamente conocido. Sin embargo, hay algunas características menos conocidas
-que conviene mencionar.
+Git/Gitlab are the de-facto standard for source code management. We will not go into the details of Git, being it a well known fellow of every developer. However, there are some lesser-known features
+that are worth mentioning.
 
-- Gitlab incluye un *Issue Manager* sencillo pero bastante completo, hasta el punto de que, en algunos casos, podría
-emplearse como sustituto de _Jira_(TM).
-- También incluye una *Wiki* con soporte de varios lenguajes de markup que, como en el caso anterior,
-podría emplearse como sustituto de _Confluence_(TM), al menos en lo que se refiere a documentación de los proyectos.
+- Gitlab includes a simple but quite complete *Issue Manager*, which, in some cases, can be used as a substitute for _Jira_(TM).
+- It also includes a *Wiki* with support for several markup languages which, as in the previous case, can be used as a replacement for _Confluence_(TM), at least in terms of project documentation.
 
-==== Coordinador CI/CD
+==== CI/CD Coordinator
 
-Gitlab incluye un coordinador de CI/CD relativamente poco conocido, dado que tradicionalmente sus capacidades han estado por
-debajo de los productos más usuales, tales como _Jenkins_(TM) o _TeamCity_(TM). En sus últimas versiones, sin embargo, Gitlab se ha posicionado
-como un serio competidor, fundamentalmente por las siguientes razones:
+Gitlab includes a relatively less-known CI/CD coordinator, whose capabilities have traditionally been despised in front of mainstream products, such as _Jenkins_(TM) or _TeamCity_(TM). In its latest versions, however, Gitlab has positioned itself as a serious competitor, mainly because of the following reasons:
 
-* Todo el "plumbing" de CI/CD está estrechamente integrado con el repositorio de código fuente, emplea la misma interfaz de usuario,
-y simplifica la eventual integración de otros productos.
+* All CI/CD plumbing is tightly integrated with the source code repository, uses the same user interface,
+and simplifies the eventual integration of other products.
 
-* Los _pipelines_ se definen mediante un lenguaje de markup sobradamente conocido (yaml), lo que evita tener que aprender un lenguaje
-específico.
+* Pipelines are defined using a well-known markup language (yaml), avoiding the need of learning a specific language.
 
-* Si se requieren acciones complejas, el entorno de "shell" está directamente integrado con los jobs. Es muy fácil, además,
-crear librerías de funciones escritas en .sh, .bash, etc. y llamarlas directamente desde un job. En un entorno complejo,
-los ingenieros DevOps pueden concentrarse en la creación de la base de los pipelines, dejando determinados detalles de implementación de cada job a desarrolladores especializados.
+* Whenever complex actions are required, the shell environment is directly integrated with the job code. It is also very easy to create function libraries written in .sh, .bash, etc. and call them directly from a job. DevOps engineers can concentrate on creating the basis of the pipelines, leaving certain implementation details of each job to specialised developers.
 
-Más adelante se explica en mayor detalle el modo de trabajar con Gitlab CI/CD.
+==== Code Quality Control
 
-==== Verificación de Calidad del Código
+Gitlab does not have a propietary solution for this subject. Instead, it proposes the of _CodeClimate(TM)_ product. Integration is currently in Beta phase. As far as the de facto standard for this phase has been, for years, _SonarQube(TM)_, which is also easily integrated with the most common project managers (maven, gradle, npm...), we have preferred to integrate this product in this example. The process is explained in detail later on.
 
-En este apartado, Gitlab no dispone de una solución propia, sino que
-integra el producto _CodeClimate(TM)_. Dado que el estándar de facto para esta fase es, desde hace años, _SonarQube(TM)_, el cual además se integra fácilmente con los gestores de proyectos más habituales (maven, gradle, npm..), hemos preferido integrar este producto en el presente ejemplo. Más adelante se explica en detalle este proceso.
+==== Unit tests
 
-==== Tests Unitarios
+Again, Gitab relies on third-party solutions for both unit testing and SAST execution. In our case, we will use the capabilities embedded in _maven_, which are more than sufficient in most projects.
 
-De nuevo Gitab se apoya en soluciones de terceros tanto para la ejecución de tests unitarios como SAST. En nuestro caso, emplearemos las capacidades embebidas en _maven_, más que suficientes en la mayor parte de los proyectos.
+==== Artifacts Building
 
-==== Construcción de Artefactos
+Most project managers (_maven_, _gradle_, _npm_...) have their own mechanisms for detecting dependencies and building the final artifact(s). In this project we have relied on the capabilities of _maven_, as we will see later. Adapting the jobs to other environments is quite simple.
 
-La mayor parte de los gestores de proyectos (_maven_, _gradle_, _npm_..) disponen de sus propios mecanismos de detección de dependencias y construcción del/los artefactos finales. En este proyecto nos hemos apoyado en las capacidades de _maven_, como se verá más adelante. La adaptación de los jobs a otros entornos es bastante simple.
+==== Artifacts Registry
 
-==== Registro de Artefactos
+In this aspect, the market is clearly dominated by two key players: _Nexus(TM)_ and _Artifactory(TM)_. Gitlab, however, provides a "Package Registry" compatible with most common formats, and with basic functionalities, which we think may be sufficient in many cases. For this reason, we have relied on Gitlab itself in this section.
 
-En este aspecto, el mercado está claramente dominado por dos jugadores clave: _Nexus(TM)_ y _Artifactory(TM)_. Gitlab, sin embargo, dispone de un "Package Registry" compatible con los formatos más habituales, y con funcionalidades básicas, que pensamos 
-pueden ser suficientes en muchos casos. Por ello nos hemos basado en el propio Gitlab en este apartado.
+==== Docker Image Registry
 
-==== Registro de Imágenes Docker
+Gitlab provides a very flexible "Component Registry", so we have selected using it in this example. Note that Nexus, for example, incorporates this functionality as a separate product, not included in the Nexus Registry, which gose against our idea of simplicity.
 
-También en este apartado Gitlab dispone de un "Component Registry" muy flexible, por lo que es el que se ha empleado en este
-ejemplo. Nótese que Nexus, por ejemplo, incorpora esta funcionalidad en un módulo adicional al Nexus Registry, lo que complica su empleo.
+==== Provisioning
 
-==== Provisionado
+For this subject, Gitlab propose the usage of docker images with Git + Terraform, facilitating the integration of _Terraform(TM)_ into gitlab pipelines. The aforementioned images include an integration library with 'gitlab-terraform xxxx' commands. We do not recommend the use of this library, as it adds little features and is somewhat cumbersome. Therefore, an ad-hoc docker image has been created based on a minimal linux (Alpine), and Terraform's native commands are used.
 
-Gitlab dispone de imágenes docker con Git + Terraform, y es muy simple integrar _Terraform(TM)_ en los pipelines de gitlab. Las imágenes antes mencionadas incluyen una librería de integración con comandos del tipo 'gitlab-terraform xxxx'. No recomendamos el uso de esta librería, puesto que aporta poco y resulta algo farragosa. Por lo tanto, se ha creado una imagen docker ad-hoc basada en un linux mínimo (Alpine), y se emplean los comandos propios de Terraform.
+A very interesting aspect is that Gitlab can act as a backend to the Terraform status of the project, thus preventing simultaneous access from causing unwanted behaviour. 
 
-Un aspecto muy interesante es que Gitlab puede actuar como backend del status Terraform del proyecto, evitando así que el eventual acceso simultáneo pueda provocar comportamientos indeseados. 
+==== Deployment
 
-==== Despliegue
+For this first version, deployment of the generated Docker image is done in a relatively simple way (using bash, sftp and ssh).
+Gitlab can integrate different auxiliary platforms such as Helmet/Kubernetes, Ansible, etc., so later versions of this project will explore these possibilities. 
 
-En esta primera versión, el despliegue de la imagen Docker generada se realiza de una manera relativamente simple (utilizando bash, sftp y ssh).
-Gitlab puede integrar diferentes plataformas auxiliares tipo Helmet/Kubernetes, Ansible, etc. por lo que en posteriores versiones
-de este proyecto se trabajará con estas posibilidades. 
+=== Gitlab CI/CD first steps
 
-=== Un vistazo a Gitlab CI/CD
+Obviously, it is not the purpose of this document explaining in detail how to work with Gitlab CI/CD, but it is interesting to comment on the main aspects.
 
-Obviamente, no es objeto de este documento explicar pormenorizadamente el trabajo con Gitlab CI/CD, pero sí
-que es interesante comentar los aspectos principales.
+- The first thing that surprises when approaching Gitlab CI/CD is that there is a *single* pipeline definition file per project. This file must be located at the root of the project, and must be named ".gitlab-ci.yml". The
+file format is yaml, with fairly easy to learn keywords.
+- Notwithstanding the above, this .yml can contain includes from other .yml file(s), which in turn can have includes, and so on.
+In addition, includes can reference another project, so it is easy to set up a specific project to store these includes,
+as is the case in this example.
+- The pipeline is composed of stages, and job definitions associated to the different stages. There can be more than one job associated to a stage, either to be executed in parallel or just one of them depending on the values of certain variables.
 
-- Lo primero que llama la atención de Gitlab CI/CD es que existe un *único* archivo de definición
-de pipelines por proyecto. Este archivo debe localizarse en la raíz del proyecto, y debe denominarse obligatoriamente ".gitlab-ci.yml". El
-formato del archivo es yaml, con unas keywords bastante sencillas de aprender.
-- No obstante lo anterior, este .yml puede contener "includes" de otro/s archivo/s .yml, los cuales a su vez pueden tener includes, y así sucesivamente.
-Además, los includes pueden referenciar otro proyecto, por lo que es sencillo montar un proyecto específico para almacenar estos includes,
-como es el caso de este ejemplo.
-- El pipeline se compone de etapas (stages), y de definiciones de trabajos (jobs) asociados a las diferentes etapas. Puede haber más de un job asociado a un stage, bien sea para que se ejecuten en paralelo o úno sólo de ellos en función de los valores de ciertas variables.
+image::img/stages.png[Gitlab Stages]
 
-image::img/stages.png[Etapas en Gitlab]
+- There are two optional predefined stages, called ".pre" and ".post". The jobs defined for these stages will always be executed before (after) the rest of the stages.
+- In each job, rules are defined to include or not this job in the pipeline, and under which execution conditions. For example, a "manual" job will be blocked in the pipeline until it is triggered by a Mantainer.
+- When a CI/CD event is triggered, Gitlab parses all the rules and dynamically assembles a pipeline containing only the jobs where the rules are met. This allows us to have "n" different pipelines, each one associated to a set of rules. As you can see, this is a very different way of working as compared to _Jenkins(TM)_ or _Artifactory(TM)_.
+- Using rules, we can define whether or not do we allow the job to fail and, consequently, the pipeline to continue. For example, in a job running Sonar, we allow it to fail in the "develop" branch, as it is not a release to production.
+- We can include a "before_script" and an "after_script" in the job, in addition to the main script. For example, we can define an after_script that should be executed only if the job fails, to rollout or prepare for a later phase.
+- In gitlab we must have one or more runners that manage the execution of the jobs, launching a specific executor for each one. In this example, we have configured a Docker runner, which runs as a separate Gitlab container. This runner, in turn, and for each job assigned to it, creates a Docker container with the image indicated in the job itself, and it is in this container where the scripts are executed. Scripts are written in the shell language associated with the docker image, i.e., "sh", "bash", "PowerShell", etc.
 
-- Hay dos etapas predefinidas opcionales, llamadas ".pre" y ".post". Los jobs que se definan para estas etapas se ejecutarán siempre antes (después) que el resto de etapas.
-- En cada job se definen reglas (rules) para incluir o no este job en el pipeline, y en qué condiciones de ejecución. Por ejemplo, un job "manual" quedará bloqueado en el pipeline hasta que sea lanzado por un Mantainer.
-- Cuando se dispara un evento CI/CD, Gitlab analiza todas las reglas y monta de manera dinámica un pipeline que contiene sólamente los jobs en los que se cumplen las reglas. Esto nos permite tener "n" pipelines distintos, cada uno asociado a un conjunto de reglas. Como puede verse, se trata de una modalidad de trabajo muy diferente a la de Jenkins o Artifactory.
-- También mediante reglas, podemos definir si permitimos o no que el job falle y, en consecuencia, que el pipeline continue. Por ejemplo, en un job que ejecute Sonar, permitimos que falle en la rama "develop", al no tratarse de un release a producción.
-- Podemos incluir en el job un "before_script" y un "after_script", además del "script" principal. Por ejemplo, podemos definir un after_script que se debe ejecutar sólo si el job falla, para hacer rollout o preparar una fase posterior.
-- En gitlab debemos tener uno o más "runners" que se encargan de gestionar la ejecución de los jobs, lanzando un "executor" específico para ese job. En este ejemplo, hemos configurado un runner tipo Docker, que se ejecuta como un container separado de Gitlab. Este runner, para cada job que se le asigna,
-crea a su vez un container Docker con la imagen que se indique en el propio job, y es en este container donde se ejecutan los scripts, que se escriben en el lenguaje de shell asociado a la imagen docker, es decir, "sh", "bash", "PowerShell", etc.
-
-image::img/runners.png[Runners y Executors]
+image::img/runners.png[Runners & Executors]
 
 - Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job. Adicionalmente se ha preparado otra imagen de executor denominada "ck-terraform-executor", también basada en Alpine y con Terraform preinstalado.
 - Gitlab dispone de varios mecanismos para "pasar" información de un job a otro. Posiblemente el más usado es el "cache", en el que podemos incluir uno o más directorios de trabajo que cada job "lee" al inciarse y "escribe" al finalizar. Un ejemplo típico de uso es el repositorio de dependencias de maven. Si está en cache, se descargarán sólamente una vez y estarán a disposicion de los diferentes jobs.
