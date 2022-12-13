@@ -1,0 +1,48 @@
+How to extend VM root filesystem
+--------------------------------
+
+Hyper-V
+-------
+
+The disk provisioned is a copy of the seed-disk. In this example we are using an Alpine-linux distro. The simplest way of
+expanding the resulting VM disk is as follows:
+
+- With the VM stopped, resize the disk using Hyper-V console.
+- Start VM, connect and login as root.
+- Install utility packages:
+	apk add cfdisk
+      apk add e2fsprogs-extra
+- Run 'cfdisk /dev/sda' and extend /dev/sda3 to the full disk space. Reboot may be required.
+- Run 'resize2fs /dev/sda3'
+- Run 'df -h' to check new disk size.
+
+Amazon AWS
+----------
+
+The process of launching an EC2 instance based on an AMI dynamically generates the GPT partitions, so no further action is required afterwards.
+
+VMware
+------
+
+The example provided uses a template to create the new VM. We can define a disk size larger that the template's one, but the extra space is not inmediately used by the underlying operating system and additional manual configuration is needed. If the instructions to create the template have beed followed, we will have a Debian based system with LVM logical disk partitions. Extending the root partition is
+a bit complex, but a small script is provided to simplify the process. Once the new VM is running, upload the file 'extender-lvm.sh',
+make it executable with 'chmod +x extender-lvm.sh', and run it with root privileges. Alternatively, you can proceed as follows:
+  
+- Connect and login as root.
+- Run 'lvs' and annotate the name of the volume group. It showld be composed of the hostame defined during the installation
+  of the seed VM plus "-vg". E.g. "debian-seed-vg".  
+- Run 'fdisk -l' (you should see an extended partition (/dev/sda2) and a logical one (/dev/sda5) whith type LVM).
+- Run 'fdisk /dev/sda' and enter the following commands:
+			d -> 2 (delete partition 2. Logical partition 5 is also deleted)
+			n -> e -> <return> -> <return> (create extended partition sda2 using all the space available)
+			n -> <return> -> <return> (create logical partition sda5 over sda2 using all the space available)
+			¿Revove LVM signature? -> N
+			t -> 5 -> 8e (change sda5 partition type to Linux LVM)
+			w (write changes to disk)
+- Run 'pvresize /dev/sda5' (resize physical volume to new partition size)
+- Run 'lvextend -l +100%FREE /dev/<your-volume-group-name>/root' (extend logical volume by 100% of free space)
+- Run 'resize2fs /dev/<your-volume-group-name>/root' (resize filesystem to new volume size)
+- Run 'df -h' (check new filesystem size).
+
+
+faustino.nebrera@vass.es 13/12/2022
