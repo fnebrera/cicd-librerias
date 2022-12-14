@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Extender particion LVM principal para ocupar todo el disco. Solo valido
-# para instalaciones con LVM y con una unica particion.
+# para instalaciones con LVM y con una unica particion. Se asume que
+# python3 esta instalado.
 #
 # 1) Obtener tamaño del disco fisico
 #
@@ -43,10 +44,10 @@ free=$(echo "print($TAMFIS - $TAMLOG - $TAMSWAP)" | python3)
 # Quitar decimales
 free=${free%.*}
 echo "Espacio libre: $free MB"
-seguir=$(echo "print($free > 102)" | python3)
+seguir=$(echo "print($free > 1024)" | python3)
 [[ $seguir = "True" ]] || { echo "No se puede extender la particion"; exit 0; }
 # Preguntar si quiere seguir?
-read -p  "¿Extender particion ${PARTICION}? (S/N): " seguir && [[ $seguir == [sN] ]] || exit 0
+read -p  "¿Extender particion ${PARTICION}? (S/N): " seguir && [[ $seguir == [sS] ]] || exit 0
 #
 # 3) Modificar tabla de particiones para ocupar todo el espacio
 #

@@ -1,6 +1,6 @@
 = image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Project _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.2, 03/11/2022
+1.0.3, 14/12/2022
 :toc:
 :toc-title: Index
 :toclevels: 4
@@ -43,7 +43,7 @@ In later versions, we plan to replicate part of the libraries to include project
 
 |1.0.3
 |FNG
-|11/12/2022
+|14/12/2022
 |Documentation is now in english. New fully tested examples of provision/deploy: Currently available for Hyper-V, AWS & Vmware vSphere(TM)
 |===
 
@@ -225,39 +225,40 @@ image::img/stages.png[Gitlab Stages]
 
 image::img/runners.png[Runners & Executors]
 
-- Para este ejemplo hemos preparado una imagen de executor denominada "ck-maven-executor", basada en un linux lightweight (Alpine) sobre el que se preinstalan maven, git y otros módulos de utilidad. De este modo, nos "ahorramos" todo el tiempo que requiere la instalación de estos componentes cada vez que ejecutemos un job. Adicionalmente se ha preparado otra imagen de executor denominada "ck-terraform-executor", también basada en Alpine y con Terraform preinstalado.
-- Gitlab dispone de varios mecanismos para "pasar" información de un job a otro. Posiblemente el más usado es el "cache", en el que podemos incluir uno o más directorios de trabajo que cada job "lee" al inciarse y "escribe" al finalizar. Un ejemplo típico de uso es el repositorio de dependencias de maven. Si está en cache, se descargarán sólamente una vez y estarán a disposicion de los diferentes jobs.
-- Un elemento clave en la definición del pipeline son las "variables". En Gitlab, existen varios niveles de variables:
-* Variables predefinidas de Gitlab: Todas ellas comienzan con "CI_" y pueden contener tanto información estática como dinámica. Por ejemplo, CI_PROJECT_ID
-contiene el ID del proyecto (estática), mientras que CI_COMMIT_REF_NAME contiene el nombre del branch sobre el que está trabajando el pipeline (dinámica).
-* Variables de Grupo: Se definen en la configuración del grupo de proyectos. Pueden estar enmascaradas, para que no sean visibles en logs (p.e. passwords). Al estar asociadas al grupo, sólo los usuarios de nivel "Mantainer" en el grupo tienen derecho a visualizarlas y modificarlas. Aunque se trata de un mecaniso bastante simple, nos permite "ahorrarnos" un gestor de secretos (p.e. Vault) en las fases de CI/CD.
-* Variables de Proyecto: Similares a las anteriores, sólo que específicas del proyecto
-* Variables de Pipeline: Están asociadas al pipeline del proyecto y son modificables tanto por Mantainers como por Developers. Pueden definirse en alguno de los includes, o bien en el .yml principal.
-* Variables de Job: Son específicas de cada job, y tienen vigencia sólo durante la ejecución de dicho job.
-* Variables de Entorno: Específicas de cada script. Normalmente son variables de trabajo, aunque es posible pasarlas a jobs subsiguientes mediante el mecanismo de paso de artefactos "dotenv" que comentaremos más adelante.
+- For this example we have prepared an executor image called "ck-maven-executor", based on a lightweight linux distro (Alpine) on which maven, git and other utility modules are pre-installed. This way, we "save" all the time required to install these components every time we run a job. Additionally, another executor image called "ck-terraform-executor" has been prepared, also based on Alpine and with Terraform pre-installed. The directory "ejemplos_cfg/executors" contains
+the Dockerfiles and shell scripts used to build these images.
+- Gitlab has several mechanisms to "pass" information from one job to another. Possibly the most widely used is the "cache", in which we can include one or more working directories that each job "reads" at startup and "writes" at the end. A typical example of use is the maven dependency repository. If a required item
+it is in cache, they will be downloaded only once and will be available to the different jobs later on.
+- A key element in the definition of the pipeline are the "variables". In Gitlab, there are several levels of variables:
+* Gitlab predefined variables: They all start with "CI_" and can contain both static and dynamic information. For example, CI_PROJECT_ID
+contains the project Id (static), while CI_COMMIT_REF_NAME contains the name of the branch the pipeline is working on (dynamic).
+* Group Variables: These are defined in the project group configuration. They can be masked, so that they are not visible in logs (e.g. passwords). As they are associated to the group, only "Mantainer" level users in the group have the right to view and modify them. Although this is a fairly simple mechanism, it allows us to avoid the need of a secrets manager (e.g. Vault) in the CI/CD phases.
+* Project Variables: Similar to the previous ones, but project specific.
+* Pipeline Variables: These are associated with the project pipeline and are modifiable by both Mantainers and Developers. They can be defined in any of the includes, or in the main .yml.
+* Job Variables: These are specific to each job, and are valid only during the execution of that job.
+* Environment Variables: Specific to each script. These are normally job variables, although it is possible to pass them to subsequent jobs using the "dotenv" artifact passing mechanism discussed later.
+- The pipeline is triggered when certain events occur (commit, push, merge_request). Both at pipeline level and individually per job we can "filter" the events we are interested in. In this example, in the rules at pipeline level we have defined that we are only interested in "push" events.
+- Gitlab has many other mechanisms (multi-project pipelines, external triggers, webhooks, etc.) that have not been necessary in this example, so we do not go into their description. 
 
-- El pipeline se dispara al ocurrir determinados eventos (commit, push, merge_request). Tanto a nivel pipeline como individualmente por job podemos "filtrar" los eventos que nos interese. En este ejemplo, en las reglas a nivel pipeline hemos definido que sólo nos interesan los eventos "push".
-- Gitlab dispone de muchos otros mecanismos (pipelines multiproyecto, triggers externos, webhooks, etc.) que no han sido necesarios en este ejemplo, por lo que no entramos en su descripción. 
+== Library description
 
-== Descripción de las librerías
+In this first version of the project, we use only three products: Gitlab, SonarQube and Terraform. This contrasts with the 4, 5 or 6 products that are commonly used in CI/CD chains. These three products are also very familiar to DevOps engineers and developers alike.
 
-En esta primera versión del proyecto, empleamos únicamente tres productos: Gitlab, SonarQube y Terraform. Esto contrasta con los 4, 5 o 6 productos que se emplean habitulamnete en cadenas CI/CD. Estos tres productos, además, resultan muy familiares tanto a ingenieros DevOps como a desarrolladores.
-
-En el proyecto se demuestra, además, que Gitlab CI/CD puede sustituir perfectamente a Jenkins o TeamCity, y con un lenguaje de definición de pipelines muy simple y de rápida curva de aprendizaje.
+The project also demonstrates that Gitlab CI/CD can perfectly replace Jenkins or TeamCity, and with a very simple pipeline definition language and a fast learning curve.
 
 === Layout
 
-Se ha creado un proyecto Git denominado "cicd-librerias" dentro del grupo de proyectos "comunytek". En este grupo de proyectos se encuentra también el proyecto "selfwebspringboot" que usaremos como ejemplo de la implementación de las librerías.
+A Git project called "cicd-libraries" has been created within the "comunytek" project group. In this group also lives the project "selfwebspringboot" which we will use as an example of the implementation of the libraries.
 
-- En _cicd-librerias_ se han creado 3 carpetas:
+- 3 folders have been created in _cicd-libraries_:
 
-* ejemplos_cfg: Incluye ejemplos de configuraciones en los proyectos base, tales como ".gitlab-ci.yml", "pom.xml", etc.
-* pipelines: Contiene los includes principales para los diferentes entornos. En la actual versión sólo está definido el relativo a maven/java.
-* jobs: Contiene una carpeta para cada entorno (en este ejemplo, solamente maven), y en cada carpeta, los includes de cada job del pipeline.
+* ejemplos_cfg: Includes examples of configurations in the base projects, such as ".gitlab-ci.yml", "pom.xml", etc.
+* pipelines: Contains the main includes for the different environments. In the current version only those used for maven/java are defined.
+* jobs: Contains a folder for each environment (in this example, only maven), and in each folder, the includes for each job in the pipeline.
 
-- En _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml", como ejemplo de integración de las librerías _cicd-librerias_.
+- In _selfwebspringboot_ the file ".gitlab-ci.yml" has been created, as an example of integration of the _cicd-libraries_ libraries.
 
-Este sería el esquema básico de empleo de las librerías:
+This is be the basic scheme for the use of libraries:
 
 image::img/layout.png[Layout]
 

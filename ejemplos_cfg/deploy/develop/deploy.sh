@@ -45,7 +45,9 @@ function docker_down() {
         echo "INFO El stack docker no esta iniciado"
     else
         echo "INFO Deteniendo el stack docker.."
-        docker-compose -f ${PRJ_DIR}/docker-compose.yml -f ${PRJ_DIR}/docker-compose.override.yml down
+        # V 1.0.3 se ha simplificado
+        # docker-compose -f ${PRJ_DIR}/docker-compose.yml -f ${PRJ_DIR}/docker-compose.override.yml down
+        docker-compose -f ${PRJ_DIR}/docker-compose.yml down
         [[ $? != 0 ]] && { echo "ERROR No se ha podido detener el stack docker"; exit 4; }
     fi
 }
@@ -134,26 +136,48 @@ function create_docker_networks() {
 function copy_volume_data() {
     local vol
     local dire
+    local fich
     echo "INFO Copiando datos a volumenes docker.."
     for vol in $(ls -C1 volumes); do
+        #
+        # Este es el destino habitual de docker en linux, salvo que cambie en proximas versiones.
+        # Para poder eliminar el contenido anterior y copiar el nuevo, hay que hacerlo con sudo.
+        #
+        dire="/var/lib/docker/volumes/${vol}/_data"
     	#
-    	# Si esta vacio, se ignora
+    	# Si el origen esta vacio, se ignora
     	#
         if [[ -z $(ls -A volumes/${vol}) ]]; then 
             echo "INFO El volumen ${vol} esta vacio, se ignora"
             continue 
         fi
         #
-        # Si contiene un fichero testigo llamado 'ignore' paso de el (normalmente son volumenes para logs)               
+        # Si contiene un fichero testigo llamado 'ignore' paso de el (normalmente son volumenes para logs)
+        #               
         if [[ -f volumes/${vol}/ignore ]]; then 
             echo "INFO El volumen ${vol} contiene un archivo 'ignore', se ignora"
             continue 
-        fi               
+        fi 
         #
-        # Este es el destino habitual de docker en linux, salvo que cambie en proximas versiones.
-        # Para poder eliminar el contenido anterior y copiar el nuevo, hay que hacerlo con sudo.
+        # V 1.0.3
+        # Si contiene un archivo llamado "only_if_new", sólo debemos copiar
+        # si es instalacion nueva. Por ejemplo, si son los datos de base para
+        # una BBDD. En primera instalación se copian, pero en actualizaciones no.              
         #
-        dire="/var/lib/docker/volumes/${vol}/_data"
+        if [[ -f volumes/${vol}/only_if_new && ! -z $(sudo ls -A ${dire}) ]]; then
+            echo "INFO El volumen ${vol} contiene un archivo 'only_if_new' y el destino no esta vacio, se ignora"
+            continue 
+        fi
+        # V 1.0.3 Si hay algun archivo tgz, lo extraemos insitu y lo eliminamos
+        #
+        for fich in $(ls -C1 volumes/${vol}); do
+        	if [[ $fich == *".tgz" ]]; then
+        	    echo "INFO Extrayendo ${vol}/${fich}.."
+        		tar xzf volumes/${vol}/${fich} -C volumes/${vol}/
+        	    echo "INFO Eliminando ${vol}/${fich} antes de copiar volumen.."
+        		rm -f volumes/${vol}/${fich}
+        	fi
+        done
         echo "INFO Copiando volumen ${vol} a ${dire}.."
         sudo rm -Rf ${dire}/*
         [[ $? != 0 ]] && { echo "ERROR No se ha podido borrar el contenido anterior de ${dire}"; exit 4; }

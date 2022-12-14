@@ -16,7 +16,7 @@ a provisionar. Para este ejemplo, hemos hecho lo siguiente:
 			%sudo	ALL=(ALL)	NOPASSWD: ALL
 5. Creamos usuario 'vassadmin', y agregamos a grupos sudo y docker
             sudo groupadd sudo
-		sudo adduser -s /bin/bash vassadmin
+			sudo adduser -s /bin/bash vassadmin
             sudo passwd vassadmin (ponemos una password que solo conoce el sysadmin, provisional Lolo2756)
 		sudo usermod -a -G docker vassadmin
 		sudo usermod -a -G sudo vassadmin

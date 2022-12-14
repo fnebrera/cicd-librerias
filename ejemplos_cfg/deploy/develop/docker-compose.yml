@@ -4,6 +4,8 @@ services:
     selfweb:
         image: ninguna
         container_name: selfweb
+        depends_on:
+            - postgres
         restart: unless-stopped
         volumes:
             - selfweb_log:/var/log/selfweb
@@ -29,6 +31,19 @@ services:
         networks:
             - selfweb_network
             
+    postgres:
+        container_name: postgres_14
+        image: postgres:14.4
+        ports:
+            - 5432:5432
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - selfweb_network
+        restart: unless-stopped
+        environment:
+            POSTGRES_PASSWORD: postgres
+            
     portainer:
         image: portainer/portainer-ce
         container_name: portainer
@@ -53,6 +68,8 @@ volumes:
     nginx_log:
         external: true
     portainer_data:
+        external: true
+    postgres_data:
         external: true
 
 networks:

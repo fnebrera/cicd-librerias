@@ -28,9 +28,9 @@ plantilla (template). Para construir dicha plantilla, en este ejemplo hemos hech
 		apt-get update && apt-get upgrade
 		apt-get install docker docker-compose
 4. Configuramos sudo
-        		apt-get install sudo
+        apt-get install sudo
 		visudo
-            		Cambiamos la linea del grupo sudo y ponemos NOPASSWD: ALL
+            Cambiamos la linea del grupo sudo y ponemos NOPASSWD: ALL
 			%sudo	ALL=(ALL)	NOPASSWD: ALL
 5. Agregamos usuario 'vassadmin' a los grupos sudo y docker
 		adduser vassadmin  docker
@@ -41,6 +41,7 @@ plantilla (template). Para construir dicha plantilla, en este ejemplo hemos hech
 8. Apagamos la maquina y clonamos a una plantilla con nombre "debian-plantilla":
 		Seleccionamos la VM, con botón derecho:
 			Clonar -> Clonar a plantilla
-9. Si estamos faltos de espacio, podemos eliminar la maquina semilla. Si no es así, conviene mantenerla, por si se requiere instalar o configurar algo adicional en el futuro.
+9. Si estamos faltos de espacio, podemos eliminar la maquina semilla. Si no es así, conviene mantenerla, por si se requiere instalar o configurar
+   algo adicional en el futuro.
 		
 ====================== E O F ================================

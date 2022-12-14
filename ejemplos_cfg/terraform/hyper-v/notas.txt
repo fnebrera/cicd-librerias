@@ -35,7 +35,7 @@ lo hemos creado así:
 		adduser vassadmin sudo
 7. Cambiamos los permisos de hostname para que podamos modificarlo con sudo
 		chmod g+w /etc/hostname
-		NOTA: En centos hay que usar "hostnamectl -set-hostname <nombre-host>"
+		NOTA: En RedHat/Centos y Debian hay que usar "hostnamectl -set-hostname <nombre-host>"
 8. Desde nuestro linux de trabajo, copiamos la clave publica al usuario vassadmin y probamos conexion
 		ssh-copy-id -i <miclave.pub> vassadmin@<ip actual de la maquina semilla>
 		ssh -i <miclave> vassadmin@<ip actual de la maquina semilla>

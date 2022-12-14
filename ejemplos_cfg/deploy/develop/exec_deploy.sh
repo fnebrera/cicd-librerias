@@ -69,15 +69,16 @@ function exec_deploy() {
     t_echo "INFO Ejecutando sftp para subir el directorio deploy a la maquina remota.."
     t_echo "----------------------------------------------------------------------------------------"
     sftp -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} -r ${CONN_STRING} << ***EndOfFile***
-    put ${DEPLOY_ROOT} ${DEPLOY_SSH_PATH}/work
-    chmod 755 ${DEPLOY_SSH_PATH}/work/deploy.sh
+    put -p ${DEPLOY_ROOT} ${DEPLOY_SSH_PATH}/work
 ***EndOfFile***
 
+    #scp -r -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${DEPLOY_ROOT} ${CONN_STRING}:${DEPLOY_SSH_PATH}/work
     [[ $? != 0 ]] && { echo "ERROR sftp no se ha ejecutado correctamente"; exit 1; }
     #
     # Ejecutamos en remoto el comando de deploy que hemos subido como parte del directorio de trabajo.
     #
-    COMANDO="${DEPLOY_SSH_PATH}/work/deploy.sh \
+    COMANDO="chmod 755 ${DEPLOY_SSH_PATH}/work/deploy.sh && \
+    ${DEPLOY_SSH_PATH}/work/deploy.sh \
     -s ${DEPLOY_SSH_SVC_NAME} \
     -i ${DOCKER_IMG_TAG} \
     -u ${CICD_REGISTRY_USER} \
@@ -107,8 +108,8 @@ function exec_deploy() {
     t_echo "----------------------------------------------------------------------------------------"
     COMANDO="rm -Rf ${DEPLOY_SSH_PATH}/work"
     ssh -o StrictHostKeyChecking=no -i ${DEPLOY_SSH_KEY} ${CONN_STRING} "${COMANDO}" || \
-    	echo "WARN No se ha podido eliminar el directorio de trabajo remoto"
-    t_echo "DEBUG Directorio de tabajo eiminado"
+     	echo "WARN No se ha podido eliminar el directorio de trabajo remoto"
+    t_echo "DEBUG Directorio de tabajo eliminado"
     t_echo "INFO Log del script de despliegue remoto:"
     cat deploy.log
     t_echo "=============================================================================================="
