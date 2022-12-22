@@ -646,36 +646,56 @@ that for each project and branch the development team has to prepare the Terrafo
 
 ===== _Deploy_
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/deploy-simple.yml[]. Se ejecuta en master y, opcionalmente en develop, siempre que el flag DEPLOY_DEVELOP esté a "true". Definido como "manual" para que pueda lanzarse sólamente una vez verificado que el provisionado ha sido correcto.
+For this stage the job has been defined in the file link:jobs/maven/deploy-simple.yml[]. It is run on master and optionally on develop, as long as the DEPLOY_DEVELOP flag is set to "true". Defined as "manual" so that it can be launched only after verifying that the provisioning is correct.
 
-A fin de que la librería sea genérica, el job se ha planteado de manera muy simple:
+In order to make the library generic, the job has been kept very simple:
 
-- A nivel de proyecto, debe definirse una variable DEPLOY_ROOT apuntando a un directorio que contenga todo lo necesario para hacer el deploy. Por ejemplo:
+- At project level, a DEPLOY_ROOT variable must be defined pointing to a directory containing everything needed to do the deploy. For example, if
+staging and production deploys have to be differentiated, the variable can be defined as:
 DEPLOY_ROOT=$CI_PROJECT_DIR/deploy/$CI_COMMIT_REF_NAME.
-- Tambien a nivel de proyecto deben definirse las variables DEPLOY_SSH_USER, DEPLOY_SSH_KEY, DEPLOY_SSH_PATH y DEPLOY_SSH_SVC_NAME, cuyo significado se ha explicado
-en párrafos anteriores.
-- En este directorio debe existir un archivo "exec_deploy.sh" conteniendo las funciones bash que se precisen y, obligatoriamente, una
-denominada "exec_deploy", que será la que se ocupe de realizar el deploy propiamente dicho, ya sea simplemente con SSH o empleando algún agente externo,
-tipo _ansible(TM)_ o similar.
+- Also at project level, the variables DEPLOY_SSH_USER, DEPLOY_SSH_KEY, DEPLOY_SSH_PATH and DEPLOY_SSH_SVC_NAME must be defined.
+Please find description in previous sections.
+- A file called "exec_deploy.sh" should exist in that directory, containing the local bash functions required. A function
+called "exec_deploy()" should exist in that file, and will be in charge of deployment, either using simple sftp/ssh commands or using an external agent,
+such as _ansible(TM)_ or similar.
 
-En el ejemplo que venimos tratando, la función copia al remoto todo el directorio de deploy, que consiste en lo siguiente (ver directorio "deploy" en los ejemplos):
+[WARNING]
+Please be aware that the following descriptions are just an example of how to use the library. The actual steps will depend on the product to be deployed and are provided only as examples.
 
-- Un archivo "docker-compose.yml" que define el stack docker en el que se ejecutará el producto. En este archivo hay un "placehorder" donde debemos indicar la imagen docker a instalar, que se habrá generado y registrado en la etapa "docker". Este placeholder se rellena mediante un archivo "docker-compose.override.yml" que se genera de manera automática en tiempo de despliegue, y que tendrá un contenido similar al siguiente:
+The example project represents a REST server built with _SpringBoot_. The
+product fat-jar is installed in a docker image containing an industry-grade Azul Systems JRE. The client app is written in javascript plus some html and css files, and is served by a _nginx_ web server, which acts a reverse-proxy for accessing the REST server. Additionally, the server requires access to a Postgres database, which is also deployed in a docker container. The three
+containers are deployed as a docker stack using _docker-compose_. A common docker network is used for communication between the containers. The stack
+also defines some external "volumes" for the database, the nginx static content and product config files, so that the data is persisted between invocations of the stack.
 
--------------------------------------------------
-services:
-    selfweb:
-        image: registry2.comunytek.com/comunytek/selfweb/selfwebspringboot/release:5.0.6
--------------------------------------------------
+In the example provided, the function _exec_deploy()_ works as follows:
 
-- Un árbol de directorios en los que definimos los "volumes" y "networks" que empleará el stack. Cuando alguno de los volúmenes se debe crear, pero no copiar su contenido al destino, debe incluir un archivo llamado "ignore". Si no es así, todo el contenido se copia (y sobrescribe) al destino (/var/lib/docker/volumes/xxx/_data).
-- Un script bash llamado "deploy.sh" que se ejecutará de manera remota y se ocupará de realizar la instalación propiamente dicha (ver ejemplos).
+- Uses ssh to create the destination folder for the installation (DEPLOY_SSH_PATH) in the remote VM (if not already created).
+- Changes owner and group of the destination folder to the user and group defined in the DEPLOY_SSH_USER variable.
+- Removes (if exists) a folder called "work" under the destination folder.
+- Uses sftp to copy the entire deploy directory to a new folder called "work" under the destination folder. The contents of the deploy directory are as follows:
+* A "docker-compose.yml" file that defines the docker stack used for of the product. In this file there is a "placehorder" called "ninguna" in the image field of the service called DEPLOY_SSH_SVC_NAME. This placeholder will be replaced in next steps with the reference to the docker image which has been generated and registered in the "docker" stage.
+* A directory tree in which we define the "volumes" and "networks" to be used by the stack. When any of the volumes are to be created, but not copied to the destination, it must include a file called "ignore". Otherwise, the entire contents are copied (and overwritten) to the destination (/var/lib/docker/volumes/<volume>/_data). Note that complex or large data structures can be prepared as ".tgz" files and will be decompressed remotely in next steps. 
+* A bash script called "deploy.sh" that will run remotely and will perform the actual installation.
+- Uses ssh to run remotely the "deploy.sh" script, passing all the additional parameters required.
+- Downloads and shows in console the log of the script.
 
-== Casos de uso
+Following with the example, the "deploy.sh" script works as follows:
 
-Para los casos de uso que siguen, se parte de la siguiente configuración de variables:
+- Changes (if required) the hostname of the machine to the value of the _hyperv_host_name_ output of Terraform. 
+- Stops (if running) the docker stack defined in the "docker-compose.yml" file.
+- Creates (if not existent) the docker networks and volumes found under the "networks" and "volumes" directories of the working tree.
+- Copies (unless a "ignore" file is present) the contents of the "volumes" directories to the corresponding docker volumes. In case of ".tgz" files, they are decompressed before being copied to the destination. Note that the previous contents (if any) of the volume are overwritten, unless a file
+called "only_if_new" is found, in which case the contents are only copied if the destination is empty. The presence of "ignore" files is usefull for axiliary volumes, such as those used for logs. At the same time, the "only_if_new" files are usefull for volumes that are to be populated only once, such as the database contents.
+- Replaces the "placeholder" in the "docker-compose.yml" file with the reference to the docker image that has been generated and registered in the "docker" stage (DOCKER_IMG_TAG).
+- Starts the docker stack defined in the "docker-compose.yml" file. The docker images are pulled either from the docker registry or the
+local Gitlab registry as required. Note that the stack is run in detached mode, so that the commad can finish and the script can proceed.
+- Shows the list of running docker containers, so that the user can verify that the installation is correct.
 
-*De pipeline (grupo)*
+== Use cases
+
+For the following use cases, the variable configuration is as follows:
+
+*Pipeline (group)*
 
 * IGNORE_AUX_BRANCHES: "false"
 * COMPILE_AUX_BRANCHES: "true"
@@ -688,7 +708,7 @@ Para los casos de uso que siguen, se parte de la siguiente configuración de var
 * PROVISION_DEVELOP: "false"
 * DEPLOY_DEVELOP: "false"
 
-*De pipeline (proyecto)*
+*Pipeline (project)*
 
 * SNAPSHOT_NUMBER: "003"
 * HOTFIX_BRANCH: "Hotfix-Issue-23056"
@@ -698,81 +718,84 @@ Para los casos de uso que siguen, se parte de la siguiente configuración de var
 * RUN_PROVISION_STAGES: "true"
 * RUN_DEPLOY_STAGES: "true"
 
-=== Ramas auxiliares
+=== Auxiliary branches
 
-Habitualmente un único desarrollador trabajará en la rama "X", en su PC personal, y con un repositorio git local clonado inicialmente desde el servidor Gitlab.
+Typically a single developer will work on branch "X", on their personal PC, and with a local git repository initially cloned from the Gitlab server.
 
-- Periódicamente, hará commit  de los cambios realizados a su repositorio local.
-- Sea por razones de backup, por haber finalizado un sprint, etc., hará push de la rama auxiliar, lo que disparará el pipeline.
-- Dado que IGNORE_AUX_BRANCHES es false, el pipeline se ejecuta, con los stages:
-* create_bash_library: Comportamiento normal
-* prepare: Comportamiento normal.
-* compile: Se ejecuta, al ser COMPILE_AUX_BRANCHES = true.
-* sonar: Se ejecuta, al ser SONAR_AUX_BRANCHES = true. Se pasa sonar sólo a los archivos modificados y se permite errores.
-* NO se ejecuta la etapa test, al ser TEST_AUX_BRANCHES = false.
+- Periodically, he/she will commit the changes to its local repository.
+- Either for backup reasons, for having finished a sprint, etc., he/she will push the auxiliary branch, which will trigger the pipeline.
+- Since IGNORE_AUX_BRANCHES is false, the pipeline is executed, with the stages:
+* create_bash_library: Normal behaviour.
+* prepare: Normal behaviour.
+* compile: Runs, as COMPILE_AUX_BRANCHES = true.
+* sonar: Executed, as SONAR_AUX_BRANCHES = true. Sonar is passed only to modified files and errors are allowed.
+* The test stage is NOT executed, as TEST_AUX_BRANCHES = false.
 
-Como puede verse, se trata símplemente de verificar que el código fuente actual compila sin errores y pasa o no sonar.
+As can be seen, it is simply a matter of verifying that the current source code compiles without errors and getting a first sight of quality analises.
 
-=== Rama develop
+=== 'develop' branch
 
-El tratamiento de esta rama es bastante más complejo, puesto que en su desarrollo pueden intervenir varias personas. Además, si el flag REGISTER_DEVELOP es true, probablemente vamos a hacer un despliegue "oficial" a UAT o staging, por lo que hemos de ser cuidadosos.
+Handling this branch is rather more complex, as several people may be involved in its development. Also, if the REGISTER_DEVELOP flag is true, we are probably going to do an "official" deployment to UAT or staging, so we have to be careful.
 
-- A medida que los desarrolladores van finalizando su trabajo en su rama "X, Y,..", hacen lo siguiente:
-* Hacen fetch / diff / pull de la rama develop (o eventualmente de una rama temporal específica para el sprint), para obtener el último código disponible.
-* Hacen merge (en local) de su rama "X" sobre develop/sprint. Si hay conflictos, deben resolverse en la rama "X" y repetir el proceso.
-* Notifican al Project Leader que su trabajo está concluido, al menos provisionalmente.
-* El proceso se repite hasta tener finalizada la versión o sprint, pasados los tests de integración y cualquier otro requisito previo y, en definitiva, poder pasar a pre-producción.
+- As developers finish their work on their "X, Y,..." branch, they do the following:
+* They fetch / diff / pull from the develop branch (or eventually from a temporary branch specific to the sprint), to get the latest code available.
+* Merge (locally) their "X" branch into develop/sprint. If there are conflicts, they must resolve them in the "X" branch and repeat the process.
+* They notify the Project Leader that their work is complete, at least provisionally.
+* The process is repeated until the version or sprint is finished, the integration tests and any other prerequisites have been passed and, ultimately, they can move to pre-production.
 
-- El Project Leader, una vez finalizadas todas las ramas que conforman la versión o sprint, hace lo siguiente:
-* Hace pull de develop a su repositorio local.
-* Para cada una de las ramas auxiliares que conforman el SNAPSHOT (o bien para la rama de sprint) hace merge en local de dicha/s rama/s sobre develop. Si todavía quedan conflictos, deben resolverse entre los desarrolladores, y repetir el circuito.
-* Una vez resueltos los conflictos, actualiza el pom de develop con la versión fijada para el SNAPSHOT. Si admitimos snapshots incrementales, se define el número de snapshot en la variable SNAPSHOT_NUMBER.
-* Hace push de la rama develop, lo que dispara el pipeline.
+- The Project Leader, once all the branches that make up the release or sprint have been completed, does the following:
+* Pulls develop to its local repository.
+* For each of the auxiliary branches that make up the SNAPSHOT (or for the sprint branch), the Project Leader merge the branch/s into develop. If there are still conflicts, they must be resolved between the developers, and the loop repeated.
+* Once the conflicts are resolved, the leader updates the 'develop' pom with the version set for the SNAPSHOT. If incremental snapshots are supported, the snapshot number is defined in the SNAPSHOT_NUMBER variable.
+* Pushes the develop branch, which triggers the pipeline.
 
-- Con la configuración antes descrita, el pipeline funcionará del siguiente modo:
+- With the above configuration, the pipeline will work as follows:
 
-* create_bash_library: Comportamiento normal
-* prepare: Comportamiento normal.
-* compile: Comportamiento normal.
-* sonar: Se pasa para todo el código, y NO se admiten errores (ALLOW_FAILURE_IN_SONAR_DEVELOP = false).
-* test: Se pasan tests unitarios, y NO se admiten errores (ALLOW_FAILURE_IN_TEST_DEVELOP = false).
-* build: Se crea el "fat-jar" y, posteriormente, se verifican condiciones para continuar el pipeline. Si no se cumplen, se genera un artefacto con el .jar y el pom, el cual queda disponible para download durante unas horas. Una de las condiciones para continuar es que REGISTER_DEVELOP valga true. Si, a pesar de estar en la rama develop, la versión del proyecto NO es SNAPSHOT, y dado que ALLOW_RELEASE_IN_SNAPSHOT es false, el pipeline se interrumpirá.
-* register: Se registra un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
-* docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
-* tag: Se crea un nuevo Tag con Id único que incluye el SNAPSHOT_NUMBER.
-* tf-prepare: NO se ejecuta (PROVISION_DEVELOP: "false").
-* tf-apply: NO se ejecuta (PROVISION_DEVELOP: "false").
-* deploy: NO se ejecuta (DEPLOY_DEVELOP: "false").
+* create_bash_library: Normal behaviour.
+* prepare: Normal behaviour.
+* compile: Normal behaviour.
+* sonar: Sonar is passed for all code, and NO errors are allowed (ALLOW_FAILURE_IN_SONAR_DEVELOP = false).
+* test: Unit tests are passed, and NO errors are allowed (ALLOW_FAILURE_IN_TEST_DEVELOP = false).
+* build: The fat-jar is created and then conditions are checked to continue the pipeline. If they are not met, an artifact is generated with the .jar and the pom, which is available for download for a few hours. One of the conditions to continue is that REGISTER_DEVELOP is true. If, despite being in the develop branch, the project version is NOT SNAPSHOT, and given that ALLOW_RELEASE_IN_SNAPSHOT is false, the pipeline will be interrupted.
+* register: An artifact consisting of the fat-jar, the pom and a tgz containing the current sources is registered in the gitlab "Package Registry". The artifact ID cannot be repeated, and so the artifact becomes the "single source of truth" of the different registered versions. In this example, as it is a maven-like registry, it could (if it were a library) be used as a dependency in other projects.
+* docker: Only if it is a docker project. The docker image is generated and registered in the gitlab "Container Registry" or DockerHub registry.
+* tag: A new tag is created with a unique ID including the SNAPSHOT_NUMBER.
+* tf-prepare: NOT executed (PROVISION_DEVELOP: "false").
+* tf-apply: NOT run (PROVISION_DEVELOP: "false").
+* deploy: NOT run (DEPLOY_DEVELOP: 'false').
 
-=== Rama master
+=== 'master' branch
 
-En el modelo de flujo que hemos seleccionado, la rama master contiene únicamente la última versión para producción (release). Es por ello que el trabajo sobre esta rama es muy delicado, estando su manejo reservado a usuarios de nivel Mantainer y, preferentemente, al Project Leader.
+In the flow model we have selected, the master branch contains only the latest version for production (release). This is why working on this branch is very delicate, and its handling is reserved to Mantainer level users and, preferably, to the Project Leader.
 
-- Una vez que último SNAPSHOT ha sido aprobado, el Project Leader hace lo siguiente:
-* Hace pull de develop a su repositorio local, y se asegura de que se trata de la versión SNAPSHOT aprobada para producción.
-* Para evitar errores, hace pull de master, y comprueba que se trata de la última versión de release.
-* Hace merge de develop sobre master, y resuelve los eventuales conflictos con la ayuda del resto del equipo.
-* Modifica la versión del proyecto en master para eliminar la cadena "-SNAPSHOT".
-* Hace push de master, lo que dispara el pipeline.
+- Once the latest SNAPSHOT has been approved, the Project Leader does the following:
+* Pulls develop to its local repository, and makes sure that it is the SNAPSHOT version approved for production.
+* To avoid errors, he pulls from master, and checks that it is the latest release version.
+* Merges develop on master, and resolves any conflicts with the help of the rest of the team.
+* Modifies the project version in master to remove the "-SNAPSHOT" string.
+* Pushes the master branch, which triggers the pipeline.
 
-- Con esta configuración, el pipeline funcionará del siguiente modo:
+- With the above configuration, the pipeline will work as follows:
 
-* create_bash_library: Comportamiento normal
-* prepare: Comportamiento normal.
-* compile: Comportamiento normal.
-* sonar: Se pasa para todo el código, y NO se admiten errores.
-* test: Se pasan tests unitarios, y NO se admiten errores.
-* build: Se crea el "fat-jar" y, se verifica que la versión del proyecto NO es SNAPSHOT. Si no se cumple, se genera un artefacto con el .jar y el pom, el cual queda disponible para download durante unas horas y se interrumpe el pipeline.
-* register: Se registra un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, y así el artefacto se convierte en el "single source of truth" de las diferentes versiones registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
-* docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
-* tag: Se crea un nuevo Tag con Id único (la versión del proyecto).
-* tf-prepare: Inicializa el backend de terraform y crea el plan de provisioning.
-* tf-apply: Se ejecuta de forma manual. Aplica el plan terraform anteriormente generado.
-* deploy: Sólo si se trata de un proyecto docker. Se ejecuta de forma manual. Se instala o actualiza el producto en entorno de producción.
+* create_bash_library: Normal behaviour.
+* prepare: Normal behaviour.
+* compile: Normal behaviour.
+* sonar: Passed for all code, and NO errors are allowed.
+* test: Unit tests are passed, and NO errors are allowed.
+* build: The "fat-jar" is created and, version of the project is checked.
+If it ends with SNAPSHOT, an artifact is generated with the .jar and the pom (available for download for a few hours) and the pipeline is interrupted.
+* register: An artifact consisting of the fat-jar, the pom and a tgz containing the current sources is registered in the gitlab "Package Registry". The artifact ID cannot be repeated, and so the artifact becomes the "single source of truth" of the different registered versions. In this example, as it is a maven-like registry, it could (if required) be used as a dependency in other projects.
+* docker: Only if it is a docker project. The docker image is generated and registered in the "Container Registry" of gitlab.
+* tag: A new tag is created with a unique ID (the project version).
+* tf-prepare: Initialises the terraform backend and creates the provisioning plan.
+* tf-apply: Runs manually. Applies the previously generated terraform plan.
+* deploy: Only if it is a docker project. It is executed manually. It installs or updates the product in production environment.
 
-=== Rama hotfix
+=== hotfix branch
 
-En esta versión se ha dejado bastante libertad al tratamiento de eventuales ramas hotfix, puesto que cada organización tiene su propia normativa, que deberá implementarse en la definición final del pipeline.
+In this version, the treatment of possible hotfix branches has been left quite free, as each organisation has its own rules, which must be implemented in the final definition of the pipeline.
+
+----------- >>>>>>>>>>>
 
 - Si es preciso crear y liberar un hotfix, se procederá del siguiente modo:
 * El project leader creará, a partir del tag de la versión de release implicada, una nueva rama, designada de acuerdo con la normativa de la organización (p.e. "Issue-#"). Para que la nueva rama sea considerada hotfix, se modificará la variable HOTFIX_BRANCH para que contenga el nombre de dicha rama. El HOTFIX_NUMBER se definirá con un valor inicial, p.e. "001" que se deberá ir incrementando para cada hotfix requerido en la versión implicada.
