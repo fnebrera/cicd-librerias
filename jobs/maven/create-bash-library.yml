@@ -93,6 +93,7 @@ create-bash-library:
               ${HOTFIX_BRANCH})
                   REG_VERSION="${PRJ_VERS}-HOTFIX"
                   DOCKER_IMG_TAG="${IMG_PREFIX}:${PRJ_VERS}-hotfix"
+                  TAG_NAME="hotfix-${PRJ_VERS}"
                   #
                   # Agregamos numero de hotfix, si lo hay
                   #

@@ -264,76 +264,78 @@ image::img/layout.png[Layout]
 
 === Variables
 
-==== De Grupo
+==== Group level
 
-A nivel del grupo de proyectos (en este caso "comunytek") es necesario definir las siguientes variables:
+At project group level the following variables have to be defined:
 
-CICD_USER:: Usuario de gitlab con suficientes derechos para llamar a la API de Gitlab en relación al proyecto. Normalmente será un Mantainer.
-CICD_PASSWD:: Password del usuario anterior.
-CICD_TOKEN:: Personal token creado para el usuario anterior (en settings de usuario).
-CICD_EMAIL:: Dirección de correo del usuario anterior.
-CICD_HOST:: Nombre del host donde se encuentra instalado Gitlab (p.e. "git2.comunytek.com").
-CICD_REGISTRY_HOST:: Nombre del host para el acceso al registry Docker. Aunque se trata del propio Gitlab, atiende a un puerto distinto, por lo que hemos de discriminarlo por el nombre del host (p.e. "https://registry2.comunytek.com").
-SONAR_HOST_URL:: Url completa del host donde está instalado Sonarqube (p.e. "https://sonar2.comunytek.com").
-SONAR_HOST_TOKEN:: Token generado en Sonar para acceso externo mediante la API.
+CICD_USER:: Gitlab user with sufficient rights to call the Gitlab API in relation to the project. Normally this will be a Mantainer.
+CICD_PASSWD:: Password for user.
+CICD_TOKEN:: Personal token created for the previous user (in user settings).
+CICD_EMAIL:: Email address of the user.
+CICD_HOST:: Gitlab server hostname (e.g. "git2.comunytek.com").
+CICD_REGISTRY_HOST:: Hostname of docker registry. Even if hosted in the same Gitlab server, it listens a different port,
+so we have to discriminate it by host name (e.g. "https://registry2.comunytek.com"). Set to 'dockerhub' if using public docker repository.
+SONAR_HOST_URL:: Full URL of Sonarqube host (e.g. "https://sonar2.comunytek.com").
+SONAR_HOST_TOKEN:: Token generated in Sonar for external access via API.
 
-==== De pipeline (ocultas)
+==== Pipeline level (hidden)
 
-En el include principal del pipeline se definen un conjunto de variables que quedan ocultas para los Developers, y que se han utilizado como base para implementar los diferentes flujos. Un Manager de Grupo puede modificar el comportamiento del pipeline sin más que actualizar estas variables.
+In the main include of the pipeline, a set of variables are defined that are hidden from the Developers, and are used as the basis for implementing the different flows. A Group Manager can modify the behaviour of the pipeline just changing these variables.
 
-IGNORE_AUX_BRANCHES:: No ejecutar el pipeline en ramas auxiliares (aquellas distintas de 'master' y 'develop').
-Si se define a "true", el resto de flags relacionados con ramas auxiliares no tienen efecto.
-Como excepcion, la rama identificada como HOTFIX_BRANCH (si existe) siempre pasa.
-COMPILE_AUX_BRANCHES:: Compilar o no ante un push en ramas auxiliares.
-SONAR_AUX_BRANCHES:: Pasar o no Sonar en ramas auxiliares. En cualquier caso se admite que falle.
-TEST_AUX_BRANCHES:: Pasar o no test unitarios en ramas auxiliares. En cualquier caso se admite que falle.
-ALLOW_FAILURE_IN_SONAR_DEVELOP:: Permitir fallo al pasar Sonar en rama develop.
-ALLOW_FAILURE_IN_TEST_DEVELOP:: Permitir fallo al pasar tests unitarios en rama develop.
-ALLOW_RELEASE_IN_DEVELOP:: Permitir versiones release (no son SNAPSHOT) en rama develop. Normalmente será "false", pero puede haber circunstancias específicas en que sea necesario permitirlo. Nótese que nunca permitimos versiones SNAPSHOT en rama master.
-REGISTER_DEVELOP:: Registrar, generar imagen docker y tag de la rama 'develop'. Debe indicarse a "true"
-si la rama 'develop' representa despliegues oficiales en preproducción, UAT, QA o staging.
-Si se establece como "false", el pipeline termina con la generación del fat-jar y su
-almacenamiento temporal como artefacto.
-PROVISION_DEVELOP:: Provisionar infraestructura (Terraform) en rama develop.
-DEPLOY_DEVELOP:: Instalar/actualizar software en rama develop.
-TF_BACKEND_ADDRESS:: URL del backend de Terraform (sólo aplica si se ha activado el provisioning con Terraform). Normalmente será "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}".
+IGNORE_AUX_BRANCHES:: Pipeline is not executed in auxiliary branches (those different of 'master' y 'develop').
+If "true", the rest of flags related to auxiliary branches are ignored.
+Note that the branch identified as HOTFIX_BRANCH (in case it exists) is not considered auxiliary.
+COMPILE_AUX_BRANCHES:: Flag to compile aux branches.
+SONAR_AUX_BRANCHES:: Flag to launch Sonar analysis in aux branches. Note that failure is allowed.
+TEST_AUX_BRANCHES:: Flag to execute unit tests in aux branches. Note that failure is allowed.
+ALLOW_FAILURE_IN_SONAR_DEVELOP:: Flag to allow failure of Sonar analysis in 'develop'.
+ALLOW_FAILURE_IN_TEST_DEVELOP:: Flag to allow failure of unit tests in 'develop'.
+ALLOW_RELEASE_IN_DEVELOP:: Flag to allow release (non SNAPSHOT) version in 'develop'. Should be 'false' unless required for specific resons.
+Note that SNAPSHOT version is NOT permitted in 'master'.
+REGISTER_DEVELOP:: Register artifact, create and register docker image and generate Tag in 'develop' pipeline. Set to "true"
+in case 'develop' branch represents official deploys to pre-production, UAT QA or Staging.
+If set to "false", the pipeline teminates after generating the fat-jar and creating a temporal artifact.
+PROVISION_DEVELOP:: Flag to provision infrastructure (Terraform) in 'develop'.
+DEPLOY_DEVELOP:: Flag to deploy software in 'develop'.
+TF_BACKEND_ADDRESS:: Terraform backed URL (only applies if provisioning with Terraform has been activated). Usually "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_NAME}".
 
-==== Del proyecto
+==== Project level
 
-Se trata de variables con valores específicos para cada proyecto, pero que sólo deben ser editables por usuarios de nivel "Mantainer". Se definen en los settings CI/CD del proyecto.
+Variables with specific values for each project. Must be kept editable only by "Mantainer" level users. They are defined in the CI/CD settings of the project.
 
-===== Específicas para provisionado con Terraform 
+===== Terraform specific 
 
-TF_ROOT:: Directorio raiz de la configuracion de Terraform. Normalmente se definirá en base a variables intrínsecas de Gitlab. P.e "$CI_PROJECT_DIR/terraform/$CI_COMMIT_REF_NAME". 
-TF_VAR_HYPERVISOR_USER:: Usuario de login del host donde reside el hipervisor. En el caso de AWS, Access key ID.
-TF_VAR_HYPERVISOR_PASSWD:: Password de dicho usuario. En el caso de AWS, Secret acess key.
+TF_ROOT:: Terraform configuration root directory. Normally it will be defined based on intrinsic Gitlab variables. E.g. "$CI_PROJECT_DIR/terraform/$CI_COMMIT_REF_NAME". 
+TF_VAR_HYPERVISOR_HOST:: Hostname or IP of the host where the hypervisor lives. Only usefull for on-premises provisioning. In the case of VMware,
+it refers to the vCenter server.
+TF_VAR_HYPERVISOR_USER:: Login user of the host where the hypervisor lives. In the case of AWS, Access key ID.
+TF_VAR_HYPERVISOR_PASSWD:: Password for the user. In the case of AWS, Secret acess key.
 
-===== Específicas para despliegue como stack Docker
+===== Specific for deployment as a Docker stack
 
-DEPLOY_SSH_USER:: Usuario a emplear para conectar por SSH con la VM creada
-DEPLOY_SSH_KEY:: Variable tipo 'File' que contiene la clave privada para acceder por SSH a la nueva VM
-DEPLOY_SSH_PATH:: Path donde vamos a instalar/actualizar el producto
-DEPLOY_SSH_SVC_NAME:: Nombre del servicio docker que vamos a crear/instalar
+DEPLOY_SSH_USER:: User to connect via SSH to the new VM.
+DEPLOY_SSH_KEY:: 'File' type variable containing the private key for SSH access to the new VM.
+DEPLOY_SSH_PATH:: Path where the product should be installed.
+DEPLOY_SSH_SVC_NAME:: Name of the docker service to be created/installed.
 
-==== De pipeline (editables)
+==== Pipeline level (editables)
 
-Se trata de variables definidas en el ".gitlab-ci.yml" del proyecto y que son, por tanto, editables por los Developers, para tratar circunstancias específicas.
+These are variables defined in the project's ".gitlab-ci.yml" and are therefore editable by the Developers, to deal with specific circumstances.
 
-SNAPSHOT_NUMBER:: Si registramos, creamos docker y tag, etc. en SNAPSHOT podemos agregar (opcionalmente)
-un numero de snapshot a la vesion del proyecto para identificar registros y tag. Nótese que, si la versión en el pom junto con este indentificador ya está registrada, el job de registro terminará con error, y el pipeline se interrumpirá.
-HOTFIX_BRANCH:: Indicar la rama de hotfix en la que estamos trabajando, si es que existe. En esta rama, se ejecuta todo el pipeline,
-aunque las etapas sonar y test admiten errores.
-Comentar esta linea, o dejar en blanco el valor, una vez liberado el hotfix.
-HOTFIX_NUMBER:: Opcionalmente, podemos indicar un numero de hotfix, para registro, docker y tag.
-En la version del proyecto, se respeta la que se indica en el pom.xml.
-RUN_CI_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas a integración continua (CI).
-RUN_REGISTER_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas al registro de artefactos, imágenes docker y tags.
-RUN_PROVISION_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas al provisioning de infraestructura.
-RUN_DEPLOY_STAGES:: "true"/"false". Indica si se deben ejecutar las etapas asociadas al despliegue (instalación/actualización) del software.
+SNAPSHOT_NUMBER:: If we register, create docker and Tag in SNAPSHOT branch we can add (optionally)
+a snapshot number to the project version to identify sub-releases. Note that, if the version in the _pom_ along with this identifier is already registered, the registration job will end with an error, and the pipeline will be interrupted.
+HOTFIX_BRANCH:: Name of the hotfix branch we are working on, if it exists. In this branch, the whole pipeline is executed,
+although the _sonar_ and _test_ stages allow failure.
+Comment out this line, or leave the value blank, once the hotfix is released.
+HOTFIX_NUMBER:: Optionally, we can indicate a hotfix number, for registry, docker and tag.
+RUN_CI_STAGES:: "true"/"false". Sets whether the stages associated with continuous integration (CI) are to be executed.
+RUN_REGISTER_STAGES:: "true"/"false". Sets whether the stages associated with the registration of artefacts, docker images and tags should be run.
+RUN_PROVISION_STAGES:: "true"/"false". Sets whether the stages associated with infrastructure provisioning are to be performed.
+RUN_DEPLOY_STAGES:: "true"/"false". Sets whether to execute the stages associated with the deployment (installation/upgrade) of the software.
 
-=== Pipeline del proyecto e include principal
+=== Project pipeline and main include
 
-En el proyecto _selfwebspringboot_ se ha creado el archivo ".gitlab-ci.yml" con el contenido siguiente:
+The content of the '.gitlab-ci.yml' file in the example project is as follows:
 
 ------------------------------------------------------------
 variables:
@@ -348,13 +350,13 @@ include:
    file: 'pipelines/maven-springboot-simple.yml'
 ------------------------------------------------------------
 
-Como puede verse, simplemente se definen las variables de pipeline editables, y se incluye el resto de la definición del pipeline tomada del proyecto _cicd-librerias_.
+As can be seen, we simply define the editable pipeline variables, and include the rest of the pipeline definition taken from the _cicd-libraries_ project.
 
-El include principal sólo es editable por Managers de Grupo. En este ejemplo, mostramos a continuación un extracto de su contenido.
+The main include is only editable by Group Managers. For this pipeline type, see below an extract of 'maven-springboot-simple.yml':
 
 ------------------------------------------------------------
 variables:
-  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"    # Home de sonar, para caching
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   ...
 
 workflow:
@@ -384,110 +386,237 @@ include:
       ... resto de includes
 ------------------------------------------------------------
 
-=== Fases del pipeline
+=== Pipeline Phases
 
-A efectos de control global del flujo, se han agrupado las diferentes etapas en la siguientes fases:
+For the purposes of overall flow control, the different stages have been grouped into the following phases:
 
-* Preparación
+* Preparation
 - create-bash-library
 - prepare
-* Integración continua (CI)
+* Continuous integration (CI)
 - compile
 - sonar
 - test
 - build
-* Registro (artefacto, imagen docker, tag)
+* Registration (artifact, docker image, tag)
 - register
 - docker
 - tag
-* Aprovisionamiento de infraestructura
+* infrastructure provisioning
 - tf-prepare
 - tf-apply
-* Despliegue del producto
+* Product deployment
 - deploy
 
-=== Jobs específicos para maven
+=== Maven-specific jobs
 
-A continuación se explica brevemente la funcionalidad de los diferentes jobs. Puede accederse al código fuente siguiendo el correspondiente link. Los jobs se muestran agregados por fases e indicando, si es necesario, la etapa (stage) a la que corresponden. 
+The functionality of the different jobs is briefly explained below. The source code can be accessed by following the corresponding link. The jobs are shown aggregated by phases and indicating, if necessary, the stage to which they correspond. 
 
-==== Fase de preparación
+==== Preparation phase
 
-Se ejecuta de manera incondicional, y se emplea para preparar la caché, así como algunas variables de entorno que serán de utilidad en etapas posteriores.
+It is executed unconditionally, and is used to prepare the cache, as well as some environment variables that will be useful in later stages.
 
 ===== _Create-bash-library (.pre)_
 
-Job definido en link:jobs/maven/create-bash-library.yml[]. Se ejecuta en la etapa ".pre", es decir, con anterioridad a cualquier otro job del pipeline. En este caso concreto, se limita a crear y popular un archivo temporal llamado "funciones-bash.sh" conteniendo una serie de funciones escritas en bash y de uso general para cualquier job del pipeline. El archivo generado se pasa como artefacto al resto del pipeline. Cuando un job quiere llamar a una función de la librería, necesita "cargarla" previamente, lo que se hace habitualmente en el before_script:
+Job defined in link:jobs/maven/create-bash-library.yml[]. It is executed at the '.pre' stage, i.e. before any other job in the pipeline. In this particular case, it simply creates and populates a temporary file called "functions-bash.sh" containing a series of functions written in bash and of general use for any job in the pipeline. The generated file is passed as an artifact to the rest of the pipeline. When a job wants to call a function from the library, it needs to "load" it first, which is usually done in the before_script:
 
 ------------------------------------------------------------
   before_script:
     - . funciones-bash.sh
 ------------------------------------------------------------
 
-Este mecanismo permite mantener la/s librería/s bajo control de código fuente, y es el recomendado por Gitlab (ver link:https://www.youtube.com/watch?v=sF3kPJTy2UU[]).
+This mechanism serves to keep the library(s) under source code control, and is recommended by Gitlab (see link:https://www.youtube.com/watch?v=sF3kPJTy2UU[]).
 
-Idéntico mecanismo puede ser válido para librerías escritas en PowerShell, Python, Ruby, etc.
+The same mechanism can be valid for libraries written in PowerShell, Python, Ruby, etc.
 
 ===== _Prepare (prepare)_
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/prepare-simple.yml[]. Este job se ejecuta incondicionalmente en todas las
-ramas al hacer push, excepto en ramas auxiliares si el flag IGNORE_AUX_BRANCHES está a true (todo el pipeline simplemente se ignora). El job prepara el entorno para la ejecución de jobs posteriores.
+For this step the job has been defined in the file link:jobs/maven/prepare-simple.yml[]. This job is executed unconditionally on all branches when pushing, except on auxiliary branches if the
+IGNORE_AUX_BRANCHES flag is set to true (the whole pipeline is simply ignored). The job prepares the environment for the execution of subsequent jobs.
 
-- Define los directorios que forman parte del cache.
-- Calcula una serie de variables de entorno, útiles para todo el pipeline.
-- Copia las claves y valores de las variables de entorno a un archivo temporal "prepare.env".
-- Pasa el contenido de "prepare.env" al resto del pipeline mediante un artefacto de tipo "reports" y clave "dotenv". Las variables contenidas en este archivo son accesibles en todo el pipeline.
+- Defines the directories that are part of the cache.
+- Computes a number of environment variables, useful for the whole pipeline.
+- Copies the keys and values of the environment variables to a temporary file "prepare.env".
+- Passes the contents of "prepare.env" to the rest of the pipeline via an artefact of type "reports" and key "dotenv". The variables contained in this file are accessible throughout the pipeline.
 
-==== Fase de integración contínua (CI)
+Some of the computed variables refer to the register phase:
+
+- REG_VERSION: Version of the artifact to be registered.
+- DOCKER_IMG_TAG: Name of the docker image to be registered.
+- TAG_NAME: Name of the tag to be registered.
+
+The values of said variables are computed depending on the branch being pushed:
+
+* master
+- REG_VERSION: Same of the project version.
+- DOCKER_IMG_TAG: Same of the project version.
+- TAG_NAME: Same of the project version.
+* develop
+- If SNAPSHOT
+** REG_VERSION: Same of the project version, with the SNAPSHOT_NUMBER appended.
+** DOCKER_IMG_TAG: Same of the project version, with the SNAPSHOT_NUMBER appended.
+** TAG_NAME: Same of the project version, with the SNAPSHOT_NUMBER appended.
+- Else
+** REG_VERSION: Project version plus '-DEVELOP-RELEASE' plus SNAPSHOT_NUMBER.
+** DOCKER_IMG_TAG: Project version plus '-develop-release' plus SNAPSHOT_NUMBER.
+** TAG_NAME: 'develop-release-' plus project version plus SNAPSHOT_NUMBER.
+* hotfix
+- REG_VERSION: Project version plus '-HOTFIX' plus HOTFIX_NUMBER.
+- DOCKER_IMG_TAG: Project version plus '-hotfix' plus HOTFIX_NUMBER.
+- TAG_NAME: 'hotfix-' plus project version plus HOTFIX_NUMBER.
+
+==== Continuous Integration Phase (CI)
 
 ===== _Compile_
 
-El job en se define en link:jobs/maven/compile-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag COMPILE_AUX_BRANCHES está a false (o bien el flag IGNORE_AUX_BRANCHES está a true, lo que aplica a todo el pipeline). También se ejecuta en la rama hotfix (si existe). En este ejemplo, el job es bastante simple:
+This job is defined in link:jobs/maven/compile-simple.yml[]. It is executed unconditionally on all branches on push, except on auxiliary branches if the COMPILE_AUX_BRANCHES flag is set to false (or the IGNORE_AUX_BRANCHES flag is set to true, which applies to the whole pipeline). It also runs on the hotfix branch (if it exists). In this example, the job is quite simple:
 
-- Define los directorios de la cache.
-- Ejecuta "mvn clean compile". Si se produce un error de compilación, el pipeline se detiene.
+- Defines the cache directories locally used.
+- Runs "mvn clean compile". If a compile error occurs, the pipeline stops.
 
 ===== _Sonar_
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/sonar-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag SONAR_AUX_BRANCHES está a false. También se ejecuta en la rama hotfix (si existe). Se ejecuta Sonarqube sobre el código fuente para localizar bugs, code-smells y vulnerabilidades SAST.
+For this stage the job has been defined in the file link:jobs/maven/sonar-simple.yml[]. It is executed unconditionally on all branches when pushing, except on auxiliary branches if the SONAR_AUX_BRANCHES flag is set to false. It also runs on the hotfix branch (if it exists). Sonarqube is run on the source code to find bugs, code-smells and SAST vulnerabilities. Note that specific quality rules can be defined for each project, and that the analysis can be run on modified files only, or on the whole project.
 
-- Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_SONAR_DEVELOP se defina como true.
-- En ramas auxiliares se pasa Sonar sólo en archivos modificados, mientras que en el resto de ramas se pasa a todo el código. 
-- Se ejecuta "mvn validate sonar:sonar".
+- Pipeline is allowed to continue in case of error in the hotfix and auxiliary branches, as well as in 'develop' as long as the ALLOW_FAILURE_IN_SONAR_DEVELOP
+flag is set to true.
+- In the auxiliary branches Sonar is passed only on modified files, while in all other branches it is passed on whole project. 
+- Runs "mvn validate sonar:sonar".
 
 ===== _Test_
 
-Job definido en link:jobs/maven/test-simple.yml[]. Se ejecuta incondicionalmente en todas las ramas al hacer push, excepto en ramas auxiliares si el flag TEST_AUX_BRANCHES está a false. Nótese que en la rama hotfix (si existe) también se ejecuta este job. El objetivo del job es pasar los test unitarios definidos para el proyecto.
+Job defined in link:jobs/maven/test-simple.yml[]. It is executed unconditionally on all branches on push, except on auxiliary branches if the TEST_AUX_BRANCHES flag is set to false. Note that the hotfix branch (if it exists) also runs this job. The purpose of the job is to pass the unit tests defined for the project.
 
-- Se permite continuar en caso de error en hotfix y ramas auxiliares, así como en develop siempre que el flag ALLOW_FAILURE_IN_TEST_DEVELOP se defina como true.
-- Se ejecuta "mvn test".
+- Pipeline is allowed to continue in case of error in hotfix and auxiliary branches, as well as in develop as long as the ALLOW_FAILURE_IN_TEST_DEVELOP flag is set to true.
+- Run "mvn test".
 
 ===== _Build_
 
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/build-simple.yml[]. Este job se ejecuta incondicionalmente en master, develop y hotfix al hacer push. No se ejecuta en ramas auxiliares. Se trata de construir el artefacto objeto del proyecto. En el caso de maven/SpringBoot se trataría del llamado "fat-jar".
+For this stage the job has been defined in the file link:jobs/maven/build-simple.yml[]. This job is run unconditionally on master, develop and hotfix on push. It does not run on auxiliary branches. The objective is building the executable artifact of the project. In the case of maven/SpringBoot it is
+what we call the "fat-jar".
 
-- Se ejecuta "mvn package". Si da error, se detiene el pipeline.
-- Si estamos en la rama master y la versión del proyecto es SNAPSHOT, salimos con error 2 (no se permite SNAPSHOT en master).
-- Si estamos en la rama develop, la versión del proyecto NO es SNAPSHOT y el flag "ALLOW_RELEASE_IN_DEVELOP" es false, salimos con error 3 (no se permite release en develop).
-- Si estamos en develop y el flag REGISTER_DEVELOP es false, salimos con error 4 (la rama develop no se registra), con lo que detenemos el pipeline.
-- Si salimos con error, generamos un artefacto compuesto por el fat-jar, el pom y el .gitlab-ci.yml. Este artefacto está disponible para su descarga durante un periodo de 8 horas. La idea es que, si se genera alguno de los errores anteriores, el pipeline se detenga, pero dispongamos del artefacto para pruebas adicionales, condiciones no contempladas, etc.
+- Runs "mvn package". In case of failure, the pipeline is stopped.
+- If we are in the master branch and the project version is SNAPSHOT, we get error 2 (SNAPSHOT is not allowed in master).
+- If we are in the develop branch, the project version is NOT SNAPSHOT and the flag "ALLOW_RELEASE_IN_DEVELOP" is false, we exit with error 3
+(release not allowed in develop).
+- If we are in develop and the REGISTER_DEVELOP flag is false, we exit with error 4 (the develop branch is not to be registered), so we stop the pipeline.
 
-==== Fase de registro
+If exiting with error, we generate an artefact composed of the fat-jar, the pom and the .gitlab-ci.yml. This artefact is available for download for a period of 8 hours. The idea is that, if any of the above errors are generated, the pipeline will stop, but the artefact will be available for further testing, conditions not covered, etc.
+
+==== Register phase
 
 ===== _Register_
 
-Job definido en link:jobs/maven/register-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. No se ejecuta en ramas auxiliares. Este job asume que se ha ejecutado la etapa "build" y diponemos, por tanto, del "fat-jar" en la cache. Para que el job ejecute con éxito, se precisan unos requisitos previos:
+Job defined in link:jobs/maven/register-simple.yml[]. Runs on master, hotfix and develop (only if REGISTER_DEVELOP flag is true). It is not run on auxiliary branches. This job assumes that the "build" stage has been executed and therefore we have the "fat-jar" in the cache. For the job to run successfully, some prerequisites are needed:
 
-- Habilitar (si no lo está) el "Package Registry" de Gitlab y configurarlo para que no acepte duplicados.
-- Configurar, en el pom.xml, los registries para snapshot y release (dentro del elemento <distributionManagement>).
-- Crear un archivo "ci_settings.xml" definiendo las credenciales de acceso a el/los registries.
-- En el directorio "ejemplos_cfg/maven" pueden verse ejemplos para un proyecto real.
+- Enable (if not already enabled) the Gitlab "Package Registry" and configure it not to accept duplicates.
+- Configure, in the pom.xml, the registries for snapshot and release (inside the <distributionManagement> element).
+- Create a "ci_settings.xml" file defining the access credentials to the registries.
+- Examples for a real project can be found in the directory "examples_cfg/maven".
 
-Este job (como otros varios del pipeline) se ha definido como "manual". Esto significa que queda bloqueado dentro de la cadena de ejecución hasta que se libere manualmente. En gitlab, no existe, por el momento, un mecanismo directo de interacción con la consola pero podemos, de forma indirecta, controlar el flujo:
+The job uses the REG_VERSION variable created in the _prepare_ stage to register an artifact composed of the fat-jar, the pom and
+a tar file containing the source code. The tar file is created by the job itself. The body of the job is defined as follows:
+
+----------------------------------------------------
+      SRC_FILE="./{PRJ_VERS}-src.tgz"
+      tar czf ${SRC_FILE} ./src/*
+      REG_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+      mvn validate deploy:deploy-file -s ci_settings.xml \
+        -Durl="${REG_URL}" \
+        -DrepositoryId="gitlab-maven" \
+        -Dfile="${JAR_FILE}" \
+        -DpomFile="pom.xml" \
+        -Dversion=${REG_VERSION} \
+        -Dfiles=${SRC_FILE} \
+        -Dclassifiers=src \
+        -Dtypes=tgz
+----------------------------------------------------
+
+===== _Docker_
+
+For this stage the job has been defined in the file link:jobs/maven/docker-simple.yml[]. This job is run unconditionally on master and hotfix on push. It does not run on auxiliary branches. Additionally it can be run on develop if REGISTER_DEVELOP is true. It is only executed if a "Dockerfile" file exists in the root of the project.
+
+Note that this jobs has to be run by an executor with DIND (Docker in Docker) enabled, so it uses an official Docker image plus a service to enable DIND:
+
+----------------------------------------------------
+  image: docker:20.10.17
+  services:
+    - docker:20.10.17-dind
+----------------------------------------------------
+
+The resulting Image ID has being defined at the _prepare_ stage, and it is stored in the variable DOCKER_IMG_TAG. The job does the following:
+
+- Creates the Docker image based on the Dockerfile.
+- Logs into the Component Container (either local Gitlab or Dockerhub). Note that if the registry is Dockerhub, the login is done without specifying the registry host (default behaviour).
+- Registers the image via "docker push".
+
+-------------------------------------------------
+      REGISTRY_HOST=${CICD_REGISTRY_HOST}
+      [[ ${CICD_REGISTRY_HOST} == "dockerhub" ]] && REGISTRY_HOST=""
+      docker login -u $CICD_REGISTRY_USER -p $CICD_REGISTRY_PASSWD $REGISTRY_HOST
+      docker build -t $DOCKER_IMG_TAG .
+      docker push $DOCKER_IMG_TAG 
+-------------------------------------------------
+
+===== _Tag_
+
+Job defined in link:jobs/maven/tag-simple.yml[]. Runs on master, hotfix and develop (if REGISTER_DEVELOP flag is true).
+
+The tag name has been defined in the _prepare_ stage and is stored in the variable TAG_NAME.
+
+An excerpt of the job is as follows:
+
+-------------------------------------------------
+      git config user.name "$CICD_USER"
+      git config user.email "$CICD_EMAIL"
+      git remote remove origin
+      git remote add origin ${ORIGIN_URL}
+      git tag -a $TAG_NAME -m "Build $TAG_NAME"
+      git push origin $TAG_NAME
+-------------------------------------------------
+
+==== Infrastructure provisioning phase
+
+In the current version of the library, Hashicorp _Terraform(TM)_ is used as the infrastructure manager. The library is platform agnostic with respect to the infrastructure provider, so it can be used with any provider supported by Terraform. The library is also agnostic with respect to the type of infrastructure to be provisioned, so it can be used to provision any type of infrastructure supported by Terraform.
+In order for the job to work correctly, a variable called TF_ROOT has to be defined, pointing to the root directory of the configuration to be used. For example,
+if we are going to handle infrastructure in Amazon AWS, and
+we want to differentiate between pre-production and production configurations we could use:
+
+TF_ROOT=$CI_PROJECT_DIR/terraform/aws/$CI_COMMIT_REF_NAME
+
+Configuration examples for both on-premises and cloud provisioning can be found in the _examples-cfg_ directory. Note that in the examples a single
+virtual machine is provisioned based on a "seed" base platform comprised of a linux distro plus some auxiliary tools (bash, sudo, docker) and
+an admin user called 'vassadmin'. Detailed instructions for the preparation of the seed can be found in the _examples-cfg_ directory (notas.txt). The linux
+distros used are:
+
+- Hyper-V: Alpine linux. Hyper-V integration services have to be installed manually. The seed consists of the disk image (vhdx) of a
+previously created VM.
+- vSphere: Debian bullseye. Integration services are installed by default. Note that Alpine linux is not properly supported by vSphere. In this
+case the seed is a 'template' created from a previously created VM.
+- AWS: Amazon linux 2. Integration services are installed by default. The seed is a an AMI image created from a previously created VM.
+
+The VM disk size is defined in the Terraform configuration and can be higher than the seed. Depending on the provider, the resulting root filesystem
+can be resized automatically or not. In the latter case, manual configurarion is needed. For debian based systems, a script called
+_extender-lvm.sh_ is provided. A full definition of tasks to be performed both for debian and alpine distros can be found in the file _extender-disco.txt_.
+
+===== _Tf-prepare_
+
+Defined in link:jobs/maven/tf-prepare-simple.yml[]. It is run on master and optionally on develop, as long as the PROVISION_DEVELOP flag is set to "true".
+
+It uses gitlab itself as status backend, for which it is required to set the access data to it through the variables TF_BACKEND_ADDRESS (it must be defined at group level), TF_HYPERVISOR_USER and TF_HYPERVISOR_PASSWD (the latter at project level).
+
+The job validates the terraform configuration and creates the provisioning "plan" based on the possible changes on the real situation of machines, disks, interfaces, etc. The generated plan is passed on to subsequent stages in the form of an internal pipeline artifact.
+
+===== _Tf-apply_
+
+Job defined in link:jobs/maven/tf-apply-simple.yml[]. Runs on master and optionally on develop, provided the PROVISION_DEVELOP flag is set to "true". Defined as "manual" to allow detailed review of the plan prepared in the previous step, before proceeding to provisioning (apply).
+
+This job (like some others in the pipeline) has been defined as "manual". This means that it is locked inside the execution chain until it is manually released. In gitlab, there is, at the moment, no direct mechanism for interacting with the console, but we can indirectly control the flow:
 
 image::img/jobmanual.png[Job manual]
 
-Por ejemplo, en este caso, se ha definido una variable de job llamada SKIP, con valor inicial false. Si en el job pulsamos el icono de "play", la variable no cambiará su valor. Por contra, si pulsamos sobre el nombre del job, se nos presenta un formulario en el que podemos agregar o modificar el valor de variables locales.
-En este ejemplo, podemos definir la variable SKIP a true, con lo que podemos, en el script, saltanos la ejecución de este job y pasar a la siguiente etapa:
+For example, in this case, a job variable called SKIP has been defined, with initial value of false. If we click on the "play" icon in the job, the variable will not change its value. On the other hand, if we click on the "gear" icon, we are presented with a form in which we can add or modify the value of local variables.
+In this example, we can set the variable SKIP to true, so we can, in the script, skip the execution of this job and move on to the next stage:
 
 -------------------------------------------------
   variables:
@@ -497,109 +626,23 @@ En este ejemplo, podemos definir la variable SKIP a true, con lo que podemos, en
 
 -------------------------------------------------
 
+Additionally, the possibility of performing any terraform action has been provided, for which we must define the ACTION variable with the desired value. The default is "apply", but we can enter "destroy" or another valid terraform command.
 
-El job prepara un artifact ID del siguiente modo:
+In order to facilitate the subsequent deployment phase, the Terraform _outputs_ are written to a file called "cicd.vars", which has been defined as part of the cache, and has the format "key=value", so it can easily be read as environment variables at later stages, by simply using
+"source cicd.vars" in the script. As part of the cache, it is persisted between invocations of the pipeline. For example, if one of the outputs is the IP
+of the provisioned machine, it will be cached, so in case we stop the pipeline before the deployment phases, those can be run at a
+later time and they will be able to obtain the previous Terraform outputs from the cached _cicd.vars_ file. 
 
-- En rama master, el ID es la versión del proyecto en el pom (debe ser de release). Como es lógico, no puede registrarse la misma versión más de una vez.
-- En rama develop, y si es SNAPSHOT, se agrega a la versión del proyecto el valor de la variable SNAPSHOT_NUMBER, con lo quedaría algo como "5.0.6-SNAPSHOT.003". De este modo, podemos liberar para UAT o staging más de una versión intermedia, en forma de "release candidate", pero manteniendo registrada toda la historia de este SNAPSHOT.
-- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), agregamos a la versión del proyecto la cadena "-DEVELOP-RELEASE" seguida del SNAPSHOT_NUMBER, es decir, algo como "5.0.6-DEVELOP-RELEASE.003". Es una situación bastante rara, puesto que se sale de la normativa básica de flujo, pero hemos dejado abierta esta posibilidad para acomodar circunstancias excepcionales.
-- En rama hotfix (si existe), agregamos a la versión del proyecto la cadena "-HOTFIX" seguida del HOTFIX_NUMBER, es decir, algo como "5.0.6-HOTFIX.002".
+In the provided examples, the following outputs are defined:
 
-Finalmente, creamos un tar con los fuentes y registramos un artefacto compuesto por el fat-jar, el pom y el tar:
+- _hyperv_instance_ip_: IP address of the provisioned machine. Note that, in general, DHCP is used, so the IP may change between invocations. In
+the case of AWS, a fixed (Elastic IP) could be used, if desired.
+- _hyperv_host_name_: Hostname of the provided machine. Currently defined as part of the _terraform.tfvars_ file.
 
-----------------------------------------------------
-      SRC_FILE="./{PRJ_VERS}-src.tgz"
-      tar czf ${SRC_FILE} ./src/*
-      mvn validate deploy:deploy-file -s ci_settings.xml \
-      -Durl="${REG_URL}" \
-      -DrepositoryId="gitlab-maven" \
-      -Dfile="${JAR_FILE}" \
-      -DpomFile="pom.xml" \
-      ${VERSION} \
-      -Dfiles=${SRC_FILE} \
-      -Dclassifiers=src \
-      -Dtypes=tgz
-----------------------------------------------------
+Note that both the body of the job and the mechanism of passing the outputs to the next stage are very simple, yet standard. The idea is
+that for each project and branch the development team has to prepare the Terrafom configuration than best fits the project requirements.
 
-===== _Docker_
-
-Para esta etapa se ha definido el job en el archivo link:jobs/maven/docker-simple.yml[]. Este job se ejecuta incondicionalmente en master y hotfix al hacer push. No se ejecuta en ramas auxiliares. Adicionalmente puede ejecutarse en develop si REGISTER_DEVELOP es true. Sólo se ejecuta si existe, en la raiz del proyecto, un archivo "Dockerfile".
-
-El job prepara un Image ID del siguiente modo:
-
-- En rama master, agregamos al Id base la cadena "/release". Nótese que el Component Registry SI admite duplicados.
-- En rama develop, y si es SNAPSHOT, se agrega al Id base la cadena "/snapshot", y a la versión de proyecto el SNAPSHOT_NUMBER.
-- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), agregamos al Id base cadena "/develop-release", y a la versión de proyecto el SNAPSHOT_NUMBER.
-- En rama hotfix (si existe), agregamos al Id de base la cadena "/hotfix", y a la versión de proyecto el HOTFIX_NUMBER.
-
-El job guarda el IMG_TAG generado en el archivo "prepare.env", y lo pasa como artefacto a etapas posteriores. Además:
-
-- Crea la imagen Docker en base al Dockerfile.
-- Hace login al Component Container de nuestro Gitlab.
-- Registra la imagen mediante "docker push".
-
--------------------------------------------------
-    - 'echo "IMG_TAG=${IMG_TAG}" >> prepare.env'
-    - docker -v
-    - 'echo "$CICD_PASSWD" | docker login -u $CICD_USER --password-stdin $CICD_REGISTRY_HOST'
-    - docker build -t $IMG_TAG .
-    - docker push $IMG_TAG 
--------------------------------------------------
-
-===== _Tag_
-
-Job definido en link:jobs/maven/tag-simple.yml[]. Se ejecuta en master, hotfix y develop (si el flag REGISTER_DEVELOP es true) al hacer push. El job se ha definido como "manual".
-
-El job computa un TagID, de acuerdo los siguientes criterios:
-
-- Si estamos en la rama master, el TagID se forma con la cadena "release-" seguida de la versión del proyecto, es decir, algo como "release-5.0.6".
-- En rama develop, y si es SNAPSHOT, se forma con la cadena "snapshot-", la versión de proyecto y el SNAPSHOT_NUMBER. Algo como "snapshot-5.0.6-SNAPSHOT.003".
-- En rama develop, si NO es SNAPSHOT, y aceptamos release en develop (variable ALLOW_RELEASE_IN_DEVELOP a true), se forma con cadena "develop-release-", la versión de proyecto y el SNAPSHOT_NUMBER. Algo como "develop-release-5.0.6.003".
-- En rama hotfix (si existe), se forma con la cadena "hotfix-", la versión de proyecto y el HOTFIX_NUMBER. Algo como "hotfix-5.0.6.002".
-
-Con este Id se genera un tag. Nótese que los TagID no pueden repetirse. 
-
--------------------------------------------------
-    - git config user.name "$CICD_USER"
-    - git config user.email "$CICD_EMAIL"
-    - git remote remove origin
-    - git remote add origin ${ORIGIN_URL}
-    - git tag -a $TAG -m "Build $TAG"
-    - git push origin $TAG
--------------------------------------------------
-
-==== Fase de aprovisionamiento de infraestructura
-
-En la versión actual de la librería se emplea Hashicorp _Terraform(TM)_ como gestor en la infraestructura. La librería es agnóstica en cuanto a la plataforma
-de provisioning u otros detalles, que deberán definirse en archivos y módulos de Terraform. Para que el job funcione correctamente, en el proyecto debe
-definirse una variable llamada TF_ROOT apuntando al directorio raiz de la configuración a emplear. Por ejemplo, si vamos a manejar infraestructura en Amazon AWS, y
-queremos diferenciar las configuraciones de pre-producción y producción podríamos usar:
-
-TF_ROOT=$CI_PROJECT_DIR/terraform/aws/$CI_COMMIT_REF_NAME
-
-En el directorio _ejemplos-cfg_ pueden verse ejemplos de configuración para Hyper-V y AWS.
-
-===== _Tf-prepare_
-
-Se ha definido en link:jobs/maven/tf-prepare-simple.yml[]. Se ejecuta en master y, opcionalmente en develop, siempre que el flag PROVISION_DEVELOP esté a "true".
-
-Se emplea como backend de estado el propio gitlab, para lo que se requiere establecer los datos de acceso al mismo mediante las variables TF_BACKEND_ADDRESS (debe definirse a nivel de grupo), TF_HYPERVISOR_USER y TF_HYPERVISOR_PASSWD (estas últimas a nivel de proyecto).
-
-El job valida la configuración de terraform y crea el "plan" de provisionado en base a los posibles cambios sobre la situación real de máquinas, discos, interfaces, etc. El plan generado se pasa a las etapas posteriores en forma de artefacto interno del pipeline.
-
-===== _Tf-apply_
-
-Job definido en link:jobs/maven/tf-apply-simple.yml[]. Se ejecuta en master y, opcionalmente en develop, siempre que el flag PROVISION_DEVELOP esté a "true". Definido como "manual" para permitir la revisión detallada el plan preparado en la etapa anterior, antes de proceder al provisioning (apply). Como todos los jobs manuales de esta librería, podemos "saltarnos" la ejecución sin más que indicar SKIP=true antes de lanzarlo.
-
-Adicionalmente, se ha previsto la posibilidad de realizar una acción cualquiera de terraform, para lo que debemos definir la variable ACTION con el valor deseado. Por defecto es "apply", pero podemos entrar "destroy" u otro comando terraform válido.
-
-Con el fin de facilitar la posterior fase de despliegue, los _outputs_ de Terraform se escriben en un archivo llamado "cicd.vars", que se ha definido como parte de la caché, y tiene el formato "key=value", por lo que puede leerse fácilmente en forma de variables de entorno en etapas posteriores, sin más que emplear
-"source cicd.vars" en el script. Al formar parte de la caché, se persiste entre una invocación y otra del pipeline. Por ejemplo, si uno de los outputs es la IP
-de la máquina provisionada, se guardará en caché, con lo que podemos ejecutar el pipeline una vez con los flags
-RUN_PROVISION_STAGES="true" y RUN_DEPLOY_STAGES="false" y, si todo ha ido bien, lanzar más tarde el pipeline con RUN_PROVISION_STAGES="false" y RUN_DEPLOY_STAGES="true",
-y la/s etapa/s de deploy podrán obtener los outputs de Terraform desde el archivo cacheado _cicd.vars_. 
-
-==== Fase de despliegue (instalación/actualización) del producto
+==== Deployment phase (installation/upgrade) of the product
 
 ===== _Deploy_
 
