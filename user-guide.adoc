@@ -786,7 +786,7 @@ In the flow model we have selected, the master branch contains only the latest v
 If it ends with SNAPSHOT, an artifact is generated with the .jar and the pom (available for download for a few hours) and the pipeline is interrupted.
 * register: An artifact consisting of the fat-jar, the pom and a tgz containing the current sources is registered in the gitlab "Package Registry". The artifact ID cannot be repeated, and so the artifact becomes the "single source of truth" of the different registered versions. In this example, as it is a maven-like registry, it could (if required) be used as a dependency in other projects.
 * docker: Only if it is a docker project. The docker image is generated and registered in the "Container Registry" of gitlab.
-* tag: A new tag is created with a unique ID (the project version).
+* tag: A new tag is created with a unique ID (project version).
 * tf-prepare: Initialises the terraform backend and creates the provisioning plan.
 * tf-apply: Runs manually. Applies the previously generated terraform plan.
 * deploy: Only if it is a docker project. It is executed manually. It installs or updates the product in production environment.
@@ -795,32 +795,30 @@ If it ends with SNAPSHOT, an artifact is generated with the .jar and the pom (av
 
 In this version, the treatment of possible hotfix branches has been left quite free, as each organisation has its own rules, which must be implemented in the final definition of the pipeline.
 
------------ >>>>>>>>>>>
+- If a hotfix needs to be created and released, proceed as follows:
+* The project leader shall create, from the release version tag involved, a new branch, designated according to the organisation's rules (e.g. "Issue-#"). For the new branch to be considered as a hotfix, the HOTFIX_BRANCH variable shall be modified to contain the name of this branch. The HOTFIX_NUMBER shall be defined with an initial value, e.g. "001", which shall be incremented for each required hotfix in the version concerned.
+* The development of the patch will be done either in the hotfix branch itself (if it is a smaller job), or in one or more auxiliary branches with which the hotfix branch will be merged afterwards.
+* Once the hotfix is finished, its branch will be pushed, which will trigger the pipeline.
+* Note that, depending on the organisation's rules, the changes made will either be repeated on the current SNAPSHOT job, or the hotfix branch will be included in one of the branches that will be merged over develop before the SNAPSHOT is released.
+* Once the pipeline is successfully completed, the hotfix branch will normally be removed.
 
-- Si es preciso crear y liberar un hotfix, se procederá del siguiente modo:
-* El project leader creará, a partir del tag de la versión de release implicada, una nueva rama, designada de acuerdo con la normativa de la organización (p.e. "Issue-#"). Para que la nueva rama sea considerada hotfix, se modificará la variable HOTFIX_BRANCH para que contenga el nombre de dicha rama. El HOTFIX_NUMBER se definirá con un valor inicial, p.e. "001" que se deberá ir incrementando para cada hotfix requerido en la versión implicada.
-* El desarrollo del parche se realizará bien en la propia rama de hotfix (si se trata de un trabajo de menor cuantía), o bien en una o más ramas auxiliares con las que después de hará merge sobre la de hotfix.
-* Una vez finalizado el hotfix, se hará push de su rama, lo que disparará el pipeline.
-* Nótese que, dependiendo de la normativa de la organización, los cambios realizados o bien se repetirán sobre el trabajo en curso en SNAPSHOT, o bien se incluirá la rama hotfix en una de las que se hará merge sobre develop antes de liberar el SNAPSHOT.
-* Una vez finalizado el pipeline con éxito, lo normal es que se elimine la rama de hotfix.
+- With the above configuration, the pipeline will work as follows:
 
-- Con la configuración antes indicada, el pipeline funcionará del siguiente modo:
+* create_bash_library: Normal behaviour.
+* prepare: Normal behaviour.
+* compile: Normal behaviour.
+* sonar: Passed for all code, but errors are allowed.
+* test: unit tests are passed, but errors are allowed.
+* build: The "fat-jar" is created and no more checks are made.
+* register: An artifact consisting of the fat-jar, the pom and a tgz containing the current sources is registered in the gitlab Package Registry. The artifact ID cannot be repeated, so the HOTFIX_NUMBER is added to the project version, and the artifact becomes the "single source of truth" of the different registered hotfix versions. In this example, as it is a maven-like registry, it could (if it were a library) be used as a dependency in other projects.
+* docker: Only if it is a docker project. The docker image is generated and registered in the "Container Registry" of gitlab.
+* tag: NOT executed.
+* tf-prepare: NOT executed.
+* tf-apply: NOT executed.
+* deploy: NOT executed.
 
-* create_bash_library: Comportamiento normal
-* prepare: Comportamiento normal.
-* compile: Comportamiento normal.
-* sonar: Se pasa para todo el código, y SI se admiten errores.
-* test: Se pasan tests unitarios, y SI se admiten errores.
-* build: Se crea el "fat-jar" y no se hacen más comprobaciones.
-* register: Se registra un artefacto compuesto por el fat-jar, el pom y un tgz conteniendo los fuentes actuales en el "Package Registry" de gitlab. El Id del artefacto no puede repetirse, por lo que a la versión del proyecto se agrega el HOTFIX_NUMBER, y el artefacto se convierte en el "single source of truth" de las diferentes versiones hotfix registradas. En este ejemplo, al tratarse de un registro tipo maven, podría (si se tratase de una líbrería) emplearse como dependencia en otros proyectos.
-* docker: Sólo si se trata de un proyecto docker. Se genera la imagen docker y se registra en el "Container Registry" de gitlab.
-* tag: NO se ejecuta.
-* tf-prepare: NO se ejecuta.
-* tf-apply: NO se ejecuta.
-* deploy: NO se ejecuta.
+== Conclusion
 
-== Conclusión
+This project has demonstrated that it is possible to achieve significant savings in both man-hours and learning curve by using Gitlab CI/CD as the basic process tool, compared to other multi-product solutions, although may be it does not reach the level of sophistication and complexity that those can provide. In addition, the definition of pipelines, although only an example, can be used as a template and adapted to the requirements of many organisations.
 
-En el presente proyecto se ha comprobado que es posible obtener un ahorro importante, tanto en horas/hombre como en curva de aprendizaje, empleando Gitlab CI/CD como herramienta básica del proceso, frente a otras soluciones multi-producto, aunque, lógicamente, no se llegue al nivel de sofisticación y complejidad que pueden aportar las mismas. Adicionalmente, la definición de pipelines realizada, si bien es sólo un ejemplo, puede emplearse como "template" y adaptarse a los requisitos de muchas organizaciones.
-
-Se han incorporado, además, etapas de provisionado y despliegue relativamente sofisticadas, empleando _Terraform(TM)_, ssh, sftp y bash, que son más que suficientes para muchas situaciones reales. 
+Relatively sophisticated provisioning and deployment steps have also been incorporated, using _Terraform(TM)_, ssh, sftp and bash, which are more than sufficient for many real-world situations. 
