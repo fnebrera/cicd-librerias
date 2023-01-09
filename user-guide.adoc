@@ -1,6 +1,6 @@
 = image:img/vassblue.png[Vass logo] &nbsp;&nbsp;&nbsp; Project _cicd-librerias_
 Faustino Nebrera <faustino.nebrera@vass.es>
-1.0.3, 14/12/2022
+1.1.0, 09/01/2023
 :toc:
 :toc-title: Index
 :toclevels: 4
@@ -45,6 +45,11 @@ In later versions, we plan to replicate part of the libraries to include project
 |FNG
 |14/12/2022
 |Documentation is now in english. New fully tested examples of provision/deploy: Currently available for Hyper-V, AWS & Vmware vSphere(TM)
+
+|1.1.0
+|FNG
+|09/01/2023
+|New fully tested examples of provision/deploy for Microsoft Azure(TM) cloud platform
 |===
 
 :sectnums:
