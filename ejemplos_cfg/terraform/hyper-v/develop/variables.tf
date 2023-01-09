@@ -5,12 +5,14 @@
 variable "HYPERVISOR_USER" {
     description     = "Usuario para conectar al servidor  hyper-v"
     type            = string
+    default         = "Administrador"
 }
 
 variable "HYPERVISOR_PASSWD" {
     description     = "Password del usuario para conectar al servidor  hyper-v"
     type            = string
     sensitive       = true
+    default         = "Lagasca.67"
 }
 
 #
@@ -19,6 +21,7 @@ variable "HYPERVISOR_PASSWD" {
 variable "HYPERV_HOST" {
     description     = "Ip del servidor hyper-v"
     type            = string
+   default         = "192.168.1.29"
 }
 
 variable "HYPERV_SEED_DISK" {

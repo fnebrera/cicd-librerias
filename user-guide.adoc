@@ -174,7 +174,7 @@ and simplifies the eventual integration of other products.
 
 ==== Code Quality Control
 
-Gitlab does not have a propietary solution for this subject. Instead, it proposes the of _CodeClimate(TM)_ product. Integration is currently in Beta phase. As far as the de facto standard for this phase has been, for years, _SonarQube(TM)_, which is also easily integrated with the most common project managers (maven, gradle, npm...), we have preferred to integrate this product in this example. The process is explained in detail later on.
+Gitlab does not have a propietary solution for this subject. Instead, it proposes the use of the _CodeClimate(TM)_ product. Integration is currently in Beta phase. As far as the de facto standard for this phase has been, for years, _SonarQube(TM)_, which is also easily integrated with the most common project managers (maven, gradle, npm...), we have preferred to integrate said product in this example. The process is explained in detail later on.
 
 ==== Unit tests
 
@@ -190,7 +190,7 @@ In this aspect, the market is clearly dominated by two key players: _Nexus(TM)_ 
 
 ==== Docker Image Registry
 
-Gitlab provides a very flexible "Component Registry", so we have selected using it in this example. Note that Nexus, for example, incorporates this functionality as a separate product, not included in the Nexus Registry, which gose against our idea of simplicity.
+Gitlab provides a very flexible "Component Registry", so we have selected using it in this example. Note that Nexus, for example, incorporates this functionality as a separate product, not included in the Nexus Registry, which goes against our idea of simplicity.
 
 ==== Provisioning
 
@@ -603,7 +603,7 @@ _extender-lvm.sh_ is provided. A full definition of tasks to be performed both f
 
 Defined in link:jobs/maven/tf-prepare-simple.yml[]. It is run on master and optionally on develop, as long as the PROVISION_DEVELOP flag is set to "true".
 
-It uses gitlab itself as status backend, for which it is required to set the access data to it through the variables TF_BACKEND_ADDRESS (it must be defined at group level), TF_HYPERVISOR_USER and TF_HYPERVISOR_PASSWD (the latter at project level).
+We use gitlab itself as TF status backend, so access configuration has to be provided through the variables TF_BACKEND_ADDRESS, CICD_USER and CICD_PASSWD (defined at group level).
 
 The job validates the terraform configuration and creates the provisioning "plan" based on the possible changes on the real situation of machines, disks, interfaces, etc. The generated plan is passed on to subsequent stages in the form of an internal pipeline artifact.
 

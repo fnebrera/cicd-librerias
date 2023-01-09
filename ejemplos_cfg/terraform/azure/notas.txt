@@ -1,0 +1,106 @@
+PREPARACION DE LA IMAGEN
+------------------------
+
+En Azure, una de formas de provisionar máquinas virtuales es a través de imágenes predefinidas. En nuestro caso,
+vamos a crear una imagen a partir de una máquina virtual ya creada. Para ello, vamos a seguir los siguientes pasos:
+
+- Desde el Panel de Azure, creamos una nueva máquina virtual tipo linux (p.e. Ubuntu server 20.04 LTS) con las
+  características que queramos. En nuestro caso, vamos a crear una máquina virtual de tipo B1s (1 vCPU, 1 GB RAM)
+  con un disco de 30 GB (valor por defecto). La máquina virtual se creará en la región de Francia Central (francecentral). Como parte del
+  proceso se creará un grupo de recursos (TEST-CICD), una red virtual privada (test-cicd-vnet) y otros recursos necesarios. podemos
+  crear un par de claves para SSH o utilizar un par existente. Como usuario, empleamos 'vassadmin'.
+- Conectamos con la nueva máquina con SSH e instalamos docker y docker-compose. Para ello, ejecutamos los siguientes
+  comandos:
+    sudo apt update
+    sudo apt install docker docker-compose
+
+Ahora podemos apagar la máquina virtual (o bien, podemos dejarla encendida para realizar pruebas posteriores).
+Para crear la imagen, vamos a seguir los siguientes pasos (desde la consola de Azure):
+
+Crear galería:
+    az sig create --resource-group TEST-CICD --gallery-name TestGallery
+
+Crear imagen (inicialmente es sólo un esqueleto):
+    az sig image-definition create \
+    --resource-group TEST-CICD \
+    --gallery-name TestGallery \
+    --gallery-image-definition TestImage \
+    --publisher VASS \
+    --offer CICD \
+    --sku UBU_20_SEED \
+    --os-type Linux \
+    --os-state specialized \
+    --hyper-v-generation V2
+
+Para crear la version de la imagen, necesitamos el id de la máquina virtual que hemos creado anteriormente. Para ello, ejecutamos el siguiente comando:
+    az vm show --resource-group TEST-CICD --name test-seed --query id --output tsv
+
+    Y nos guardamos el ID:
+    /subscriptions/61726489-0dbf-4d0e-b5cd-2a6e330f64f9/resourceGroups/TEST-CICD/providers/Microsoft.Compute/virtualMachines/test-seed
+
+Crear versión de la imagen (a partir de la máquina virtual creada anteriormente):
+    az sig image-version create \
+    --resource-group TEST-CICD \
+    --gallery-name TestGallery \
+    --gallery-image-definition TestImage \
+    --gallery-image-version 1.0.0 \
+    --managed-image "/subscriptions/61726489-0dbf-4d0e-b5cd-2a6e330f64f9/resourceGroups/TEST-CICD/providers/Microsoft.Compute/virtualMachines/test-seed"
+
+Para comprobar que la imagen es correcta, podemos crear una máquina virtual a partir de la imagen creada:
+    az vm create \
+    --resource-group TEST-CICD \
+    --name test-cicd-pre \
+    --image "/subscriptions/61726489-0dbf-4d0e-b5cd-2a6e330f64f9/resourceGroups/TEST-CICD/providers/Microsoft.Compute/galleries/TestGallery/images/TestImage/versions/1.0.0" \
+    --admin-username vassadmin \
+    --size Standard_B1s \
+    --location francecentral \
+    --nsg-rule SSH
+
+Conectamos con la nueva VM y comprobamos que todo es correcto. Ya podemos eliminar esta VM, que no vamos a necesitar.
+
+Para poder aprovisionar desde Terraform, vamos a crear un Service Principal con el que Terraform se autentique. Para ello
+seguimos los siguientes pasos:
+
+Obtener Id de la suscripcion:
+    az account show --query id
+
+    Y nos guardamos el ID:
+    "61726489-0dbf-4d0e-b5cd-2a6e330f64f9"      --> subscription_id
+
+Crear Service Principal:
+    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/61726489-0dbf-4d0e-b5cd-2a6e330f64f9"
+
+    Y nos guardamos los datos:
+    {
+        "appId": "d6619c91-e232-4372-ab6b-4bd101c5d965",              --> client_id
+        "displayName": "azure-cli-2023-01-03-09-25-31",       
+        "password": "3OS8Q~LM9oGMOCCVilyV2CxZhCWMegpxx4Tpdcdx",       --> client_secret
+        "tenant": "b716c11f-16a3-4d15-8dbc-f11f7fdefe5a"              --> tenant_id
+    }
+
+En Terraform, usaremos los datos anteriores al definir el provider. Al tratare de datos sensibles, los definiremos
+en gitlab como variables de proyecto. Para que Terraform las "vea", deben comenzar con TF_VAR_xxx:
+
+En gitlab (variables de proyecto):
+TF_VAR_HYPERVISOR_HOST   -> subscription_id
+TF_VAR_HYPERVISOR_USER   -> client_id
+TF_VAR_HYPERVISOR_PASSWD -> client_secret
+TF_VAR_HYPERVISOR_TENANT -> tenant_id
+
+En Terraform (providers.tf):
+provider "azurerm" {
+  features {}
+
+  subscription_id = var.HYPERVISOR_HOST
+  client_id       = var.HYPERVISOR_USER
+  client_secret   = var.HYPERVISOR_PASSWD
+  tenant_id       = var.HYPERVISOR_TENANT
+}
+
+Para poder diferenciar el provisionado en UAT (rama develop) y en PROD (rama master), se ha previsto
+emplear dos subnets y, lógicamente, dos IPs públicas diferentes. Estos datos, así como la definición
+de tamaño de máquina y disco, se han definido como variables, cuyo valor se establece en el archivo 'terraform.tfvars',
+que se encuentra en el directorio 'terraform' de cada rama.
+
+Para consultas o dudas, contactar con faustino.nebrera@vass.es
+

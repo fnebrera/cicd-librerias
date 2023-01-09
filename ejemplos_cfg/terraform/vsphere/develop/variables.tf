@@ -10,17 +10,20 @@
 variable "HYPERVISOR_USER" {
     description     = "Usuario para conectar al servidor vcenter"
     type            = string
+    default         = "administrator@comunytek.com"
 }
 
 variable "HYPERVISOR_PASSWD" {
     description     = "Password del usuario para conectar al servidor vcenter"
     type            = string
     sensitive       = true
+    default         = "Lagasca.67"
 }
 
 variable "HYPERVISOR_HOST" {
     description     = "Ip/hostname del servidor vcenter"
     type            = string
+    default         = "vcenter.comunuyek.com"
 }
 
 #
