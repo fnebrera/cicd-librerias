@@ -584,9 +584,16 @@ we want to differentiate between pre-production and production configurations we
 
 TF_ROOT=$CI_PROJECT_DIR/terraform/aws/$CI_COMMIT_REF_NAME
 
-Configuration examples for both on-premises and cloud provisioning can be found in the _examples-cfg_ directory. Note that in the examples a single
+Configuration examples are provided in the _examples-cfg_ directory for a number of virtualization environments. Sensible data such as passwords, keys, etc. are not
+defined in the Terraform configuration, but are passed as variables defined at project level. For Terraform to be able to use them, their
+names must begin with "TF_VAR_". For example, the variable "TF_VAR_HYPERVISOR_USER" will be available in the Terraform configuration
+as the variable "HYPERVISOR_USER". Said variables are used in the "provider" section of the Terraform configuration. In order to simplify the
+preparation of Terraform configurations for different branches, specific variables can be defined in the _terraform.tfvars_ file. This file has
+to be created in the root of the TF_ROOT directory.
+
+Note that in the examples a single
 virtual machine is provisioned based on a "seed" base platform comprised of a linux distro plus some auxiliary tools (bash, sudo, docker) and
-an admin user called 'vassadmin'. Detailed instructions for the preparation of the seed can be found in the _examples-cfg_ directory (notas.txt). The linux
+an admin user called 'vassadmin'. Detailed instructions for the preparation of the seed can be found in the _examples-cfg/terraform_ directory (notas.txt). The linux
 distros used are:
 
 - Hyper-V: Alpine linux. Hyper-V integration services have to be installed manually. The seed consists of the disk image (vhdx) of a
@@ -594,6 +601,7 @@ previously created VM.
 - vSphere: Debian bullseye. Integration services are installed by default. Note that Alpine linux is not properly supported by vSphere. In this
 case the seed is a 'template' created from a previously created VM.
 - AWS: Amazon linux 2. Integration services are installed by default. The seed is a an AMI image created from a previously created VM.
+- Azure: Ubuntu 20.04. Integration services are installed by default. The seed is a specialized gallery image created from a previously created VM.
 
 The VM disk size is defined in the Terraform configuration and can be higher than the seed. Depending on the provider, the resulting root filesystem
 can be resized automatically or not. In the latter case, manual configurarion is needed. For debian based systems, a script called
@@ -636,11 +644,11 @@ later time and they will be able to obtain the previous Terraform outputs from t
 In the provided examples, the following outputs are defined:
 
 - _hyperv_instance_ip_: IP address of the provisioned machine. Note that, in general, DHCP is used, so the IP may change between invocations. In
-the case of AWS, a fixed (Elastic IP) could be used, if desired.
+the case of AWS, a fixed (Elastic IP) could be used, if desired. In the case of Azure, the public IP is fixed by default.
 - _hyperv_host_name_: Hostname of the provided machine. Currently defined as part of the _terraform.tfvars_ file.
 
 Note that both the body of the job and the mechanism of passing the outputs to the next stage are very simple, yet standard. The idea is
-that for each project and branch the development team has to prepare the Terrafom configuration than best fits the project requirements.
+that for each project and branch the development team has to prepare the Terrafom configuration that best fits the project requirements.
 
 ==== Deployment phase (installation/upgrade) of the product
 

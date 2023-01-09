@@ -32,4 +32,16 @@ a provisionar. Para este ejemplo, hemos hecho lo siguiente:
 8. Creamos una AMI privada a partir de esta imagen para los lanzamientos subsiguientes.
 9. Podemos apagar la instancia semilla, o incluso eliminarla.
 
+Para conectar con AWS desde Terraform, necesitamos definir una identidad IAM sin acceso a consola (acceso mediante clave y secret).
+En gitlab y a nivel proyecto, debemos definir las siguentes variables:
+TF_VAR_HYPERVISOR_USER     -> Key de AWS
+TF_VAR_HYPERVISOR_PASSWORD -> Secret de AWS
+
+Esta variables se usan en el bloque "provider" de terraform:
+provider "aws" {
+  region      = var.AWS_REGION	-> Definida en terraform.tfvars
+  access_key  = var.HYPERVISOR_USER
+  secret_key  = var.HYPERVISOR_PASSWD
+}
+
 ====================== E O F ================================
